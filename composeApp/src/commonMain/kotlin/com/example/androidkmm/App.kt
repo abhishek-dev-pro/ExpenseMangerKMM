@@ -1,6 +1,6 @@
 package com.example.androidkmm
 
-import MainScreen
+import com.example.androidkmm.screens.MainScreen
 import androidx.compose.runtime.Composable
 import com.example.androidkmm.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
