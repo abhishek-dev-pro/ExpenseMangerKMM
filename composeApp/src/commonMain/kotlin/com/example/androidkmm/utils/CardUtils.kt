@@ -71,4 +71,28 @@ object CardUtils {
             icon()
         }
     }
+
+    /**
+     * Creates a standard item card surface (used by BillItem and GroupItem)
+     */
+    @Composable
+    fun ItemCardSurface(
+        content: @Composable () -> Unit
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
+            color = Color(0xFF1A1A1A), // slightly lighter black background
+            tonalElevation = 2.dp,
+            shadowElevation = 6.dp
+        ) {
+            content()
+        }
+    }
 }

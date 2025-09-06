@@ -31,7 +31,7 @@ fun MainScreen() {
             when (selectedTab) {
                 0 -> HomeScreenContent()
                 1 -> PlaceholderScreen("Transactions")
-                2 -> PlaceholderScreen("Groups")
+                2 -> GroupsScreen()
                 3 -> PlaceholderScreen("Insights")
                 4 -> PlaceholderScreen("Profile")
             }
