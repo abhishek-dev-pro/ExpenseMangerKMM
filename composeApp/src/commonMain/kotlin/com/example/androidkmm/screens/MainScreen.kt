@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.androidkmm.components.*
+import com.example.androidkmm.transactions.TransactionsScreen
 
 /**
  * Main screen with bottom navigation and content switching
@@ -30,7 +31,7 @@ fun MainScreen() {
         ) {
             when (selectedTab) {
                 0 -> HomeScreenContent()
-                1 -> PlaceholderScreen("Transactions")
+                1 -> TransactionsScreen()
                 2 -> GroupsScreen()
                 3 -> PlaceholderScreen("Insights")
                 4 -> PlaceholderScreen("Profile")

@@ -1,12 +1,10 @@
-package com.example.androidkmm.components
+package com.example.androidkmm.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,6 +12,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.androidkmm.components.BalanceCard
+import com.example.androidkmm.components.BillItem
+import com.example.androidkmm.components.GreetingSection
+import com.example.androidkmm.components.GroupItem
+import com.example.androidkmm.components.ProgressCard
+import com.example.androidkmm.components.QuickActions
+import com.example.androidkmm.components.SectionHeader
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.data.SampleData
 import kotlinx.coroutines.delay
