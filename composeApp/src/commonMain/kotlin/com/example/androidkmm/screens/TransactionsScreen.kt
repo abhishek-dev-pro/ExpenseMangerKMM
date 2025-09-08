@@ -3,7 +3,6 @@ package com.example.androidkmm.transactions
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,19 +16,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Attachment
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -52,22 +46,24 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.androidkmm.screens.AddTransactionSheet
+import com.example.androidkmm.screens.TransactionDetailSheet
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.pow
+import kotlin.math.round
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 // ✅ Money formatting extension (from commonMain)
 fun Double.toMoney(digits: Int = 2): String {
     val factor = 10.0.pow(digits)
-    return (kotlin.math.round(this * factor) / factor).toString()
+    return (round(this * factor) / factor).toString()
 }
 
 // ✅ Data class for transaction
@@ -165,6 +161,7 @@ fun TransactionsScreen() {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var selectedTx by remember { mutableStateOf<Transaction?>(null) }
 
     Column(
         modifier = Modifier
@@ -205,7 +202,7 @@ fun TransactionsScreen() {
 
                     // ✅ Staggered animation
                     LaunchedEffect(Unit) {
-                        kotlinx.coroutines.delay(index * 100L) // stagger by index
+                        delay(index * 100L) // stagger by index
                         visible = true
                     }
 
@@ -216,13 +213,31 @@ fun TransactionsScreen() {
                         ) + fadeIn()
                     ) {
                         Column {
-                            TransactionItem(tx)
+                            TransactionItem(tx, ){
+                                selectedTx = tx
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }
             }
         }
+
+        selectedTx?.let { tx ->
+            ModalBottomSheet(
+                onDismissRequest = { selectedTx = null },
+                sheetState = sheetState,
+                containerColor = Color.Black,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+            ) {
+                TransactionDetailSheet(
+                    onSave = { /* Handle save action */ },
+                    transaction = tx,
+                    onDismiss = { selectedTx = null }
+                )
+            }
+        }
+
 
         if (showSheet) {
             ModalBottomSheet(
@@ -364,9 +379,9 @@ fun TransactionSearchBar(
 
 
 @Composable
-fun TransactionItem(tx: Transaction) {
+fun TransactionItem(tx: Transaction, onClick: () -> Unit = {}) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable{onClick()},
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -422,7 +437,7 @@ fun TransactionItem(tx: Transaction) {
                 color = if (tx.amount >= 0) Color(0xFF00C853) else Color.Red,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
-                
+
             )
         }
     }

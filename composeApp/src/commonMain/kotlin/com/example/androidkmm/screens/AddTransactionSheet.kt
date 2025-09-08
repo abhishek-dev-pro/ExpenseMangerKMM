@@ -573,7 +573,7 @@ private fun TransactionTypeToggle() {
 }
 
 @Composable
-private fun SectionLabel(text: String) {
+fun SectionLabel(text: String) {
     Text(text, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Normal)
     Spacer(Modifier.height(4.dp))
 }
