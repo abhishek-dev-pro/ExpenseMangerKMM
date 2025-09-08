@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.androidkmm.screens.AddTransactionSheet
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -447,6 +448,7 @@ fun SelectCategoryOrPaymentBox(
     title: String,
     subtitle: String,
     icon: ImageVector,
+    iconColor: Color = Color.Gray,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -456,7 +458,7 @@ fun SelectCategoryOrPaymentBox(
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Black)
             .drawBehind {
-                val strokeWidth = 1.dp.toPx()
+                val strokeWidth = 1.5.dp.toPx()
                 val dashWidth = 12.dp.toPx()
                 val dashGap = 8.dp.toPx()
 
@@ -479,7 +481,7 @@ fun SelectCategoryOrPaymentBox(
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(Color(0xFF2C2C2C), CircleShape),
+                    .background(iconColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -519,207 +521,11 @@ fun SelectCategoryOrPaymentBox(
 
 
 
-@Composable
-fun AddTransactionSheet(onClose: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        SheetHeader(title = "Add Transaction", onClose = onClose)
 
-        Spacer(Modifier.height(16.dp))
-
-        TransactionTypeToggle()
-
-        Spacer(Modifier.height(24.dp))
-
-        TransactionAmountInputSection()
-
-
-        Spacer(Modifier.height(24.dp))
-
-        SectionLabel("Category")
-        SelectCategoryOrPaymentBox(
-            title = "Select Category",
-            subtitle = "Choose from categories",
-            icon = Icons.Default.CreditCard,
-            onClick = { println("Categories clicked!") }
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        SectionLabel("Payment method")
-        SelectCategoryOrPaymentBox(
-            title = "Select Payment Method",
-            subtitle = "Choose payment mode",
-            icon = Icons.Default.CreditCard,
-            onClick = { println("Payment method clicked!") }
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        TransactionDateTimePicker()
-
-        Spacer(Modifier.height(16.dp))
-
-        NoteInput()
-
-        UploadReceiptCard(
-            modifier = Modifier.padding(top = 16.dp),
-            onClick = { println("Upload receipt clicked!") }
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        SaveTransactionButton(onSave = onClose)
-
-        Spacer(Modifier.height(20.dp))
-    }
-}
 
 /* ---------------- Helper Composables ---------------- */
 
-@Composable
-private fun SheetHeader(title: String, onClose: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-        IconButton(onClick = onClose) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-        }
-    }
-}
 
-@Composable
-private fun TransactionTypeToggle() {
-    var selectedTab by remember { mutableStateOf("Expense") }
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1C1C1C))
-            .padding(4.dp)
-    ) {
-        listOf("Expense", "Income").forEach { tab ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (selectedTab == tab) Color.DarkGray else Color.Transparent)
-                    .clickable { selectedTab = tab }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(tab, color = Color.White, fontSize = 14.sp)
-            }
-        }
-    }
-}
-
-@Composable
-private fun SectionLabel(text: String) {
-    Text(text, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Normal)
-    Spacer(Modifier.height(4.dp))
-}
-
-@Composable
-private fun NoteInput() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF1C1C1C))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Text("Add a note...", color = Color.Gray, fontSize = 14.sp)
-    }
-}
-
-@Composable
-private fun SaveTransactionButton(onSave: () -> Unit) {
-    Button(
-        onClick = onSave,
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C1C1C)),
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-    ) {
-        Text("✓ Save Transaction", color = Color.White, fontSize = 16.sp)
-    }
-}
-
-
-@Composable
-fun TransactionAmountInputSection() {
-    var amount by remember { mutableStateOf("") }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),             // row spans full width
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center      // centers its children
-    ) {
-        val textColor = if (amount.isEmpty()) Color.LightGray else Color.White
-
-        Spacer(modifier = Modifier.weight(1f))
-
-
-        Box(
-            modifier = Modifier
-                .weight(1f)                             // expand equally to both sides
-                .wrapContentWidth(Alignment.Start)      // keep text aligned left inside
-        ) {
-            Column {
-                Row {
-                    Text(
-                        text = "$",
-                        color = textColor,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    BasicTextField(
-                        value = amount,
-                        onValueChange = { input ->
-                            if (input.isEmpty() || input.matches(Regex("^\\d*\\.?\\d{0,2}$"))) {
-                                amount = input
-                            }
-                        },
-                        textStyle = TextStyle(
-                            color = textColor,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Start
-                        ),
-                        singleLine = true,
-                        cursorBrush = SolidColor(Color.White),
-                        decorationBox = { innerTextField ->
-                            if (amount.isEmpty()) {
-                                Text(
-                                    text = "0",
-                                    color = Color.LightGray,
-                                    fontSize = 32.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                            innerTextField()
-                        },
-                        modifier = Modifier.widthIn(min = 40.dp)
-                    )
-                }
-
-                Text("Enter amount", color = Color.Gray, fontSize = 14.sp)
-            }
-
-        }
-
-        Spacer(modifier = Modifier.weight(1f)) // balance right side
-    }
-}
 
 
 
@@ -793,8 +599,8 @@ fun TransactionDateTimePicker() {
     var showTimePicker by remember { mutableStateOf(false) }
 
     val monthNames = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     )
 
     fun formatDate(): String = "${selectedDay.toString().padStart(2,'0')} ${monthNames[selectedMonth-1]} $selectedYear"
