@@ -1,12 +1,13 @@
 package com.example.androidkmm.screens
 
+import ExpenseTrackerApp
+import TransactionsScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.androidkmm.components.*
-import com.example.androidkmm.transactions.TransactionsScreen
 
 /**
  * Main screen with bottom navigation and content switching
@@ -33,8 +34,8 @@ fun MainScreen() {
                 0 -> HomeScreenContent()
                 1 -> TransactionsScreen()
                 2 -> GroupsScreen()
-                3 -> PlaceholderScreen("Insights")
-                4 -> PlaceholderScreen("Profile")
+                3 -> LedgerMainScreen()
+                4 -> ExpenseTrackerApp()
             }
         }
     }
