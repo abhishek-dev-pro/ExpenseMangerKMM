@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.androidkmm.models.Account
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -437,6 +438,8 @@ private fun EditTransactionContent(
             id = "current",
             name = transaction.account,
             balance = "",
+            icon = Icons.Default.AccountBalance,
+            color = Color.Blue,
             type = "Current"
         )
     ) }

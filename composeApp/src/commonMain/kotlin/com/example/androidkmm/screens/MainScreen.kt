@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.androidkmm.components.*
+import com.example.androidkmm.database.InitializeDatabase
 
 /**
  * Main screen with bottom navigation and content switching
@@ -15,6 +16,9 @@ import com.example.androidkmm.components.*
 @Composable
 fun MainScreen() {
     var selectedTab by remember { mutableStateOf(0) }
+    
+    // Initialize database
+    InitializeDatabase()
 
     Scaffold(
         bottomBar = {

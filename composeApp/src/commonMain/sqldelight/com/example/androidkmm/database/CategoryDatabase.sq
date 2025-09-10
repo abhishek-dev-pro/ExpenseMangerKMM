@@ -1,0 +1,115 @@
+CREATE TABLE category (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon_name TEXT NOT NULL,
+    color_hex TEXT NOT NULL,
+    type TEXT NOT NULL,
+    is_custom INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE account (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    balance TEXT NOT NULL,
+    icon_name TEXT NOT NULL,
+    color_hex TEXT NOT NULL,
+    type TEXT NOT NULL,
+    is_custom INTEGER NOT NULL DEFAULT 0
+);
+
+-- Insert default categories
+INSERT INTO category (id, name, icon_name, color_hex, type, is_custom) VALUES
+-- Expense Categories
+('1', 'Food', 'Restaurant', '#FFFF9800', 'EXPENSE', 0),
+('2', 'Transport', 'DirectionsCar', '#FF2196F3', 'EXPENSE', 0),
+('3', 'Housing', 'Home', '#FF4CAF50', 'EXPENSE', 0),
+('4', 'Utilities', 'Lightbulb', '#FFFFC107', 'EXPENSE', 0),
+('5', 'Health', 'LocalHospital', '#FFE91E63', 'EXPENSE', 0),
+('6', 'Shopping', 'ShoppingCart', '#FF9C27B0', 'EXPENSE', 0),
+('7', 'Entertainment', 'Movie', '#FF673AB7', 'EXPENSE', 0),
+('8', 'Travel', 'Flight', '#FF3F51B5', 'EXPENSE', 0),
+('9', 'Education', 'School', '#FF009688', 'EXPENSE', 0),
+('10', 'Savings', 'Savings', '#FF4CAF50', 'EXPENSE', 0),
+('11', 'Loans', 'AccountBalance', '#FFF44336', 'EXPENSE', 0),
+('12', 'Gifts', 'CardGiftcard', '#FFE91E63', 'EXPENSE', 0),
+('13', 'Others', 'Category', '#FF607D8B', 'EXPENSE', 0),
+
+-- Income Categories
+('14', 'Salary', 'AttachMoney', '#FF4CAF50', 'INCOME', 0),
+('15', 'Freelance', 'Work', '#FF2196F3', 'INCOME', 0),
+('16', 'Investment', 'TrendingUp', '#FF9C27B0', 'INCOME', 0),
+('17', 'Rental Income', 'Home', '#FF4CAF50', 'INCOME', 0),
+('18', 'Gift', 'CardGiftcard', '#FFE91E63', 'INCOME', 0),
+('19', 'Bonus', 'Stars', '#FFFF9800', 'INCOME', 0);
+
+-- Insert default account
+INSERT INTO account (id, name, balance, icon_name, color_hex, type, is_custom) VALUES
+('1', 'Cash', '₹0', 'AttachMoney', '#FF4CAF50', 'CASH', 0);
+
+-- Queries
+selectAll:
+SELECT * FROM category ORDER BY is_custom ASC, name ASC;
+
+selectByType:
+SELECT * FROM category WHERE type = ? ORDER BY is_custom ASC, name ASC;
+
+selectCustomCategories:
+SELECT * FROM category WHERE is_custom = 1 ORDER BY name ASC;
+
+selectDefaultCategories:
+SELECT * FROM category WHERE is_custom = 0 ORDER BY name ASC;
+
+selectByNameAndType:
+SELECT * FROM category WHERE name = ? AND type = ?;
+
+insertCategory:
+INSERT INTO category (id, name, icon_name, color_hex, type, is_custom)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateCategory:
+UPDATE category 
+SET name = ?, icon_name = ?, color_hex = ?, type = ?, is_custom = ?
+WHERE id = ?;
+
+deleteCategory:
+DELETE FROM category WHERE id = ?;
+
+deleteCategoryByNameAndType:
+DELETE FROM category WHERE name = ? AND type = ?;
+
+getCategoryCount:
+SELECT COUNT(*) FROM category;
+
+-- Account Queries
+selectAllAccounts:
+SELECT * FROM account ORDER BY is_custom ASC, name ASC;
+
+selectAccountById:
+SELECT * FROM account WHERE id = ?;
+
+selectAccountByName:
+SELECT * FROM account WHERE name = ?;
+
+selectCustomAccounts:
+SELECT * FROM account WHERE is_custom = 1 ORDER BY name ASC;
+
+selectDefaultAccounts:
+SELECT * FROM account WHERE is_custom = 0 ORDER BY name ASC;
+
+insertAccount:
+INSERT INTO account (id, name, balance, icon_name, color_hex, type, is_custom)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateAccount:
+UPDATE account 
+SET name = ?, balance = ?, icon_name = ?, color_hex = ?, type = ?, is_custom = ?
+WHERE id = ?;
+
+deleteAccount:
+DELETE FROM account WHERE id = ?;
+
+deleteAccountByName:
+DELETE FROM account WHERE name = ?;
+
+getAccountCount:
+SELECT COUNT(*) FROM account;

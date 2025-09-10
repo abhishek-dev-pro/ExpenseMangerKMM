@@ -32,6 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.models.Category
+import com.example.androidkmm.models.CategoryType
+import com.example.androidkmm.models.CategoryTab
+import com.example.androidkmm.models.Account
 
 // Color definitions
 val DarkBackground = Color(0xFF1A1A1A)
@@ -42,34 +48,9 @@ val BlueAccent = Color(0xFF2196F3)
 val WhiteText = Color(0xFFFFFFFF)
 val GrayText = Color(0xFF9E9E9E)
 
-// Data classes
-data class Account(
-    val id: String,
-    val name: String,
-    val balance: String,
-    val icon: ImageVector = Icons.Default.AccountBalance,
-    val color: Color = BlueAccent,
-    val type: String
-)
+// Account data class is now defined in models/AccountModels.kt
 
-data class Category(
-    val id: String = "",
-    val name: String,
-    val icon: ImageVector,
-    val color: Color,
-    val type: CategoryType = CategoryType.EXPENSE,
-    val isCustom: Boolean = false
-)
-
-enum class CategoryType {
-    EXPENSE,
-    INCOME
-}
-
-enum class CategoryTab {
-    EXPENSE,
-    INCOME
-}
+// Category, CategoryType, and CategoryTab are now defined in models/CategoryModels.kt
 
 // Bank options
 val bankOptions = listOf(
@@ -77,26 +58,7 @@ val bankOptions = listOf(
     "Axis Bank", "Bank of Baroda", "Punjab National Bank"
 )
 
-// Default categories
-val defaultExpenseCategories = listOf(
-    Category(id = "1", name = "Food & Dining", icon = Icons.Default.Restaurant, color = Color(0xFFFF9800), type = CategoryType.EXPENSE),
-    Category(id = "2", name = "Shopping", icon = Icons.Default.ShoppingCart, color = Color(0xFF9C27B0), type = CategoryType.EXPENSE),
-    Category(id = "3", name = "Transportation", icon = Icons.Default.DirectionsCar, color = Color(0xFF2196F3), type = CategoryType.EXPENSE),
-    Category(id = "4", name = "Home & Utilities", icon = Icons.Default.Home, color = Color(0xFF4CAF50), type = CategoryType.EXPENSE),
-    Category(id = "5", name = "Entertainment", icon = Icons.Default.SportsEsports, color = Color(0xFFE91E63), type = CategoryType.EXPENSE),
-    Category(id = "6", name = "Health & Fitness", icon = Icons.Default.FavoriteBorder, color = Color(0xFFF44336), type = CategoryType.EXPENSE),
-    Category(id = "7", name = "Travel", icon = Icons.Default.Flight, color = Color(0xFF00BCD4), type = CategoryType.EXPENSE),
-    Category(id = "8", name = "Education", icon = Icons.Default.School, color = Color(0xFFFF9800), type = CategoryType.EXPENSE)
-)
-
-val defaultIncomeCategories = listOf(
-    Category(id = "9", name = "Salary", icon = Icons.Default.AttachMoney, color = Color(0xFF4CAF50), type = CategoryType.INCOME),
-    Category(id = "10", name = "Business", icon = Icons.Default.Business, color = Color(0xFF2196F3), type = CategoryType.INCOME),
-    Category(id = "11", name = "Investment", icon = Icons.Default.TrendingUp, color = Color(0xFF9C27B0), type = CategoryType.INCOME),
-    Category(id = "12", name = "Rental Income", icon = Icons.Default.Home, color = Color(0xFF4CAF50), type = CategoryType.INCOME),
-    Category(id = "13", name = "Gift", icon = Icons.Default.CardGiftcard, color = Color(0xFFE91E63), type = CategoryType.INCOME),
-    Category(id = "14", name = "Bonus", icon = Icons.Default.Stars, color = Color(0xFFFF9800), type = CategoryType.INCOME)
-)
+// Default categories are now loaded from database
 
 // Icon options for categories
 val categoryIcons = listOf(
@@ -124,75 +86,18 @@ fun ProfileMainScreen() {
     var showAddCategorySheet by remember { mutableStateOf(false) }
     var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
 
-    var accounts by remember {
-        mutableStateOf(
-            listOf(
-                Account(
-                    id = "1",
-                    name = "Personal Account",
-                    balance = "₹10,000",
-                    icon = Icons.Default.AccountBalance,
-                    color = BlueAccent,
-                    type = "Savings"
-                ),
-                Account(
-                    id = "2",
-                    name = "Business Account",
-                    balance = "₹50,000",
-                    icon = Icons.Default.Business,
-                    color = Color(0xFF4CAF50),
-                    type = "Current"
-                ),
-                Account(
-                    id = "3",
-                    name = "Travel Fund",
-                    balance = "₹5,000",
-                    icon = Icons.Default.Flight,
-                    color = Color(0xFFFF9800),
-                    type = "Savings"
-                ),
-                Account(
-                    id = "4",
-                    name = "Emergency Fund",
-                    balance = "₹25,000",
-                    icon = Icons.Default.Savings,
-                    color = Color(0xFF2196F3),
-                    type = "Savings"
-                ),
-                Account(
-                    id = "5",
-                    name = "Joint Account",
-                    balance = "₹15,000",
-                    icon = Icons.Default.Group,
-                    color = Color(0xFFE91E63),
-                    type = "Shared"
-                )
-            )
-        )
-    }
-
-    var customCategories by remember {
-        mutableStateOf(
-            listOf(
-                Category(
-                    id = "custom1",
-                    name = "Coffee & Tea",
-                    icon = Icons.Default.LocalCafe,
-                    color = Color(0xFFFF9800),
-                    type = CategoryType.EXPENSE,
-                    isCustom = true
-                ),
-                Category(
-                    id = "custom2",
-                    name = "Freelance Work",
-                    icon = Icons.Default.Work,
-                    color = Color(0xFF4CAF50),
-                    type = CategoryType.INCOME,
-                    isCustom = true
-                )
-            )
-        )
-    }
+    // Database managers
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    
+    // Flow for categories from database
+    val expenseCategories = categoryDatabaseManager.getCategoriesByType(CategoryType.EXPENSE).collectAsState(initial = emptyList<Category>())
+    val incomeCategories = categoryDatabaseManager.getCategoriesByType(CategoryType.INCOME).collectAsState(initial = emptyList<Category>())
+    val customCategories = categoryDatabaseManager.getCustomCategories().collectAsState(initial = emptyList<Category>())
+    
+    // Flow for accounts from database
+    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val accounts = accountsState.value
 
     Box(
         modifier = Modifier
@@ -231,8 +136,15 @@ fun ProfileMainScreen() {
                 AddAccountBottomSheet(
                     onDismiss = { showAddAccountSheet = false },
                     onAccountAdded = { account ->
-                        accounts = accounts + account
-                        showAddAccountSheet = false
+                        accountDatabaseManager.addAccount(
+                            account = account,
+                            onSuccess = {
+                                showAddAccountSheet = false
+                            },
+                            onError = { error ->
+                                println("Error adding account: ${error.message}")
+                            }
+                        )
                     }
                 )
             }
@@ -246,9 +158,9 @@ fun ProfileMainScreen() {
                 dragHandle = null
             ) {
                 CategoriesBottomSheet(
-                    expenseCategories = defaultExpenseCategories,
-                    incomeCategories = defaultIncomeCategories,
-                    customCategories = customCategories,
+                    expenseCategories = expenseCategories.value,
+                    incomeCategories = incomeCategories.value,
+                    customCategories = customCategories.value,
                     selectedTab = selectedCategoryTab,
                     onDismiss = { showCategorySheet = false },
                     onTabSelected = { tab -> selectedCategoryTab = tab },
@@ -257,7 +169,7 @@ fun ProfileMainScreen() {
                         // Handle edit category
                     },
                     onDeleteCategory = { category ->
-                        customCategories = customCategories.filter { it.id != category.id }
+                        categoryDatabaseManager.deleteCategory(category)
                     }
                 )
             }
@@ -273,9 +185,19 @@ fun ProfileMainScreen() {
                 AddCategoryBottomSheet(
                     categoryType = selectedCategoryTab,
                     onDismiss = { showAddCategorySheet = false },
-                    onCategoryAdded = { category ->
-                        customCategories = customCategories + category
-                        showAddCategorySheet = false
+                    onCategoryAdded = { category, onSuccess, onError ->
+                        println("DEBUG: onCategoryAdded callback called with: ${category.name}")
+                        categoryDatabaseManager.addCategory(
+                            category = category,
+                            onSuccess = {
+                                println("DEBUG: Category added successfully")
+                                onSuccess()
+                            },
+                            onError = { error ->
+                                println("DEBUG: Error adding category: ${error.message}")
+                                onError(error.message ?: "Unknown error occurred")
+                            }
+                        )
                     }
                 )
             }
@@ -1399,11 +1321,13 @@ fun BankCard(
 fun AddCategoryBottomSheet(
     categoryType: CategoryTab,
     onDismiss: () -> Unit,
-    onCategoryAdded: (Category) -> Unit
+    onCategoryAdded: (Category, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit
 ) {
     var categoryName by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf(Icons.Default.AttachMoney) }
     var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -1572,32 +1496,69 @@ fun AddCategoryBottomSheet(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Error Message
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         // Add Category Button
         Button(
             onClick = {
-                if (categoryName.isNotEmpty()) {
-                    val category = Category(
-                        id = Clock.System.now().toEpochMilliseconds().toString(),
-                        name = categoryName,
-                        icon = selectedIcon,
-                        color = selectedColor,
-                        type = if (categoryType == CategoryTab.EXPENSE) CategoryType.EXPENSE else CategoryType.INCOME,
-                        isCustom = true
-                    )
-                    onCategoryAdded(category)
-                }
+                if (isLoading) return@Button
+                
+                errorMessage = "" // Clear previous error
+                isLoading = true
+                
+                println("DEBUG: Add Category button clicked with name: '$categoryName'")
+                val category = Category(
+                    id = Clock.System.now().toEpochMilliseconds().toString(),
+                    name = categoryName,
+                    icon = selectedIcon,
+                    color = selectedColor,
+                    type = if (categoryType == CategoryTab.EXPENSE) CategoryType.EXPENSE else CategoryType.INCOME,
+                    isCustom = true
+                )
+                println("DEBUG: Created category object: ${category.name}, type: ${category.type}, isCustom: ${category.isCustom}")
+                onCategoryAdded(
+                    category,
+                    {
+                        isLoading = false
+                        onDismiss()
+                    },
+                    { error ->
+                        isLoading = false
+                        errorMessage = error
+                    }
+                )
             },
+            enabled = categoryName.isNotEmpty() && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = GrayText),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else GrayText,
+                contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
+            ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text(
-                text = "Add Category",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Add Category",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
