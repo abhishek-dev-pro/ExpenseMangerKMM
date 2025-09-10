@@ -1,6 +1,6 @@
 package com.example.androidkmm.screens
 
-import ExpenseTrackerApp
+import ProfileMainScreen
 import TransactionsScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -35,7 +35,7 @@ fun MainScreen() {
                 1 -> TransactionsScreen()
                 2 -> GroupsScreen()
                 3 -> LedgerMainScreen()
-                4 -> ExpenseTrackerApp()
+                4 -> ProfileMainScreen()
             }
         }
     }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -117,7 +116,7 @@ val categoryColors = listOf(
 )
 
 @Composable
-fun ExpenseTrackerApp() {
+fun ProfileMainScreen() {
     var currentScreen by remember { mutableStateOf("profile") }
     var showAccountSheet by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
