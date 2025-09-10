@@ -949,7 +949,7 @@ private fun AmountInputSection(
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -957,22 +957,23 @@ private fun AmountInputSection(
         ) {
             Text(
                 text = "$",
-                color = TransactionColors.secondaryText,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Light
+                color = TransactionColors.primaryText,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Medium
             )
             Text(
                 text = amount.ifEmpty { "0" },
-                color = TransactionColors.secondaryText,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Light
+                color = TransactionColors.primaryText,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Medium
             )
         }
 
         Text(
             text = "Enter amount",
             color = TransactionColors.secondaryText,
-            fontSize = 16.sp
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 }
@@ -992,8 +993,8 @@ private fun CategoryAccountSelector(
         Text(
             text = title,
             color = TransactionColors.primaryText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         Button(
@@ -1019,7 +1020,8 @@ private fun CategoryAccountSelector(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = selectedText,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Start
                 )
@@ -1041,8 +1043,8 @@ private fun InputField(
         Text(
             text = label,
             color = TransactionColors.primaryText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         OutlinedTextField(
@@ -1096,7 +1098,7 @@ private fun DateTimeSelector(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = value,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
     }
@@ -1110,8 +1112,8 @@ private fun ReceiptUploadSection() {
         Text(
             text = "Receipt (Optional)",
             color = TransactionColors.primaryText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
         )
 
         Button(
@@ -1142,7 +1144,7 @@ private fun ReceiptUploadSection() {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Upload Receipt",
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }

@@ -97,7 +97,7 @@ private fun TransactionDetailsContent(
             .fillMaxWidth()
             .navigationBarsPadding()
             .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             // Header with close buttons
@@ -112,36 +112,21 @@ private fun TransactionDetailsContent(
                     Text(
                         text = "Transaction Details",
                         color = TransactionDetailColors.primary,
-                        fontSize = 28.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${transaction.date}, ${transaction.time}",
                         color = TransactionDetailColors.secondary,
-                        fontSize = 17.sp
+                        fontSize = 14.sp
                     )
                 }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(
-                                TransactionDetailColors.surface,
-                                CircleShape
-                            )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.OpenInFull,
-                            contentDescription = "Expand",
-                            tint = TransactionDetailColors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+
 
                     IconButton(
                         onClick = onDismiss,
@@ -166,7 +151,7 @@ private fun TransactionDetailsContent(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(80.dp)
                         .clip(RoundedCornerShape(32.dp))
                         .background(transaction.categoryColor),
                     contentAlignment = Alignment.Center
@@ -179,7 +164,7 @@ private fun TransactionDetailsContent(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 val amountColor = when (transaction.type) {
                     TransactionType.INCOME -> TransactionDetailColors.income
@@ -196,11 +181,11 @@ private fun TransactionDetailsContent(
                 Text(
                     text = "$${amountPrefix}${formatDouble(transaction.amount, 2)}",
                     color = amountColor,
-                    fontSize = 56.sp,
+                    fontSize = 38.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = transaction.type.name.lowercase().replaceFirstChar { it.uppercase() },
@@ -222,16 +207,16 @@ private fun TransactionDetailsContent(
                 Text(
                     text = "Title",
                     color = TransactionDetailColors.secondary,
-                    fontSize = 17.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Normal
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = transaction.title,
                     color = TransactionDetailColors.primary,
-                    fontSize = 32.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -244,16 +229,16 @@ private fun TransactionDetailsContent(
                     Text(
                         text = "Description",
                         color = TransactionDetailColors.secondary,
-                        fontSize = 17.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Normal
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = transaction.description,
                         color = TransactionDetailColors.primary,
-                        fontSize = 32.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -266,11 +251,11 @@ private fun TransactionDetailsContent(
                 Text(
                     text = "Category",
                     color = TransactionDetailColors.secondary,
-                    fontSize = 17.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Normal
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -302,7 +287,7 @@ private fun TransactionDetailsContent(
                     Text(
                         text = transaction.category,
                         color = TransactionDetailColors.primary,
-                        fontSize = 20.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -315,11 +300,11 @@ private fun TransactionDetailsContent(
                 Text(
                     text = "Account",
                     color = TransactionDetailColors.secondary,
-                    fontSize = 17.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Normal
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -352,7 +337,7 @@ private fun TransactionDetailsContent(
                         Text(
                             text = transaction.account,
                             color = TransactionDetailColors.primary,
-                            fontSize = 20.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
