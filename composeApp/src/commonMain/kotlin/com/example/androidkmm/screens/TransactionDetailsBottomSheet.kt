@@ -41,11 +41,13 @@ object TransactionDetailColors {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionDetailsBottomSheet(
-    transaction: Transaction,
+    transaction: com.example.androidkmm.models.Transaction,
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    onEdit: (Transaction) -> Unit,
-    onDelete: () -> Unit
+    onEdit: (com.example.androidkmm.models.Transaction) -> Unit,
+    onDelete: () -> Unit,
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
     var isEditMode by remember { mutableStateOf(false) }
     var editedTransaction by remember { mutableStateOf(transaction) }
@@ -72,7 +74,9 @@ fun TransactionDetailsBottomSheet(
                         isEditMode = false
                         editedTransaction = transaction
                     },
-                    onTransactionChange = { editedTransaction = it }
+                    onTransactionChange = { editedTransaction = it },
+                    categoryDatabaseManager = categoryDatabaseManager,
+                    accountDatabaseManager = accountDatabaseManager
                 )
             } else {
                 TransactionDetailsContent(
@@ -88,18 +92,21 @@ fun TransactionDetailsBottomSheet(
 
 @Composable
 private fun TransactionDetailsContent(
-    transaction: Transaction,
+    transaction: com.example.androidkmm.models.Transaction,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    LazyColumn(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 24.dp)
     ) {
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         item {
             // Header with close buttons
             Row(
@@ -113,14 +120,15 @@ private fun TransactionDetailsContent(
                     Text(
                         text = "Transaction Details",
                         color = TransactionDetailColors.primary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "${transaction.date}, ${transaction.time}",
                         color = TransactionDetailColors.secondary,
-                        fontSize = 14.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Normal
                     )
                 }
 
@@ -152,52 +160,53 @@ private fun TransactionDetailsContent(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(32.dp))
-                        .background(transaction.categoryColor),
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) Color(0xFF3B82F6) else transaction.categoryColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = transaction.categoryIcon,
+                        imageVector = if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) Icons.Default.SwapHoriz else transaction.categoryIcon,
                         contentDescription = transaction.category,
                         tint = Color.White,
-                        modifier = Modifier.size(60.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val amountColor = when (transaction.type) {
-                    TransactionType.INCOME -> TransactionDetailColors.income
-                    TransactionType.EXPENSE -> TransactionDetailColors.expense
-                    TransactionType.TRANSFER -> TransactionDetailColors.transfer
+                    com.example.androidkmm.models.TransactionType.INCOME -> TransactionDetailColors.income
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionDetailColors.expense
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionDetailColors.transfer
                 }
 
                 val amountPrefix = when (transaction.type) {
-                    TransactionType.INCOME -> "+"
-                    TransactionType.EXPENSE -> "-"
-                    TransactionType.TRANSFER -> ""
+                    com.example.androidkmm.models.TransactionType.INCOME -> "+"
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> "-"
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> ""
                 }
 
                 Text(
                     text = "$${amountPrefix}${formatDouble(transaction.amount, 2)}",
                     color = amountColor,
-                    fontSize = 38.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = transaction.type.name.lowercase().replaceFirstChar { it.uppercase() },
                     color = TransactionDetailColors.secondary,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .background(
                             TransactionDetailColors.surface,
                             RoundedCornerShape(12.dp)
                         )
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 18.dp, vertical = 10.dp)
                 )
             }
         }
@@ -208,17 +217,17 @@ private fun TransactionDetailsContent(
                 Text(
                     text = "Title",
                     color = TransactionDetailColors.secondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
                     text = transaction.title,
                     color = TransactionDetailColors.primary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -230,185 +239,284 @@ private fun TransactionDetailsContent(
                     Text(
                         text = "Description",
                         color = TransactionDetailColors.secondary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
 
                     Text(
                         text = transaction.description,
                         color = TransactionDetailColors.primary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        item {
-            // Category Section
-            Column {
-                Text(
-                    text = "Category",
-                    color = TransactionDetailColors.secondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            TransactionDetailColors.surface,
-                            RoundedCornerShape(16.dp)
-                        )
-                        .padding(20.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(transaction.categoryColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = transaction.categoryIcon,
-                            contentDescription = transaction.category,
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Text(
-                        text = transaction.category,
-                        color = TransactionDetailColors.primary,
-                        fontSize = 16.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
         }
 
-        item {
-            // Account Section
-            Column {
-                Text(
-                    text = "Account",
-                    color = TransactionDetailColors.secondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal
-                )
+        // Category Section - Only show for non-transfer transactions
+        if (transaction.type != com.example.androidkmm.models.TransactionType.TRANSFER) {
+            item {
+                Column {
+                    Text(
+                        text = "Category",
+                        color = TransactionDetailColors.secondary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            TransactionDetailColors.surface,
-                            RoundedCornerShape(16.dp)
-                        )
-                        .padding(20.dp)
-                ) {
-                    Box(
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(transaction.accountColor),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .background(
+                                TransactionDetailColors.surface,
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp)
                     ) {
-                        Icon(
-                            imageVector = transaction.accountIcon,
-                            contentDescription = transaction.account,
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(transaction.categoryColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = transaction.categoryIcon,
+                                contentDescription = transaction.category,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
 
-                    Column {
                         Text(
-                            text = transaction.account,
+                            text = transaction.category,
                             color = TransactionDetailColors.primary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Text(
-                            text = "HDFC Bank",
-                            color = TransactionDetailColors.secondary,
-                            fontSize = 16.sp
-                        )
                     }
                 }
             }
         }
 
-        item {
-            // Action Buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 40.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onDelete,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(64.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = TransactionDetailColors.primary
-                    ),
-                    border = BorderStroke(
-                        width = 2.dp,
-                        color = TransactionDetailColors.primary
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Delete",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+        // Account Section(s) - Different for each transaction type
+        when (transaction.type) {
+            com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                // Show From Account
+                item {
+                    Column {
+                        Text(
+                            text = "From Account",
+                            color = TransactionDetailColors.secondary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    TransactionDetailColors.surface,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(transaction.accountColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = transaction.accountIcon,
+                                    contentDescription = transaction.account,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Text(
+                                text = transaction.account,
+                                color = TransactionDetailColors.primary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
 
-                Button(
-                    onClick = onEdit,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(64.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = "Edit",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "Edit",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                // Show To Account
+                item {
+                    Column {
+                        Text(
+                            text = "To Account",
+                            color = TransactionDetailColors.secondary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    TransactionDetailColors.surface,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(transaction.accountColor), // Using same color for now
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = transaction.accountIcon, // Using same icon for now
+                                    contentDescription = transaction.transferTo,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Text(
+                                text = transaction.transferTo ?: "Unknown Account",
+                                color = TransactionDetailColors.primary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
+            }
+            else -> {
+                // Show single Account for Income/Expense
+                item {
+                    Column {
+                        Text(
+                            text = "Account",
+                            color = TransactionDetailColors.secondary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    TransactionDetailColors.surface,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(transaction.accountColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = transaction.accountIcon,
+                                    contentDescription = transaction.account,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Text(
+                                text = transaction.account,
+                                color = TransactionDetailColors.primary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        }
+        
+        // Action Buttons - Always at bottom
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = TransactionDetailColors.primary
+                ),
+                border = BorderStroke(
+                    width = 1.5.dp,
+                    color = TransactionDetailColors.primary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Delete",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Button(
+                onClick = onEdit,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Edit",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
@@ -416,15 +524,18 @@ private fun TransactionDetailsContent(
 
 @Composable
 private fun EditTransactionContent(
-    transaction: Transaction,
-    onSave: (Transaction) -> Unit,
+    transaction: com.example.androidkmm.models.Transaction,
+    onSave: (com.example.androidkmm.models.Transaction) -> Unit,
     onCancel: () -> Unit,
-    onTransactionChange: (Transaction) -> Unit
+    onTransactionChange: (com.example.androidkmm.models.Transaction) -> Unit,
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
     var selectedType by remember { mutableStateOf(transaction.type) }
     var amount by remember { mutableStateOf(transaction.amount.toString()) }
     var title by remember { mutableStateOf(transaction.title) }
     var description by remember { mutableStateOf(transaction.description) }
+    var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     var selectedCategory by remember { mutableStateOf<TransactionCategory?>(
         TransactionCategory(
             id = "current",
@@ -449,6 +560,49 @@ private fun EditTransactionContent(
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
     var showToAccountSheet by remember { mutableStateOf(false) }
+    
+    // Validation function
+    fun validateForm(): Boolean {
+        val errors = mutableMapOf<String, String>()
+        
+        // Validate title
+        if (title.isBlank()) {
+            errors["title"] = "Title is required"
+        }
+        
+        // Validate amount
+        if (amount.isBlank()) {
+            errors["amount"] = "Amount is required"
+        } else {
+            val amountValue = amount.toDoubleOrNull()
+            if (amountValue == null || amountValue <= 0) {
+                errors["amount"] = "Please enter a valid amount"
+            }
+        }
+        
+        // Validate category
+        if (selectedCategory == null) {
+            errors["category"] = "Category is required"
+        }
+        
+        // Validate account
+        if (selectedAccount == null) {
+            errors["account"] = "Account is required"
+        }
+        
+        // Validate transfer accounts for transfer type
+        if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) {
+            if (selectedToAccount == null) {
+                errors["transferTo"] = "Transfer to account is required"
+            }
+            if (selectedAccount?.name == selectedToAccount?.name) {
+                errors["transferTo"] = "Transfer to account must be different from from account"
+            }
+        }
+        
+        validationErrors = errors
+        return errors.isEmpty()
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -480,13 +634,14 @@ private fun EditTransactionContent(
                     Text(
                         text = "Edit Transaction",
                         color = TransactionDetailColors.primary,
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = "Update your transaction details",
                         color = TransactionDetailColors.secondary,
-                        fontSize = 14.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Normal
                     )
                 }
 
@@ -507,12 +662,12 @@ private fun EditTransactionContent(
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                TransactionType.values().forEach { type ->
+                com.example.androidkmm.models.TransactionType.values().forEach { type ->
                     val isSelected = selectedType == type
                     val (icon, text) = when (type) {
-                        TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
-                        TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
-                        TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
+                        com.example.androidkmm.models.TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
+                        com.example.androidkmm.models.TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
+                        com.example.androidkmm.models.TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
                     }
 
                     Box(
@@ -604,7 +759,7 @@ private fun EditTransactionContent(
 
         item {
             // Category and Account Selection - different for transfer vs others
-            if (selectedType == TransactionType.TRANSFER) {
+            if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) {
                 // From Account and To Account for transfers
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -872,18 +1027,20 @@ private fun EditTransactionContent(
 
                 Button(
                     onClick = {
-                        val updatedTransaction = transaction.copy(
-                            type = selectedType,
-                            amount = amount.toDoubleOrNull() ?: transaction.amount,
-                            title = title,
-                            description = description.takeIf { it.isNotEmpty() } ?: "",
-                            category = selectedCategory?.name ?: transaction.category,
-                            categoryIcon = selectedCategory?.icon ?: transaction.categoryIcon,
-                            categoryColor = selectedCategory?.color ?: transaction.categoryColor,
-                            account = selectedAccount?.name ?: transaction.account,
-                            transferTo = if (selectedType == TransactionType.TRANSFER) selectedToAccount?.name else null
-                        )
-                        onSave(updatedTransaction)
+                        if (validateForm()) {
+                            val updatedTransaction = transaction.copy(
+                                type = selectedType,
+                                amount = amount.toDoubleOrNull() ?: transaction.amount,
+                                title = title,
+                                description = description.takeIf { it.isNotEmpty() } ?: "",
+                                category = if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) "Transfer" else (selectedCategory?.name ?: transaction.category),
+                                categoryIcon = if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) Icons.Default.SwapHoriz else (selectedCategory?.icon ?: transaction.categoryIcon),
+                                categoryColor = if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) Color(0xFF3B82F6) else (selectedCategory?.color ?: transaction.categoryColor),
+                                account = selectedAccount?.name ?: transaction.account,
+                                transferTo = if (selectedType == com.example.androidkmm.models.TransactionType.TRANSFER) selectedToAccount?.name else null
+                            )
+                            onSave(updatedTransaction)
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)
@@ -921,7 +1078,8 @@ private fun EditTransactionContent(
             onCategorySelected = { category ->
                 selectedCategory = category
                 showCategorySheet = false
-            }
+            },
+            categoryDatabaseManager = categoryDatabaseManager
         )
     }
 
@@ -934,7 +1092,8 @@ private fun EditTransactionContent(
             onAccountSelected = { account ->
                 selectedAccount = account
                 showFromAccountSheet = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager
         )
     }
 
@@ -947,7 +1106,8 @@ private fun EditTransactionContent(
             onAccountSelected = { account ->
                 selectedToAccount = account
                 showToAccountSheet = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager
         )
     }
 }

@@ -134,6 +134,19 @@ class SQLiteAccountDatabase(
             }
         }
     }
+    
+    fun updateAccountBalance(accountId: String, newBalance: Double, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
+        scope.launch {
+            try {
+                database.categoryDatabaseQueries.updateAccountBalance(newBalance.toString(), accountId)
+                println("DEBUG: Account balance updated successfully: $accountId -> $newBalance")
+                onSuccess()
+            } catch (e: Exception) {
+                println("DEBUG: Error updating account balance: ${e.message}")
+                onError(e)
+            }
+        }
+    }
 }
 
 // Icon name to ImageVector mapping for accounts

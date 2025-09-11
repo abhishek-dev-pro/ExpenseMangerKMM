@@ -14,7 +14,7 @@ actual class DatabaseDriverFactory {
             databasePath.mkdirs()
         }
         
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}/app_database.db")
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}/app_database_v3.db")
         CategoryDatabase.Schema.create(driver)
         return driver
     }

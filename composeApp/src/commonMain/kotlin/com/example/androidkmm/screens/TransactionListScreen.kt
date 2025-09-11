@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,8 +23,11 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import com.example.androidkmm.models.Account
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import com.example.androidkmm.models.Account
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +37,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -74,7 +81,7 @@ enum class TransactionType {
 data class DayGroup(
     val date: String,
     val displayDate: String,
-    val transactions: List<Transaction>,
+    val transactions: List<com.example.androidkmm.models.Transaction>,
     val income: Double,
     val expense: Double
 )
@@ -101,12 +108,45 @@ data class TransactionCategory(
 
 
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun TransactionsScreen() {
-    val transactions = remember { getSampleTransactions() }
-    val dayGroups = remember { groupTransactionsByDay(transactions) }
+    val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    
+    val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
+    val allTransactions = transactionsState.value
+    
+    // Current month state management
+    val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    var selectedMonth by remember { mutableStateOf(currentDate.monthNumber) }
+    var selectedYear by remember { mutableStateOf(currentDate.year) }
+    
+    // Filter transactions for the selected month (for summary card only)
+    val transactionsForSummary = remember(allTransactions, selectedMonth, selectedYear) {
+        allTransactions.filter { transaction ->
+            try {
+                // Parse transaction date (assuming format like "2025-09-10")
+                val parts = transaction.date.split("-")
+                if (parts.size >= 2) {
+                    val year = parts[0].toInt()
+                    val month = parts[1].toInt()
+                    year == selectedYear && month == selectedMonth
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+    
+    // Use all transactions for the transaction list (no filtering)
+    val dayGroups = remember(allTransactions) { groupTransactionsByDay(allTransactions) }
 
     var showAddSheet by remember { mutableStateOf(false) }
+    var showSearchScreen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -118,13 +158,35 @@ fun TransactionsScreen() {
         TransactionHeader(onAddClick = { showAddSheet = true })
 
         // Month Navigation
-        MonthNavigation()
+        MonthNavigation(
+            selectedMonth = selectedMonth,
+            selectedYear = selectedYear,
+            onPreviousMonth = {
+                if (selectedMonth > 1) {
+                    selectedMonth--
+                } else {
+                    selectedMonth = 12
+                    selectedYear--
+                }
+            },
+            onNextMonth = {
+                if (selectedMonth < 12) {
+                    selectedMonth++
+                } else {
+                    selectedMonth = 1
+                    selectedYear++
+                }
+            }
+        )
 
         // Summary Card
-        SummaryCard()
+        SummaryCard(transactions = transactionsForSummary)
 
         // Search and Filter
-        SearchAndFilter()
+        SearchAndFilter(
+            onSearchClick = { showSearchScreen = true },
+            onFilterClick = { showSearchScreen = true }
+        )
 
         // Transaction List
         LazyColumn(
@@ -133,7 +195,12 @@ fun TransactionsScreen() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(dayGroups) { dayGroup ->
-                DayGroupSection(dayGroup)
+                DayGroupSection(
+                    dayGroup = dayGroup,
+                    transactionDatabaseManager = transactionDatabaseManager,
+                    categoryDatabaseManager = categoryDatabaseManager,
+                    accountDatabaseManager = accountDatabaseManager
+                )
             }
         }
     }
@@ -142,10 +209,135 @@ fun TransactionsScreen() {
     if (showAddSheet) {
         AddTransactionBottomSheet(
             onDismiss = { showAddSheet = false },
-            onSave = { transaction ->
-                // handle save logic here
+            onSave = { transactionFormData ->
+                // Convert TransactionFormData to Transaction and save to database
+                val transaction = com.example.androidkmm.models.Transaction(
+                    id = System.currentTimeMillis().toString(),
+                    title = transactionFormData.title,
+                    amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
+                    category = if (transactionFormData.type == TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),
+                    categoryIcon = if (transactionFormData.type == TransactionType.TRANSFER) Icons.Default.SwapHoriz else (transactionFormData.category?.icon ?: Icons.Default.Category),
+                    categoryColor = if (transactionFormData.type == TransactionType.TRANSFER) Color(0xFF3B82F6) else (transactionFormData.category?.color ?: Color.Gray),
+                    account = transactionFormData.account?.name ?: "",
+                    transferTo = transactionFormData.toAccount?.name,
+                    time = transactionFormData.time,
+                    type = com.example.androidkmm.models.TransactionType.valueOf(transactionFormData.type.name),
+                    description = transactionFormData.description,
+                    date = transactionFormData.date,
+                    accountIcon = transactionFormData.account?.icon ?: Icons.Default.AccountBalance,
+                    accountColor = transactionFormData.account?.color ?: Color.Blue
+                )
+                
+                transactionDatabaseManager.addTransactionWithBalanceUpdate(
+                    transaction = transaction,
+                    accountDatabaseManager = accountDatabaseManager
+                )
                 showAddSheet = false
-            }
+            },
+            categoryDatabaseManager = categoryDatabaseManager,
+            accountDatabaseManager = accountDatabaseManager
+        )
+    }
+    
+    // Show Search Screen
+    if (showSearchScreen) {
+        SearchTransactionsScreen(
+            onBackClick = { showSearchScreen = false },
+            onCloseClick = { showSearchScreen = false },
+            onTransactionClick = { /* Handled directly in SearchTransactionsScreen */ }
+        )
+    }
+}
+
+// Image Picker Dialog
+@Composable
+private fun ImagePickerDialog(
+    onDismiss: () -> Unit,
+    onImageSelected: (String) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Select Image Source",
+                    color = TransactionColors.primaryText,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Camera option
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // For now, simulate camera selection
+                                onImageSelected("camera_image_path")
+                                showDialog = false
+                            }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = "Camera",
+                            modifier = Modifier.size(24.dp),
+                            tint = TransactionColors.primaryText
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Take Photo",
+                            color = TransactionColors.primaryText,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    
+                    Divider(color = TransactionColors.divider)
+                    
+                    // Gallery option
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                // For now, simulate gallery selection
+                                onImageSelected("gallery_image_path")
+                                showDialog = false
+                            }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Gallery",
+                            modifier = Modifier.size(24.dp),
+                            tint = TransactionColors.primaryText
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Choose from Gallery",
+                            color = TransactionColors.primaryText,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        color = TransactionColors.secondaryText
+                    )
+                }
+            },
+            containerColor = TransactionColors.background
         )
     }
 }
@@ -191,7 +383,18 @@ private fun TransactionHeader(onAddClick: () -> Unit) {
 }
 
 @Composable
-private fun MonthNavigation() {
+private fun MonthNavigation(
+    selectedMonth: Int,
+    selectedYear: Int,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit
+) {
+    val monthNames = listOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
+    val currentMonthYear = "${monthNames[selectedMonth - 1]} $selectedYear"
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -200,7 +403,7 @@ private fun MonthNavigation() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
-            onClick = { },
+            onClick = onPreviousMonth,
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
@@ -215,14 +418,14 @@ private fun MonthNavigation() {
         }
 
         Text(
-            text = "September 2025",
+            text = currentMonthYear,
             color = TransactionColors.primaryText,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold
         )
 
         IconButton(
-            onClick = { },
+            onClick = onNextMonth,
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
@@ -239,7 +442,18 @@ private fun MonthNavigation() {
 }
 
 @Composable
-private fun SummaryCard() {
+private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transaction>) {
+    // Calculate totals from actual transaction data
+    val totalIncome = transactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
+        .sumOf { it.amount }
+    
+    val totalExpense = transactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
+        .sumOf { it.amount }
+    
+    val total = totalIncome - totalExpense
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -256,7 +470,7 @@ private fun SummaryCard() {
             SummaryColumn(
                 icon = Icons.Default.TrendingUp,
                 iconColor = TransactionColors.income,
-                amount = "$2500.00",
+                amount = "$${formatDouble(totalIncome, 2)}",
                 label = "Income",
                 amountColor = TransactionColors.income
             )
@@ -264,17 +478,17 @@ private fun SummaryCard() {
             SummaryColumn(
                 icon = Icons.Default.TrendingDown,
                 iconColor = TransactionColors.expense,
-                amount = "$249.79",
+                amount = "$${formatDouble(totalExpense, 2)}",
                 label = "Expenses",
                 amountColor = TransactionColors.expense
             )
 
             SummaryColumn(
                 icon = Icons.Default.AttachMoney,
-                iconColor = TransactionColors.income,
-                amount = "+$2294.51",
+                iconColor = if (total >= 0) TransactionColors.income else TransactionColors.expense,
+                amount = "${if (total >= 0) "+" else ""}$${formatDouble(total, 2)}",
                 label = "Total",
-                amountColor = TransactionColors.income
+                amountColor = if (total >= 0) TransactionColors.income else TransactionColors.expense
             )
         }
     }
@@ -324,7 +538,10 @@ private fun SummaryColumn(
 }
 
 @Composable
-private fun SearchAndFilter() {
+private fun SearchAndFilter(
+    onSearchClick: () -> Unit,
+    onFilterClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -332,37 +549,45 @@ private fun SearchAndFilter() {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedTextField(
-            value = "",
-            onValueChange = { },
-            placeholder = {
-                Text(
-                    text = "Search transactions...",
-                    color = TransactionColors.secondaryText
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = TransactionColors.secondaryText,
-                    modifier = Modifier.size(20.dp)
-                )
-            },
-            modifier = Modifier.weight(1f),
-            shape = RoundedCornerShape(20.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = TransactionColors.searchBackground,
-                unfocusedContainerColor = TransactionColors.searchBackground,
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = TransactionColors.primaryText,
-                unfocusedTextColor = TransactionColors.primaryText
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onSearchClick() }
+        ) {
+            OutlinedTextField(
+                value = "",
+                onValueChange = { },
+                placeholder = {
+                    Text(
+                        text = "Search transactions...",
+                        color = TransactionColors.secondaryText
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = TransactionColors.secondaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = TransactionColors.searchBackground,
+                    unfocusedContainerColor = TransactionColors.searchBackground,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedTextColor = TransactionColors.primaryText,
+                    unfocusedTextColor = TransactionColors.primaryText
+                ),
+                readOnly = true,
+                enabled = false
             )
-        )
+        }
 
         IconButton(
-            onClick = { },
+            onClick = onFilterClick,
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(20.dp))
@@ -379,8 +604,13 @@ private fun SearchAndFilter() {
 }
 
 @Composable
-private fun DayGroupSection(dayGroup: DayGroup) {
-    var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
+private fun DayGroupSection(
+    dayGroup: DayGroup,
+    transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase,
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+) {
+    var selectedTransaction by remember { mutableStateOf<com.example.androidkmm.models.Transaction?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
 
     Column(
@@ -448,23 +678,46 @@ private fun DayGroupSection(dayGroup: DayGroup) {
                 selectedTransaction = null
             },
             onEdit = { editedTransaction ->
-                // Handle transaction edit
-                println("Transaction edited: ${editedTransaction.title}")
+                // Update transaction in database with balance updates
+                transactionDatabaseManager.updateTransactionWithBalanceUpdate(
+                    oldTransaction = transaction,
+                    newTransaction = editedTransaction,
+                    accountDatabaseManager = accountDatabaseManager,
+                    onSuccess = {
+                        println("Transaction updated successfully: ${editedTransaction.title}")
+                        showBottomSheet = false
+                        selectedTransaction = null
+                    },
+                    onError = { error ->
+                        println("Error updating transaction: ${error.message}")
+                    }
+                )
             },
             onDelete = {
-                // Handle transaction delete
-                println("Transaction deleted")
-                showBottomSheet = false
-                selectedTransaction = null
-            }
+                // Delete transaction from database with balance updates
+                transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
+                    transaction = transaction,
+                    accountDatabaseManager = accountDatabaseManager,
+                    onSuccess = {
+                        println("Transaction deleted successfully")
+                        showBottomSheet = false
+                        selectedTransaction = null
+                    },
+                    onError = { error ->
+                        println("Error deleting transaction: ${error.message}")
+                    }
+                )
+            },
+            categoryDatabaseManager = categoryDatabaseManager,
+            accountDatabaseManager = accountDatabaseManager
         )
     }
 }
 
 @Composable
 fun TransactionCard(
-    transaction: Transaction,
-    onClick: (Transaction) -> Unit = {}
+    transaction: com.example.androidkmm.models.Transaction,
+    onClick: (com.example.androidkmm.models.Transaction) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -542,15 +795,15 @@ fun TransactionCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 val amountColor = when (transaction.type) {
-                    TransactionType.INCOME -> TransactionColors.income
-                    TransactionType.EXPENSE -> TransactionColors.expense
-                    TransactionType.TRANSFER -> TransactionColors.transfer
+                    com.example.androidkmm.models.TransactionType.INCOME -> TransactionColors.income
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionColors.expense
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionColors.transfer
                 }
 
                 val amountText = when (transaction.type) {
-                    TransactionType.INCOME -> "+${formatDouble(transaction.amount, 2)}"
-                    TransactionType.EXPENSE -> "-${formatDouble(transaction.amount, 2)}"
-                    TransactionType.TRANSFER -> "${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.INCOME -> "+${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> "-${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> "${formatDouble(transaction.amount, 2)}"
                 }
 
                 Text(
@@ -560,7 +813,7 @@ fun TransactionCard(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                val accountText = if (transaction.type == TransactionType.TRANSFER && transaction.transferTo != null) {
+                val accountText = if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER && transaction.transferTo != null) {
                     "${transaction.account} → ${transaction.transferTo}"
                 } else {
                     transaction.account
@@ -583,7 +836,9 @@ fun TransactionCard(
 @Composable
 fun AddTransactionBottomSheet(
     onDismiss: () -> Unit,
-    onSave: (TransactionFormData) -> Unit
+    onSave: (TransactionFormData) -> Unit,
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -592,12 +847,19 @@ fun AddTransactionBottomSheet(
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
     var showToAccountSheet by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        // Set default time
+        // Set default date and time
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val currentTime = now.time // this is a kotlinx.datetime.LocalTime
-        formData = formData.copy(time = currentTime.toString())
+        val currentDate = now.date
+        val currentTime = now.time
+        
+        formData = formData.copy(
+            date = "${currentDate.year}-${currentDate.monthNumber.toString().padStart(2, '0')}-${currentDate.dayOfMonth.toString().padStart(2, '0')}",
+            time = "${currentTime.hour.toString().padStart(2, '0')}:${currentTime.minute.toString().padStart(2, '0')}"
+        )
     }
 
     ModalBottomSheet(
@@ -623,6 +885,8 @@ fun AddTransactionBottomSheet(
             onShowCategorySheet = { showCategorySheet = true },
             onShowFromAccountSheet = { showFromAccountSheet = true },
             onShowToAccountSheet = { showToAccountSheet = true },
+            onShowDatePicker = { showDatePicker = true },
+            onShowTimePicker = { showTimePicker = true },
             onSave = { onSave(formData) },
             onDismiss = onDismiss
         )
@@ -635,7 +899,8 @@ fun AddTransactionBottomSheet(
             onCategorySelected = { category ->
                 formData = formData.copy(category = category)
                 showCategorySheet = false
-            }
+            },
+            categoryDatabaseManager = categoryDatabaseManager
         )
     }
 
@@ -648,7 +913,8 @@ fun AddTransactionBottomSheet(
             onAccountSelected = { account ->
                 formData = formData.copy(account = account)
                 showFromAccountSheet = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager
         )
     }
 
@@ -661,6 +927,29 @@ fun AddTransactionBottomSheet(
             onAccountSelected = { account ->
                 formData = formData.copy(toAccount = account)
                 showToAccountSheet = false
+            },
+            accountDatabaseManager = accountDatabaseManager
+        )
+    }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { dateString ->
+                formData = formData.copy(date = dateString)
+                showDatePicker = false
+            }
+        )
+    }
+
+    // Time Picker Dialog
+    if (showTimePicker) {
+        TimePickerDialog(
+            onDismiss = { showTimePicker = false },
+            onTimeSelected = { timeString ->
+                formData = formData.copy(time = timeString)
+                showTimePicker = false
             }
         )
     }
@@ -677,9 +966,63 @@ private fun AddTransactionContent(
     onShowCategorySheet: () -> Unit,
     onShowFromAccountSheet: () -> Unit,
     onShowToAccountSheet: () -> Unit,
+    onShowDatePicker: () -> Unit,
+    onShowTimePicker: () -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Validation state
+    var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
+    
+    // Validation function
+    fun validateForm(): Boolean {
+        val errors = mutableMapOf<String, String>()
+        
+        // Validate title
+        if (formData.title.isBlank()) {
+            errors["title"] = "Title is required"
+        }
+        
+        // Validate amount
+        if (formData.amount.isBlank()) {
+            errors["amount"] = "Amount is required"
+        } else {
+            val amountValue = formData.amount.toDoubleOrNull()
+            if (amountValue == null || amountValue <= 0) {
+                errors["amount"] = "Please enter a valid amount"
+            }
+        }
+        
+        // Validate category
+        if (formData.category == null) {
+            errors["category"] = "Category is required"
+        }
+        
+        // Validate account
+        if (formData.account == null) {
+            errors["account"] = "Account is required"
+        }
+        
+        // Validate transfer accounts for transfer type
+        if (formData.type == TransactionType.TRANSFER) {
+            if (formData.toAccount == null) {
+                errors["transferTo"] = "Transfer to account is required"
+            }
+            if (formData.account?.name == formData.toAccount?.name) {
+                errors["transferTo"] = "Transfer to account must be different from from account"
+            }
+        }
+        
+        validationErrors = errors
+        return errors.isEmpty()
+    }
+    
+    // Save function with validation
+    fun handleSave() {
+        if (validateForm()) {
+            onSave()
+        }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -746,7 +1089,8 @@ private fun AddTransactionContent(
                 amount = formData.amount,
                 onAmountChange = { amount ->
                     onFormDataChange(formData.copy(amount = amount))
-                }
+                },
+                errorMessage = validationErrors["amount"]
             )
         }
 
@@ -762,7 +1106,8 @@ private fun AddTransactionContent(
                         modifier = Modifier.weight(1f),
                         title = "From Account",
                         selectedText = formData.account?.name ?: "Select",
-                        icon = Icons.Default.CreditCard,
+                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                        iconColor = formData.account?.color ?: TransactionColors.secondaryText,
                         onClick = onShowFromAccountSheet
                     )
 
@@ -770,7 +1115,8 @@ private fun AddTransactionContent(
                         modifier = Modifier.weight(1f),
                         title = "To Account",
                         selectedText = formData.toAccount?.name ?: "Select",
-                        icon = Icons.Default.CreditCard,
+                        icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
+                        iconColor = formData.toAccount?.color ?: TransactionColors.secondaryText,
                         onClick = onShowToAccountSheet
                     )
                 }
@@ -784,7 +1130,8 @@ private fun AddTransactionContent(
                         modifier = Modifier.weight(1f),
                         title = "Category",
                         selectedText = formData.category?.name ?: "Select",
-                        icon = Icons.Default.AttachMoney,
+                        icon = formData.category?.icon ?: Icons.Default.AttachMoney,
+                        iconColor = formData.category?.color ?: TransactionColors.secondaryText,
                         onClick = onShowCategorySheet
                     )
 
@@ -792,7 +1139,8 @@ private fun AddTransactionContent(
                         modifier = Modifier.weight(1f),
                         title = "Account",
                         selectedText = formData.account?.name ?: "Select",
-                        icon = Icons.Default.CreditCard,
+                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                        iconColor = formData.account?.color ?: TransactionColors.secondaryText,
                         onClick = onShowFromAccountSheet
                     )
                 }
@@ -807,7 +1155,8 @@ private fun AddTransactionContent(
                 onValueChange = { title ->
                     onFormDataChange(formData.copy(title = title))
                 },
-                placeholder = "e.g., Lunch at Subway"
+                placeholder = "e.g., Lunch at Subway",
+                errorMessage = validationErrors["title"]
             )
         }
 
@@ -826,10 +1175,24 @@ private fun AddTransactionContent(
             ) {
                 DateTimeSelector(
                     modifier = Modifier.weight(1f),
-                    value = formData.date.ifEmpty { "Today" },
+                    value = if (formData.date.isEmpty()) "Today" else {
+                        try {
+                            val parts = formData.date.split("-")
+                            if (parts.size == 3) {
+                                val year = parts[0]
+                                val month = parts[1]
+                                val day = parts[2]
+                                "$day/$month/$year"
+                            } else {
+                                formData.date
+                            }
+                        } catch (e: Exception) {
+                            formData.date
+                        }
+                    },
                     icon = Icons.Default.DateRange,
                     isSelected = true,
-                    onClick = { /* TODO: Open date picker */ }
+                    onClick = onShowDatePicker
                 )
 
                 DateTimeSelector(
@@ -837,7 +1200,7 @@ private fun AddTransactionContent(
                     value = formData.time.ifEmpty { "01:31" },
                     icon = Icons.Default.Schedule,
                     isSelected = false,
-                    onClick = { /* TODO: Open time picker */ }
+                    onClick = onShowTimePicker
                 )
             }
         }
@@ -862,7 +1225,7 @@ private fun AddTransactionContent(
         item {
             // Save Button
             Button(
-                onClick = onSave,
+                onClick = { handleSave() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -945,12 +1308,13 @@ private fun TransactionTypeSelector(
 @Composable
 private fun AmountInputSection(
     amount: String,
-    onAmountChange: (String) -> Unit
+    onAmountChange: (String) -> Unit,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -959,23 +1323,51 @@ private fun AmountInputSection(
             Text(
                 text = "$",
                 color = TransactionColors.primaryText,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Medium
+                fontSize = 48.sp,
+                fontWeight = FontWeight.Light
             )
-            Text(
-                text = amount.ifEmpty { "0" },
-                color = TransactionColors.primaryText,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Medium
+
+            OutlinedTextField(
+                value = amount,
+                onValueChange = onAmountChange,
+                textStyle = TextStyle(
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Light,
+                    textAlign = TextAlign.Center,
+                    color = TransactionColors.primaryText
+                ),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                isError = errorMessage != null,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    cursorColor = TransactionColors.primaryText,
+                    focusedTextColor = TransactionColors.primaryText,
+                    unfocusedTextColor = TransactionColors.primaryText,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    errorBorderColor = Color.Red,
+                    errorContainerColor = Color.Transparent
+                ),
+                modifier = Modifier.width(200.dp)
             )
         }
 
         Text(
             text = "Enter amount",
             color = TransactionColors.secondaryText,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 17.sp
         )
+        
+        // Error message
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -985,6 +1377,7 @@ private fun CategoryAccountSelector(
     title: String,
     selectedText: String,
     icon: ImageVector,
+    iconColor: Color = TransactionColors.secondaryText,
     onClick: () -> Unit
 ) {
     Column(
@@ -1016,7 +1409,8 @@ private fun CategoryAccountSelector(
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
+                    tint = iconColor
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -1036,7 +1430,8 @@ private fun InputField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String
+    placeholder: String,
+    errorMessage: String? = null
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1057,6 +1452,7 @@ private fun InputField(
                     color = TransactionColors.secondaryText
                 )
             },
+            isError = errorMessage != null,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -1065,9 +1461,21 @@ private fun InputField(
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
                 focusedTextColor = TransactionColors.primaryText,
-                unfocusedTextColor = TransactionColors.primaryText
+                unfocusedTextColor = TransactionColors.primaryText,
+                errorBorderColor = Color.Red,
+                errorContainerColor = TransactionColors.cardBackground
             )
         )
+        
+        // Error message
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
     }
 }
 
@@ -1106,7 +1514,12 @@ private fun DateTimeSelector(
 }
 
 @Composable
-private fun ReceiptUploadSection() {
+private fun ReceiptUploadSection(
+    onReceiptSelected: (String) -> Unit = {}
+) {
+    var showImagePicker by remember { mutableStateOf(false) }
+    var selectedImagePath by remember { mutableStateOf<String?>(null) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -1117,8 +1530,59 @@ private fun ReceiptUploadSection() {
             fontWeight = FontWeight.SemiBold
         )
 
+        if (selectedImagePath != null) {
+            // Show selected image
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = TransactionColors.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Image,
+                        contentDescription = "Receipt Image",
+                        modifier = Modifier.size(32.dp),
+                        tint = TransactionColors.primaryText
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Receipt attached",
+                            color = TransactionColors.primaryText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Tap to change",
+                            color = TransactionColors.secondaryText,
+                            fontSize = 12.sp
+                        )
+                    }
+                    IconButton(
+                        onClick = { selectedImagePath = null }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Remove",
+                            tint = TransactionColors.secondaryText,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        } else {
+            // Show upload button
         Button(
-            onClick = { /* TODO: Open camera/gallery */ },
+                onClick = { showImagePicker = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
@@ -1145,11 +1609,29 @@ private fun ReceiptUploadSection() {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Upload Receipt",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Images only",
+                        fontSize = 12.sp,
+                        color = TransactionColors.secondaryText
+                    )
+                }
             }
         }
+    }
+
+    // Image Picker Dialog
+    if (showImagePicker) {
+        ImagePickerDialog(
+            onDismiss = { showImagePicker = false },
+            onImageSelected = { imagePath ->
+                selectedImagePath = imagePath
+                onReceiptSelected(imagePath)
+                showImagePicker = false
+            }
+        )
     }
 }
 
@@ -1159,12 +1641,14 @@ fun AccountSelectionBottomSheet(
     onDismiss: () -> Unit,
     title: String = "Select Account",
     subtitle: String = "Choose an account for your transaction",
-    onAccountSelected: (Account) -> Unit
+    onAccountSelected: (Account) -> Unit,
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val accounts = remember { getSampleAccounts() }
+    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val accounts = accountsState.value
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1320,10 +1804,19 @@ private fun AccountCard(
 @Composable
 fun CategorySelectionBottomSheet(
     onDismiss: () -> Unit,
-    onCategorySelected: (TransactionCategory) -> Unit
+    onCategorySelected: (TransactionCategory) -> Unit,
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
-    val categories = remember { getSampleCategories() }
+    val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<com.example.androidkmm.models.Category>())
+    val categories = categoriesState.value.map { category ->
+        TransactionCategory(
+            id = category.id,
+            name = category.name,
+            icon = category.icon,
+            color = category.color
+        )
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1386,24 +1879,12 @@ fun CategorySelectionBottomSheet(
                 }
             }
 
-            items(categories.chunked(2)) { categoryPair ->
-                Row(
+            items(categories) { category ->
+                CategoryCard(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    categoryPair.forEach { category ->
-                        CategoryCard(
-                            modifier = Modifier.weight(1f),
-                            category = category,
-                            onClick = { onCategorySelected(category) }
-                        )
-                    }
-
-                    // Fill remaining space if odd number
-                    if (categoryPair.size == 1) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
+                    category = category,
+                    onClick = { onCategorySelected(category) }
+                )
             }
         }
     }
@@ -1418,26 +1899,27 @@ private fun CategoryCard(
     Card(
         onClick = onClick,
         modifier = modifier
-            .aspectRatio(1f)
+            .height(80.dp)
             .border(
-                width = 0.3.dp, // thin border
-                color = Color.White,
-                shape = RoundedCornerShape(16.dp) // same shape as card
+                width = 1.dp,
+                color = TransactionColors.secondaryText.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(12.dp)
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Black
+            containerColor = TransactionColors.cardBackground
         )
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.Center,
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1446,18 +1928,17 @@ private fun CategoryCard(
                     imageVector = category.icon,
                     contentDescription = category.name,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Text(
                 text = category.name,
                 color = TransactionColors.primaryText,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
+                fontWeight = FontWeight.Medium
             )
         }
     }
@@ -1517,26 +1998,29 @@ private fun getSampleTransactions(): List<Transaction> {
     )
 }
 
-private fun groupTransactionsByDay(transactions: List<Transaction>): List<DayGroup> {
-    val today = listOf(transactions[0], transactions[1])
-    val yesterday = listOf(transactions[2], transactions[3])
-
-    return listOf(
+private fun groupTransactionsByDay(transactions: List<com.example.androidkmm.models.Transaction>): List<DayGroup> {
+    if (transactions.isEmpty()) {
+        return emptyList()
+    }
+    
+    // Group transactions by date
+    val groupedByDate = transactions.groupBy { it.date }
+    
+    return groupedByDate.map { (date, dayTransactions) ->
+        val displayDate = when (date) {
+            "2025-09-10" -> "Today"
+            "2025-09-09" -> "Yesterday"
+            else -> date
+        }
+        
         DayGroup(
-            date = "2025-09-10",
-            displayDate = "Today",
-            transactions = today,
-            income = today.filter { it.type == TransactionType.INCOME }.sumOf { it.amount },
-            expense = today.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-        ),
-        DayGroup(
-            date = "2025-09-09",
-            displayDate = "Yesterday",
-            transactions = yesterday,
-            income = 0.0,
-            expense = yesterday.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+            date = date,
+            displayDate = displayDate,
+            transactions = dayTransactions,
+            income = dayTransactions.filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }.sumOf { it.amount },
+            expense = dayTransactions.filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }.sumOf { it.amount }
         )
-    )
+    }.sortedByDescending { it.date }
 }
 
 private fun getSampleAccounts(): List<Account> {
@@ -1601,4 +2085,166 @@ private fun getSampleCategories(): List<TransactionCategory> {
         TransactionCategory("13", "Clothing", Icons.Default.Checkroom, Color(0xFFE91E63)),
         TransactionCategory("14", "Medical", Icons.Default.LocalHospital, Color(0xFF4CAF50))
     )
+}
+
+// Date Picker Dialog
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerDialog(
+    onDismiss: () -> Unit,
+    onDateSelected: (String) -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Select Date",
+                    color = TransactionColors.primaryText,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    DatePicker(
+                        state = datePickerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = DatePickerDefaults.colors(
+                            containerColor = TransactionColors.background,
+                            titleContentColor = TransactionColors.primaryText,
+                            headlineContentColor = TransactionColors.primaryText,
+                            weekdayContentColor = TransactionColors.secondaryText,
+                            subheadContentColor = TransactionColors.secondaryText,
+                            yearContentColor = TransactionColors.primaryText,
+                            currentYearContentColor = TransactionColors.primaryText,
+                            selectedYearContentColor = Color.White,
+                            selectedYearContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
+                            dayContentColor = TransactionColors.primaryText,
+                            disabledDayContentColor = TransactionColors.secondaryText,
+                            selectedDayContentColor = Color.White,
+                            disabledSelectedDayContentColor = Color.White,
+                            selectedDayContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
+                            disabledSelectedDayContainerColor = TransactionColors.secondaryText,
+                            todayContentColor = Color(0xFF2196F3), // Blue accent for today
+                            todayDateBorderColor = Color(0xFF2196F3),
+                            dayInSelectionRangeContentColor = TransactionColors.primaryText,
+                            dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
+                            onDateSelected(dateString)
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = TransactionColors.primaryText,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        color = TransactionColors.secondaryText
+                    )
+                }
+            },
+            containerColor = TransactionColors.background
+        )
+    }
+}
+
+// Time Picker Dialog
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialog(
+    onDismiss: () -> Unit,
+    onTimeSelected: (String) -> Unit
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = 12,
+        initialMinute = 0,
+        is24Hour = false
+    )
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Select Time",
+                    color = TransactionColors.primaryText,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = TransactionColors.cardBackground,
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = TransactionColors.primaryText,
+                        selectorColor = Color(0xFF2196F3), // Blue accent for better visibility
+                        periodSelectorBorderColor = TransactionColors.secondaryText,
+                        periodSelectorSelectedContainerColor = Color(0xFF2196F3),
+                        periodSelectorUnselectedContainerColor = TransactionColors.cardBackground,
+                        periodSelectorSelectedContentColor = Color.White,
+                        periodSelectorUnselectedContentColor = TransactionColors.primaryText,
+                        timeSelectorSelectedContainerColor = Color(0xFF2196F3),
+                        timeSelectorUnselectedContainerColor = TransactionColors.cardBackground,
+                        timeSelectorSelectedContentColor = Color.White,
+                        timeSelectorUnselectedContentColor = TransactionColors.primaryText
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val hour = timePickerState.hour
+                        val minute = timePickerState.minute
+                        val timeString = String.format("%02d:%02d", hour, minute)
+                        onTimeSelected(timeString)
+                        showDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = TransactionColors.primaryText,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        color = TransactionColors.secondaryText
+                    )
+                }
+            },
+            containerColor = TransactionColors.background
+        )
+    }
 }
