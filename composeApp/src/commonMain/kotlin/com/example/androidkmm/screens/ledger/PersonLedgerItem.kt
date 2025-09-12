@@ -92,13 +92,25 @@ fun PersonLedgerItem(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = if (person.balance > 0) "$${formatDouble(person.balance)}" else "$${formatDouble(-person.balance)}",
+                    text = when {
+                        person.balance == 0.0 -> "$0.00"
+                        person.balance > 0 -> "$${formatDouble(person.balance)}"
+                        else -> "$${formatDouble(-person.balance)}"
+                    },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (person.balance > 0) LedgerTheme.greenAmount else LedgerTheme.redAmount
+                    color = when {
+                        person.balance == 0.0 -> Color(0xFF2196F3) // Blue for settled up
+                        person.balance > 0 -> LedgerTheme.greenAmount
+                        else -> LedgerTheme.redAmount
+                    }
                 )
                 Text(
-                    text = if (person.balance > 0) "owes you" else "you owe",
+                    text = when {
+                        person.balance == 0.0 -> "settled up"
+                        person.balance > 0 -> "you will give"
+                        else -> "you will get"
+                    },
                     fontSize = 12.sp,
                     color = LedgerTheme.textSecondary
                 )

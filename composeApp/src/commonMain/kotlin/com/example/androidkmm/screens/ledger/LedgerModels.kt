@@ -21,7 +21,8 @@ data class LedgerTransaction(
     val date: String,
     val time: String,
     val type: TransactionType,
-    val account: String? = null
+    val account: String? = null,
+    val balanceAtTime: Double = 0.0
 )
 
 enum class TransactionType {

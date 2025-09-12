@@ -1,10 +1,14 @@
+// Temporarily disabled for iOS compatibility
+/*
 package com.example.androidkmm.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,7 +20,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import java.util.*
+import com.example.androidkmm.design.DesignSystem
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+// Simple data class for date representation
+data class Date(
+    val year: Int,
+    val month: Int,
+    val day: Int
+) {
+    fun toLocalDate(): LocalDate = LocalDate(year, month, day)
+    
+    companion object {
+        fun now(): Date {
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            return Date(now.year, now.monthNumber, now.dayOfMonth)
+        }
+    }
+}
 
 @Composable
 fun DatePickerDialog(
@@ -29,11 +54,17 @@ fun DatePickerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -74,16 +105,16 @@ fun DatePickerDialog(
                     
                     DateOption(
                         label = "Yesterday",
-                        date = Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
+                        date = Date(Clock.System.now().toEpochMilliseconds() - 24 * 60 * 60 * 1000),
                         isSelected = false,
-                        onClick = { selectedDate = Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000) }
+                        onClick = { selectedDate = Date(Clock.System.now().toEpochMilliseconds() - 24 * 60 * 60 * 1000) }
                     )
                     
                     DateOption(
                         label = "This Week",
-                        date = Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000),
+                        date = Date(Clock.System.now().toEpochMilliseconds() - 7 * 24 * 60 * 60 * 1000),
                         isSelected = false,
-                        onClick = { selectedDate = Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000) }
+                        onClick = { selectedDate = Date(Clock.System.now().toEpochMilliseconds() - 7 * 24 * 60 * 60 * 1000) }
                     )
                 }
                 
@@ -168,11 +199,17 @@ fun TimePickerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -368,11 +405,17 @@ fun CategoryPickerDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -469,3 +512,4 @@ private fun getIconForCategory(iconName: String) = when (iconName) {
     "AttachMoney" -> Icons.Default.AttachMoney
     else -> Icons.Default.Category
 }
+*/

@@ -465,11 +465,18 @@ private fun BalanceItem(
     val currentUser = "You" // Assuming current user is "You"
     
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .border(
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            ),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1A1A1A)
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
     ) {
         Row(
             modifier = Modifier

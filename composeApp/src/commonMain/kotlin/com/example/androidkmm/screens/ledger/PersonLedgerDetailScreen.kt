@@ -1,11 +1,13 @@
 package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,8 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.screens.ledger.TransactionType
 import androidx.compose.runtime.collectAsState
 import kotlin.math.abs
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 // PersonLedgerDetailScreen.kt
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,13 +36,15 @@ fun PersonLedgerDetailScreen(
     onAddTransaction: () -> Unit
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
+    val coroutineScope = rememberCoroutineScope()
     val transactionsState = ledgerDatabaseManager.getLedgerTransactionsByPerson(person.id).collectAsState(initial = emptyList<LedgerTransaction>())
     val transactions = transactionsState.value
     
     // Get updated person data from database - use LaunchedEffect to get the latest person data
     var updatedPerson by remember { mutableStateOf(person) }
     
-    LaunchedEffect(person.id) {
+    // Update person data when transactions change (this will trigger balance recalculation)
+    LaunchedEffect(person.id, transactions) {
         val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
         if (latestPerson != null) {
             updatedPerson = latestPerson
@@ -99,7 +107,7 @@ fun PersonLedgerDetailScreen(
                     color = LedgerTheme.textPrimary
                 )
                 Text(
-                    text = "${transactions.size} transactions",
+                    text = "${updatedPerson.transactionCount} transactions",
                     fontSize = 14.sp,
                     color = LedgerTheme.textSecondary
                 )
@@ -121,11 +129,17 @@ fun PersonLedgerDetailScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
             colors = CardDefaults.cardColors(
-                containerColor = if (updatedPerson.balance < 0) Color(0xFF2A1919) else Color(0xFF0F2419)
+                containerColor = if (updatedPerson.balance < 0) Color(0xFF0F2419) else Color(0xFF2A1919)
             ),
-            shape = RoundedCornerShape(20.dp)
+            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
         ) {
             Column(
                 modifier = Modifier
@@ -137,9 +151,9 @@ fun PersonLedgerDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (updatedPerson.balance < 0) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                        imageVector = if (updatedPerson.balance < 0) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
                         contentDescription = null,
-                        tint = if (updatedPerson.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount,
+                        tint = if (updatedPerson.balance < 0) LedgerTheme.greenAmount else LedgerTheme.redAmount,
                         modifier = Modifier.size(16.dp)
                     )
 
@@ -157,11 +171,19 @@ fun PersonLedgerDetailScreen(
                     text = "$${formatDouble(abs(updatedPerson.balance))}",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (updatedPerson.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount
+                    color = when {
+                        updatedPerson.balance == 0.0 -> Color(0xFF2196F3) // Blue for settled up
+                        updatedPerson.balance < 0 -> LedgerTheme.redAmount
+                        else -> LedgerTheme.greenAmount
+                    }
                 )
 
                 Text(
-                    text = if (updatedPerson.balance < 0) "You owe ${updatedPerson.name}" else "${updatedPerson.name} owes you",
+                    text = when {
+                        updatedPerson.balance == 0.0 -> "Settled up"
+                        updatedPerson.balance < 0 -> "You will get"
+                        else -> "You will give"
+                    },
                     fontSize = 16.sp,
                     color = LedgerTheme.textSecondary
                 )
@@ -183,31 +205,6 @@ fun PersonLedgerDetailScreen(
                     .weight(1f)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0F2419)
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowDownward,
-                    contentDescription = null,
-                    tint = LedgerTheme.greenAmount,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "You Sent",
-                    color = LedgerTheme.greenAmount,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Button(
-                onClick = { showReceivedBottomSheet = true },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF2A1919)
                 ),
                 shape = RoundedCornerShape(16.dp)
@@ -220,8 +217,33 @@ fun PersonLedgerDetailScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "You Received",
+                    text = "You Sent",
                     color = LedgerTheme.redAmount,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Button(
+                onClick = { showReceivedBottomSheet = true },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF0F2419)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowDownward,
+                    contentDescription = null,
+                    tint = LedgerTheme.greenAmount,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "You Received",
+                    color = LedgerTheme.greenAmount,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -254,7 +276,7 @@ fun PersonLedgerDetailScreen(
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "${transactions.size} entries",
+                    text = "${updatedPerson.transactionCount} entries",
                     fontSize = 12.sp,
                     color = LedgerTheme.textSecondary
                 )
@@ -268,8 +290,14 @@ fun PersonLedgerDetailScreen(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 24.dp)
         ) {
-            items(transactions) { transaction ->
-                TransactionItem(transaction = transaction)
+            items(transactions.withIndex().toList()) { (index, transaction) ->
+                // Use the stored balance at the time of this transaction
+                val balanceAtTransaction = transaction.balanceAtTime
+                
+                TransactionItem(
+                    transaction = transaction,
+                    balanceAtTransaction = balanceAtTransaction
+                )
                 if (transaction != transactions.last()) {
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -280,16 +308,34 @@ fun PersonLedgerDetailScreen(
     // Show sent money bottom sheet
     if (showSentBottomSheet) {
         AddLedgerEntryBottomSheet(
-            onDismiss = { showSentBottomSheet = false },
-            person = person
+            onDismiss = { 
+                showSentBottomSheet = false
+                // Refresh person data when bottom sheet is dismissed
+                coroutineScope.launch {
+                    val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
+                    if (latestPerson != null) {
+                        updatedPerson = latestPerson
+                    }
+                }
+            },
+            person = updatedPerson
         )
     }
     
     // Show received money bottom sheet
     if (showReceivedBottomSheet) {
         AddLedgerEntryBottomSheet(
-            onDismiss = { showReceivedBottomSheet = false },
-            person = person,
+            onDismiss = { 
+                showReceivedBottomSheet = false
+                // Refresh person data when bottom sheet is dismissed
+                coroutineScope.launch {
+                    val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
+                    if (latestPerson != null) {
+                        updatedPerson = latestPerson
+                    }
+                }
+            },
+            person = updatedPerson,
             transactionType = TransactionType.RECEIVED
         )
     }

@@ -57,9 +57,32 @@ CREATE TABLE ledger_transactions (
     time TEXT NOT NULL,
     type TEXT NOT NULL,
     account_name TEXT,
+    balance_at_time REAL NOT NULL DEFAULT 0.0,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     FOREIGN KEY (ledger_person_id) REFERENCES ledger_persons (id) ON DELETE CASCADE
 );
+
+CREATE TABLE app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+-- Insert default settings
+INSERT INTO app_settings (key, value) VALUES
+('carry_forward_enabled', '0'),
+('currency_symbol', '$'),
+('date_format', 'MMM dd, yyyy');
+
+-- Settings queries
+selectAllSettings:
+SELECT * FROM app_settings ORDER BY key;
+
+selectSettingByKey:
+SELECT * FROM app_settings WHERE key = ?;
+
+upsertSetting:
+INSERT OR REPLACE INTO app_settings (key, value, updated_at) VALUES (?, ?, strftime('%s', 'now'));
 
 -- Insert default categories
 INSERT INTO category (id, name, icon_name, color_hex, type, is_custom) VALUES
@@ -90,11 +113,7 @@ INSERT INTO category (id, name, icon_name, color_hex, type, is_custom) VALUES
 INSERT INTO account (id, name, balance, icon_name, color_hex, type, is_custom) VALUES
 ('1', 'Cash', '₹0', 'AttachMoney', '#FF4CAF50', 'CASH', 0);
 
--- Insert sample ledger persons
-INSERT INTO ledger_persons (id, name, avatar_color_hex, balance, transaction_count, last_transaction_date) VALUES
-('sample_person_1', 'Sarah Chen', '#FF2196F3', -40.00, 1, 'Sep 6'),
-('sample_person_2', 'Alex Johnson', '#FF2196F3', 15.50, 2, 'Yesterday'),
-('sample_person_3', 'Maria Garcia', '#FF4CAF50', 0.00, 0, '');
+-- No sample ledger persons - start with empty ledger
 
 -- Queries
 selectAll:
@@ -189,8 +208,8 @@ selectTransactionsByAccount:
 SELECT * FROM transactions WHERE account_name = ? ORDER BY created_at DESC;
 
 insertTransaction:
-INSERT INTO transactions (id, title, amount, category_name, category_icon_name, category_color_hex, account_name, account_icon_name, account_color_hex, transfer_to, time, type, description, date)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO transactions (id, title, amount, category_name, category_icon_name, category_color_hex, account_name, account_icon_name, account_color_hex, transfer_to, time, type, description, date, is_ledger_transaction, ledger_person_id, ledger_person_name)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateTransaction:
 UPDATE transactions 
@@ -244,12 +263,12 @@ selectLedgerTransactionById:
 SELECT * FROM ledger_transactions WHERE id = ?;
 
 insertLedgerTransaction:
-INSERT INTO ledger_transactions (id, ledger_person_id, amount, description, date, time, type, account_name)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ledger_transactions (id, ledger_person_id, amount, description, date, time, type, account_name, balance_at_time)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateLedgerTransaction:
 UPDATE ledger_transactions 
-SET amount = ?, description = ?, date = ?, time = ?, type = ?, account_name = ?
+SET amount = ?, description = ?, date = ?, time = ?, type = ?, account_name = ?, balance_at_time = ?
 WHERE id = ?;
 
 deleteLedgerTransaction:
@@ -455,3 +474,31 @@ DELETE FROM group_expense_splits WHERE member_id = ?;
 
 getGroupExpenseSplitCount:
 SELECT COUNT(*) FROM group_expense_splits;
+
+-- Delete All Queries (for clearing database)
+deleteAllTransactions:
+DELETE FROM transactions;
+
+deleteAllLedgerTransactions:
+DELETE FROM ledger_transactions;
+
+deleteAllLedgerPersons:
+DELETE FROM ledger_persons;
+
+deleteAllGroupExpenseSplits:
+DELETE FROM group_expense_splits;
+
+deleteAllGroupExpenses:
+DELETE FROM group_expenses;
+
+deleteAllGroupMembers:
+DELETE FROM group_members;
+
+deleteAllGroups:
+DELETE FROM groups;
+
+deleteAllCustomAccounts:
+DELETE FROM account WHERE is_custom = 1;
+
+deleteAllCustomCategories:
+DELETE FROM category WHERE type = 'custom';

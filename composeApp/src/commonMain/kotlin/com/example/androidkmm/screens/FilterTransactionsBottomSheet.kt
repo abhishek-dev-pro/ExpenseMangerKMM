@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.TransactionType
@@ -345,12 +347,13 @@ private fun FilterOptionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) FilterColors.primaryText else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
         )
@@ -537,12 +540,13 @@ private fun CategoryChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) FilterColors.primaryText else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
         )
@@ -722,12 +726,13 @@ private fun AccountChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) FilterColors.primaryText else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
         )
@@ -907,12 +912,13 @@ private fun DateRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) FilterColors.primaryText else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
         )
@@ -1056,12 +1062,13 @@ private fun AmountRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) FilterColors.primaryText else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
         )

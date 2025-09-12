@@ -556,8 +556,14 @@ private fun FilterSummary(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .border(
+                    width = 0.5.dp, // very thin border
+                    color = Color.White.copy(alpha = 0.2f), // subtle white
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                ),
+            shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
             colors = CardDefaults.cardColors(containerColor = SearchColors.searchBackground)
         ) {
             Row(

@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -34,6 +36,8 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab
@@ -89,6 +93,9 @@ fun ProfileMainScreen() {
     // Database managers
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val scope = rememberCoroutineScope()
     
     // Flow for categories from database
     val expenseCategories = categoryDatabaseManager.getCategoriesByType(CategoryType.EXPENSE).collectAsState(initial = emptyList<Category>())
@@ -98,6 +105,9 @@ fun ProfileMainScreen() {
     // Flow for accounts from database
     val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
     val accounts = accountsState.value
+    
+    // Flow for settings from database
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
 
     Box(
         modifier = Modifier
@@ -107,7 +117,13 @@ fun ProfileMainScreen() {
         when (currentScreen) {
             "profile" -> ProfileScreen(
                 onAccountsClick = { showAccountSheet = true },
-                onCategoriesClick = { showCategorySheet = true }
+                onCategoriesClick = { showCategorySheet = true },
+                onClearDataClick = {
+                    // Clear all data from database
+                    scope.launch {
+                        transactionDatabaseManager.clearAllData()
+                    }
+                }
             )
         }
 
@@ -208,16 +224,19 @@ fun ProfileMainScreen() {
 @Composable
 fun ProfileScreen(
     onAccountsClick: () -> Unit,
-    onCategoriesClick: () -> Unit
+    onCategoriesClick: () -> Unit,
+    onClearDataClick: () -> Unit
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(24.dp)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Profile Header
-        Card(
+        item {
+            // Profile Header
+            Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = DarkSurface),
             shape = RoundedCornerShape(20.dp)
@@ -278,18 +297,16 @@ fun ProfileScreen(
                 }
             }
         }
+        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Menu Items
-        MenuCard(
+        item {
+            // Menu Items
+            MenuCard(
             icon = Icons.Default.AccountBalance,
             title = "Accounts",
             subtitle = "Manage bank accounts and wallets",
             onClick = onAccountsClick
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
 
         MenuCard(
             icon = Icons.Default.Category,
@@ -298,8 +315,6 @@ fun ProfileScreen(
             onClick = onCategoriesClick
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         MenuCard(
             icon = Icons.Default.Security,
             title = "Privacy & Security",
@@ -307,19 +322,17 @@ fun ProfileScreen(
             onClick = { }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         MenuCard(
             icon = Icons.Default.Help,
             title = "Help & Support",
             subtitle = "Get help and contact support",
             onClick = { }
         )
+        }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Account Information
-        Text(
+        item {
+            // Account Information
+            Text(
             text = "Account Information",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
@@ -358,6 +371,17 @@ fun ProfileScreen(
                     )
                 }
             }
+        }
+        }
+        
+        item {
+            // Clear Data Button
+            MenuCard(
+                icon = Icons.Default.Delete,
+                title = "Clear All Data",
+                subtitle = "Delete all transactions, accounts, and categories",
+                onClick = onClearDataClick
+            )
         }
     }
 }

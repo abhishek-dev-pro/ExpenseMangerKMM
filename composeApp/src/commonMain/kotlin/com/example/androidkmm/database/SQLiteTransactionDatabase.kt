@@ -11,10 +11,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
+// import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
 fun rememberSQLiteTransactionDatabase(): SQLiteTransactionDatabase {
@@ -45,37 +47,88 @@ class SQLiteTransactionDatabase(
     }
     
     fun getAllTransactions(): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toTransaction() }
         }
     }
     
+    // Function to fix existing transfer transactions that might not have proper transferTo field
+    fun fixTransferTransactions() {
+        scope.launch {
+            try {
+                val allTransactions = database.categoryDatabaseQueries.selectAllTransactions().executeAsList()
+                allTransactions.forEach { transactionRow ->
+                    if (transactionRow.type == "TRANSFER" && (transactionRow.transfer_to.isNullOrEmpty())) {
+                        // Try to infer the transfer destination from the title or description
+                        val title = transactionRow.title.lowercase()
+                        val description = transactionRow.description?.lowercase() ?: ""
+                        
+                        // Common patterns for transfer descriptions
+                        val transferTo = when {
+                            title.contains("to savings") || description.contains("to savings") -> "Savings"
+                            title.contains("to cash") || description.contains("to cash") -> "Cash"
+                            title.contains("to checking") || description.contains("to checking") -> "Checking"
+                            title.contains("to credit") || description.contains("to credit") -> "Credit Card"
+                            title.contains("from savings") || description.contains("from savings") -> "Savings"
+                            title.contains("from cash") || description.contains("from cash") -> "Cash"
+                            title.contains("from checking") || description.contains("from checking") -> "Checking"
+                            title.contains("from credit") || description.contains("from credit") -> "Credit Card"
+                            else -> "Unknown Account"
+                        }
+                        
+                        // Update the transaction with the inferred transfer destination
+                        database.categoryDatabaseQueries.updateTransaction(
+                            id = transactionRow.id,
+                            title = transactionRow.title,
+                            amount = transactionRow.amount,
+                            category_name = transactionRow.category_name,
+                            category_icon_name = transactionRow.category_icon_name,
+                            category_color_hex = transactionRow.category_color_hex,
+                            account_name = transactionRow.account_name,
+                            account_icon_name = transactionRow.account_icon_name,
+                            account_color_hex = transactionRow.account_color_hex,
+                            transfer_to = transferTo,
+                            time = transactionRow.time,
+                            type = transactionRow.type,
+                            description = transactionRow.description ?: "",
+                            date = transactionRow.date
+                        )
+                        
+                        println("DEBUG: Fixed transfer transaction ${transactionRow.id} with transferTo: $transferTo")
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error fixing transfer transactions: ${e.message}")
+            }
+        }
+    }
+    
     fun getTransactionById(id: String): Flow<Transaction?> {
-        return database.categoryDatabaseQueries.selectTransactionById(id).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectTransactionById(id).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.firstOrNull()?.toTransaction()
         }
     }
     
     fun getTransactionsByType(type: TransactionType): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectTransactionsByType(type.name).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectTransactionsByType(type.name).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toTransaction() }
         }
     }
     
     fun getTransactionsByDateRange(startDate: String, endDate: String): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectTransactionsByDateRange(startDate, endDate).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectTransactionsByDateRange(startDate, endDate).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toTransaction() }
         }
     }
     
     fun getTransactionsByCategory(categoryName: String): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectTransactionsByCategory(categoryName).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectTransactionsByCategory(categoryName).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toTransaction() }
         }
     }
     
     fun getTransactionsByAccount(accountName: String): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectTransactionsByAccount(accountName).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectTransactionsByAccount(accountName).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toTransaction() }
         }
     }
@@ -98,12 +151,47 @@ class SQLiteTransactionDatabase(
                     time = transaction.time,
                     type = transaction.type.name,
                     description = transaction.description,
-                    date = transaction.date
+                    date = transaction.date,
+                    is_ledger_transaction = 0, // Default to 0 for regular transactions
+                    ledger_person_id = "", // Empty for regular transactions
+                    ledger_person_name = "" // Empty for regular transactions
                 )
                 println("DEBUG: Transaction inserted successfully into SQLite database")
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error inserting transaction: ${e.message}")
+                onError(e)
+            }
+        }
+    }
+    
+    fun addLedgerTransaction(transaction: Transaction, ledgerPersonId: String, ledgerPersonName: String, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
+        println("DEBUG: SQLiteTransactionDatabase.addLedgerTransaction called with: ${transaction.title}")
+        scope.launch {
+            try {
+                database.categoryDatabaseQueries.insertTransaction(
+                    id = transaction.id,
+                    title = transaction.title,
+                    amount = transaction.amount,
+                    category_name = transaction.category,
+                    category_icon_name = getIconName(transaction.categoryIcon),
+                    category_color_hex = transaction.categoryColor.toHexString(),
+                    account_name = transaction.account,
+                    account_icon_name = getIconName(transaction.accountIcon),
+                    account_color_hex = transaction.accountColor.toHexString(),
+                    transfer_to = transaction.transferTo ?: "",
+                    time = transaction.time,
+                    type = transaction.type.name,
+                    description = transaction.description,
+                    date = transaction.date,
+                    is_ledger_transaction = 1, // Mark as ledger transaction
+                    ledger_person_id = ledgerPersonId,
+                    ledger_person_name = ledgerPersonName
+                )
+                println("DEBUG: Ledger transaction inserted successfully into SQLite database")
+                onSuccess()
+            } catch (e: Exception) {
+                println("DEBUG: Error inserting ledger transaction: ${e.message}")
                 onError(e)
             }
         }
@@ -169,7 +257,10 @@ class SQLiteTransactionDatabase(
                     time = transaction.time,
                     type = transaction.type.name,
                     description = transaction.description,
-                    date = transaction.date
+                    date = transaction.date,
+                    is_ledger_transaction = 0, // Default to 0 for regular transactions
+                    ledger_person_id = "", // Empty for regular transactions
+                    ledger_person_name = "" // Empty for regular transactions
                 )
                 
                 // Then update account balances
@@ -342,6 +433,24 @@ class SQLiteTransactionDatabase(
         } catch (e: Exception) {
             println("DEBUG: Error getting account by name: ${e.message}")
             null
+        }
+    }
+    
+    // Clear all data from all tables
+    suspend fun clearAllData() {
+        withContext(Dispatchers.Default) {
+            database.transaction {
+                // Delete all data from all tables
+                database.categoryDatabaseQueries.deleteAllTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerPersons()
+                database.categoryDatabaseQueries.deleteAllGroupExpenseSplits()
+                database.categoryDatabaseQueries.deleteAllGroupExpenses()
+                database.categoryDatabaseQueries.deleteAllGroupMembers()
+                database.categoryDatabaseQueries.deleteAllGroups()
+                database.categoryDatabaseQueries.deleteAllCustomAccounts()
+                database.categoryDatabaseQueries.deleteAllCustomCategories()
+            }
         }
     }
 }

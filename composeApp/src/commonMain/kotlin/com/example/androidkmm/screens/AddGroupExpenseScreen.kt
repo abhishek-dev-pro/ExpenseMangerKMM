@@ -1,3 +1,5 @@
+// Temporarily disabled for iOS compatibility
+/*
 package com.example.androidkmm.screens
 
 import androidx.compose.foundation.background
@@ -647,3 +649,4 @@ private fun getIconForCategory(iconName: String) = when (iconName) {
     "AttachMoney" -> Icons.Default.AttachMoney
     else -> Icons.Default.Category
 }
+*/

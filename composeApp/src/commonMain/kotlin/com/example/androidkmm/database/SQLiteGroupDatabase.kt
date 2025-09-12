@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.database.CategoryDatabase
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
+// import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 import com.example.androidkmm.models.GroupExpense
 import com.example.androidkmm.models.GroupExpenseSplit
 import com.example.androidkmm.models.SplitType
@@ -23,24 +24,24 @@ class SQLiteGroupDatabase(
     fun getAllGroups(): Flow<List<Group>> {
         return database.categoryDatabaseQueries.selectAllGroups()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { groups -> groups.map { it.toGroup() } }
     }
     
     suspend fun getGroupById(id: String): Group? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectGroupById(id).executeAsOneOrNull()?.toGroup()
         }
     }
     
     suspend fun getGroupByName(name: String): Group? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectGroupByName(name).executeAsOneOrNull()?.toGroup()
         }
     }
     
     suspend fun insertGroup(group: Group) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertGroup(
                 id = group.id,
                 name = group.name,
@@ -53,7 +54,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun updateGroup(group: Group) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateGroup(
                 name = group.name,
                 description = group.description,
@@ -66,13 +67,13 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun deleteGroup(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroup(id)
         }
     }
     
     suspend fun getGroupCount(): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getGroupCount().executeAsOne()
         }
     }
@@ -81,31 +82,31 @@ class SQLiteGroupDatabase(
     fun getAllGroupMembers(): Flow<List<GroupMember>> {
         return database.categoryDatabaseQueries.selectAllGroupMembers()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { members -> members.map { it.toGroupMember() } }
     }
     
     fun getGroupMembersByGroup(groupId: String): Flow<List<GroupMember>> {
         return database.categoryDatabaseQueries.selectGroupMembersByGroup(groupId)
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { members -> members.map { it.toGroupMember() } }
     }
     
     suspend fun getGroupMemberById(id: String): GroupMember? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectGroupMemberById(id).executeAsOneOrNull()?.toGroupMember()
         }
     }
     
     suspend fun getGroupMemberByName(name: String, groupId: String): GroupMember? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectGroupMemberByName(name, groupId).executeAsOneOrNull()?.toGroupMember()
         }
     }
     
     suspend fun insertGroupMember(member: GroupMember) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertGroupMember(
                 id = member.id,
                 group_id = member.groupId,
@@ -121,7 +122,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun updateGroupMember(member: GroupMember) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateGroupMember(
                 name = member.name,
                 email = member.email,
@@ -136,25 +137,25 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun deleteGroupMember(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupMember(id)
         }
     }
     
     suspend fun deleteGroupMembersByGroup(groupId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupMembersByGroup(groupId)
         }
     }
     
     suspend fun getGroupMemberCount(): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getGroupMemberCount().executeAsOne()
         }
     }
     
     suspend fun getGroupMemberCountByGroup(groupId: String): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getGroupMemberCountByGroup(groupId).executeAsOne()
         }
     }
@@ -163,25 +164,25 @@ class SQLiteGroupDatabase(
     fun getAllGroupExpenses(): Flow<List<GroupExpense>> {
         return database.categoryDatabaseQueries.selectAllGroupExpenses()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { expenses -> expenses.map { it.toGroupExpense() } }
     }
     
     fun getGroupExpensesByGroup(groupId: String): Flow<List<GroupExpense>> {
         return database.categoryDatabaseQueries.selectGroupExpensesByGroup(groupId)
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { expenses -> expenses.map { it.toGroupExpense() } }
     }
     
     suspend fun getGroupExpenseById(id: String): GroupExpense? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectGroupExpenseById(id).executeAsOneOrNull()?.toGroupExpense()
         }
     }
     
     suspend fun insertGroupExpense(expense: GroupExpense) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertGroupExpense(
                 id = expense.id,
                 group_id = expense.groupId,
@@ -198,7 +199,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun updateGroupExpense(expense: GroupExpense) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateGroupExpense(
                 paid_by = expense.paidBy,
                 amount = expense.amount,
@@ -214,25 +215,25 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun deleteGroupExpense(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupExpense(id)
         }
     }
     
     suspend fun deleteGroupExpensesByGroup(groupId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupExpensesByGroup(groupId)
         }
     }
     
     suspend fun getGroupExpenseCount(): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getGroupExpenseCount().executeAsOne()
         }
     }
     
     suspend fun getGroupExpenseCountByGroup(groupId: String): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getGroupExpenseCountByGroup(groupId).executeAsOne()
         }
     }
@@ -241,26 +242,26 @@ class SQLiteGroupDatabase(
     fun getAllGroupExpenseSplits(): Flow<List<GroupExpenseSplit>> {
         return database.categoryDatabaseQueries.selectAllGroupExpenseSplits()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { splits -> splits.map { it.toGroupExpenseSplit() } }
     }
     
     fun getGroupExpenseSplitsByExpense(expenseId: String): Flow<List<GroupExpenseSplit>> {
         return database.categoryDatabaseQueries.selectGroupExpenseSplitsByExpense(expenseId)
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { splits -> splits.map { it.toGroupExpenseSplit() } }
     }
     
     fun getGroupExpenseSplitsByMember(memberId: String): Flow<List<GroupExpenseSplit>> {
         return database.categoryDatabaseQueries.selectGroupExpenseSplitsByMember(memberId)
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { splits -> splits.map { it.toGroupExpenseSplit() } }
     }
     
     suspend fun insertGroupExpenseSplit(split: GroupExpenseSplit) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertGroupExpenseSplit(
                 id = split.id,
                 expense_id = split.expenseId,
@@ -272,7 +273,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun updateGroupExpenseSplit(split: GroupExpenseSplit) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateGroupExpenseSplit(
                 amount = split.amount,
                 is_paid = if (split.isPaid) 1 else 0,
@@ -282,26 +283,26 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun deleteGroupExpenseSplit(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupExpenseSplit(id)
         }
     }
     
     suspend fun deleteGroupExpenseSplitsByExpense(expenseId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupExpenseSplitsByExpense(expenseId)
         }
     }
     
     suspend fun deleteGroupExpenseSplitsByMember(memberId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteGroupExpenseSplitsByMember(memberId)
         }
     }
     
     // Complex Operations
     suspend fun addGroupWithMembers(group: Group, members: List<GroupMember>) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.transaction {
                 database.categoryDatabaseQueries.insertGroup(
                     id = group.id,
@@ -329,7 +330,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun addExpenseWithSplits(expense: GroupExpense, splits: List<GroupExpenseSplit>) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.transaction {
                 database.categoryDatabaseQueries.insertGroupExpense(
                     id = expense.id,
@@ -357,7 +358,7 @@ class SQLiteGroupDatabase(
     }
     
     suspend fun deleteGroupWithAllData(groupId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.transaction {
                 // Delete all related data (cascading deletes will handle most of this)
                 database.categoryDatabaseQueries.deleteGroup(groupId)
@@ -424,5 +425,5 @@ private fun Color.toHexString(): String {
     val red = (red * 255).toInt()
     val green = (green * 255).toInt()
     val blue = (blue * 255).toInt()
-    return "#%02X%02X%02X%02X".format(alpha, red, green, blue)
+    return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.design.DesignSystem
 
 // Colors for Transaction Details
 object TransactionDetailColors {
@@ -309,100 +310,97 @@ private fun TransactionDetailsContent(
         // Account Section(s) - Different for each transaction type
         when (transaction.type) {
             com.example.androidkmm.models.TransactionType.TRANSFER -> {
-                // Show From Account
+                // Transfer Summary Card
                 item {
-                    Column {
-                        Text(
-                            text = "From Account",
-                            color = TransactionDetailColors.secondary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    TransactionDetailColors.surface,
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(16.dp)
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                            .border(
+                                width = 0.5.dp,
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                            ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = TransactionDetailColors.surface
+                        ),
+                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // Transfer Icon
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(48.dp)
                                     .clip(CircleShape)
-                                    .background(transaction.accountColor),
+                                    .background(Color(0xFF3B82F6)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = transaction.accountIcon,
-                                    contentDescription = transaction.account,
+                                    imageVector = Icons.Default.SwapHoriz,
+                                    contentDescription = "Transfer",
                                     tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            Text(
-                                text = transaction.account,
-                                color = TransactionDetailColors.primary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                }
-
-                // Show To Account
-                item {
-                    Column {
-                        Text(
-                            text = "To Account",
-                            color = TransactionDetailColors.secondary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    TransactionDetailColors.surface,
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .padding(16.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(transaction.accountColor), // Using same color for now
-                                contentAlignment = Alignment.Center
+                            // Transfer Direction
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // From Account
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "FROM",
+                                        color = TransactionDetailColors.secondary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = transaction.account,
+                                        color = TransactionDetailColors.primary,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
+                                // Arrow
                                 Icon(
-                                    imageVector = transaction.accountIcon, // Using same icon for now
-                                    contentDescription = transaction.transferTo,
-                                    tint = Color.White,
+                                    imageVector = Icons.Default.ArrowForward,
+                                    contentDescription = "Transfer to",
+                                    tint = TransactionDetailColors.secondary,
                                     modifier = Modifier.size(20.dp)
                                 )
+
+                                // To Account
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = "TO",
+                                        color = TransactionDetailColors.secondary,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = transaction.transferTo ?: "Unknown Account",
+                                        color = TransactionDetailColors.primary,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
-
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            Text(
-                                text = transaction.transferTo ?: "Unknown Account",
-                                color = TransactionDetailColors.primary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
                         }
                     }
                 }

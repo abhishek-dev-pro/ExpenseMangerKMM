@@ -16,6 +16,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AccountType
+// import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
 fun rememberSQLiteAccountDatabase(): SQLiteAccountDatabase {
@@ -52,25 +53,25 @@ class SQLiteAccountDatabase(
     }
     
     fun getAllAccounts(): Flow<List<Account>> {
-        return database.categoryDatabaseQueries.selectAllAccounts().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectAllAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toAccount() }
         }
     }
     
     fun getAccountById(id: String): Flow<Account?> {
-        return database.categoryDatabaseQueries.selectAccountById(id).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectAccountById(id).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.firstOrNull()?.toAccount()
         }
     }
     
     fun getCustomAccounts(): Flow<List<Account>> {
-        return database.categoryDatabaseQueries.selectCustomAccounts().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectCustomAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toAccount() }
         }
     }
     
     fun getDefaultAccounts(): Flow<List<Account>> {
-        return database.categoryDatabaseQueries.selectDefaultAccounts().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectDefaultAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toAccount() }
         }
     }

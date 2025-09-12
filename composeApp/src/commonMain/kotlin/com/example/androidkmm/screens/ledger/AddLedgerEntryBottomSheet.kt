@@ -2,6 +2,7 @@ package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,11 +11,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.window.Dialog
+import java.time.Instant
+import java.time.ZoneId
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.design.DesignSystem
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -43,6 +50,7 @@ fun AddLedgerEntryBottomSheet(
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val coroutineScope = rememberCoroutineScope()
     var transactionCounter by remember { mutableStateOf(0) }
     var personCounter by remember { mutableStateOf(0) }
@@ -66,10 +74,12 @@ fun AddLedgerEntryBottomSheet(
     }
     var amount by remember { mutableStateOf("0") }
     var description by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf("Sep 10, 2025") }
+    var selectedDate by remember { mutableStateOf("2025-09-10") }
     var selectedTime by remember { mutableStateOf("01:43 PM") }
     var selectedAccount by remember { mutableStateOf<com.example.androidkmm.models.Account?>(null) }
     var showAccountSelection by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     
     // Validation state
     var validationErrors by remember { mutableStateOf(mapOf<String, String>()) }
@@ -87,9 +97,7 @@ fun AddLedgerEntryBottomSheet(
             errors["amount"] = "Please enter a valid amount"
         }
         
-        if (description.isBlank()) {
-            errors["description"] = "Description is required"
-        }
+        // Description is optional, no validation needed
         
         if (selectedAccount == null) {
             errors["account"] = "Please select an account"
@@ -104,7 +112,6 @@ fun AddLedgerEntryBottomSheet(
                      amount.isNotBlank() && 
                      amount.toDoubleOrNull() != null && 
                      amount.toDoubleOrNull()!! > 0 &&
-                     description.isNotBlank() && 
                      selectedAccount != null
 
     val commonExamples = listOf(
@@ -161,7 +168,7 @@ fun AddLedgerEntryBottomSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else Color(0xFF2A1919),
+                                    if (currentTransactionType == TransactionType.SENT) Color(0xFF2A1919) else Color(0xFF0F2419),
                                     RoundedCornerShape(16.dp)
                                 )
                                 .padding(16.dp)
@@ -173,7 +180,7 @@ fun AddLedgerEntryBottomSheet(
                                     "Recording money you received from ${person.name}"
                                 },
                                 fontSize = 14.sp,
-                                color = if (currentTransactionType == TransactionType.SENT) LedgerTheme.greenAmount else LedgerTheme.redAmount
+                                color = if (currentTransactionType == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
                             )
                         }
                     }
@@ -226,11 +233,17 @@ fun AddLedgerEntryBottomSheet(
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(top = 4.dp),
+                                        .padding(top = 4.dp)
+                                        .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                        .border(
+                                            width = 0.5.dp, // very thin border
+                                            color = Color.White.copy(alpha = 0.2f), // subtle white
+                                            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                        ),
                                     colors = CardDefaults.cardColors(
                                         containerColor = Color(0xFF2A2A2A)
                                     ),
-                                    shape = RoundedCornerShape(12.dp)
+                                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                                 ) {
                                     Column {
                                         suggestions.take(5).forEach { suggestion ->
@@ -294,12 +307,18 @@ fun AddLedgerEntryBottomSheet(
                                 modifier = Modifier
                                     .weight(1f)
                                     .wrapContentHeight()
-                                    .clickable { currentTransactionType = TransactionType.SENT },
+                                    .clickable { currentTransactionType = TransactionType.SENT }
+                                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                    .border(
+                                        width = 0.5.dp, // very thin border
+                                        color = Color.White.copy(alpha = 0.2f), // subtle white
+                                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                    ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else Color(0xFF1A1A1A)
                                 ),
                                 border = if (currentTransactionType == TransactionType.SENT) BorderStroke(2.dp, LedgerTheme.greenAmount) else null,
-                                shape = RoundedCornerShape(20.dp)
+                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -346,12 +365,18 @@ fun AddLedgerEntryBottomSheet(
                                 modifier = Modifier
                                     .weight(1f)
                                     .wrapContentHeight()
-                                    .clickable { currentTransactionType = TransactionType.RECEIVED },
+                                    .clickable { currentTransactionType = TransactionType.RECEIVED }
+                                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                    .border(
+                                        width = 0.5.dp, // very thin border
+                                        color = Color.White.copy(alpha = 0.2f), // subtle white
+                                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                    ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.RECEIVED) Color(0xFF2A1919) else Color(0xFF1A1A1A)
                                 ),
                                 border = if (currentTransactionType == TransactionType.RECEIVED) BorderStroke(2.dp, LedgerTheme.redAmount) else null,
-                                shape = RoundedCornerShape(20.dp)
+                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -410,7 +435,17 @@ fun AddLedgerEntryBottomSheet(
                     Column {
                         TextField(
                             value = amount,
-                            onValueChange = { amount = it },
+                            onValueChange = { newValue ->
+                                // Allow only numbers and one decimal point, max 2 decimal places
+                                val filtered = newValue.filter { char ->
+                                    char.isDigit() || char == '.'
+                                }
+                                
+                                // Check if it's a valid decimal format
+                                if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$"))) {
+                                    amount = filtered
+                                }
+                            },
                             placeholder = {
                                 Text(
                                     text = "0",
@@ -514,7 +549,7 @@ fun AddLedgerEntryBottomSheet(
                     ) {
                         // Date Picker
                         Button(
-                            onClick = { },
+                            onClick = { showDatePicker = true },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF1F1F1F)
@@ -537,7 +572,7 @@ fun AddLedgerEntryBottomSheet(
 
                         // Time Picker
                         Button(
-                            onClick = { },
+                            onClick = { showTimePicker = true },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF1F1F1F)
@@ -606,7 +641,7 @@ fun AddLedgerEntryBottomSheet(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = selectedAccount?.name ?: "Select account (optional)",
+                                    text = selectedAccount?.name ?: "Select account",
                                     color = LedgerTheme.textPrimary,
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f),
@@ -703,46 +738,51 @@ fun AddLedgerEntryBottomSheet(
                             if (validateForm()) {
                                 coroutineScope.launch {
                                     try {
-                                    if (person != null) {
-                                        // Add transaction to existing person
-                                        val transaction = LedgerTransaction(
-                                            id = "transaction_${System.currentTimeMillis()}_${++transactionCounter}",
-                                            personId = person.id,
-                                            amount = amount.toDoubleOrNull() ?: 0.0,
-                                            description = description,
-                                            date = selectedDate,
-                                            time = "12:00",
-                                            type = currentTransactionType,
-                                            account = selectedAccount?.name
-                                        )
+                                        // Check if a person with this name already exists
+                                        val existingPerson = ledgerDatabaseManager.getLedgerPersonByName(personName.trim())
                                         
-                                        ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, person.id)
-                                    } else {
-                                        // Create new person and add transaction
-                                        val newPerson = LedgerPerson(
-                                            id = "person_${System.currentTimeMillis()}_${++personCounter}",
-                                            name = personName,
-                                            avatarColor = LedgerTheme.avatarBlue,
-                                            balance = 0.0,
-                                            transactionCount = 0,
-                                            lastTransactionDate = ""
-                                        )
-                                        
-                                        ledgerDatabaseManager.insertLedgerPerson(newPerson)
-                                        
-                                        val transaction = LedgerTransaction(
-                                            id = "transaction_${System.currentTimeMillis()}_${++transactionCounter}",
-                                            personId = newPerson.id,
-                                            amount = amount.toDoubleOrNull() ?: 0.0,
-                                            description = description,
-                                            date = selectedDate,
-                                            time = "12:00",
-                                            type = currentTransactionType,
-                                            account = selectedAccount?.name
-                                        )
-                                        
-                                        ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, newPerson.id)
-                                    }
+                                        if (existingPerson != null) {
+                                            // Add transaction to existing person
+                                            val transaction = LedgerTransaction(
+                                                id = "transaction_${Clock.System.now().toEpochMilliseconds()}_${++transactionCounter}",
+                                                personId = existingPerson.id,
+                                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                                description = description,
+                                                date = selectedDate,
+                                                time = selectedTime,
+                                                type = currentTransactionType,
+                                                account = selectedAccount?.name
+                                                // balanceAtTime will be set in addLedgerTransactionAndUpdatePerson
+                                            )
+                                            
+                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, existingPerson.id, transactionDatabaseManager)
+                                        } else {
+                                            // Create new person and add transaction
+                                            val newPerson = LedgerPerson(
+                                                id = "person_${Clock.System.now().toEpochMilliseconds()}_${++personCounter}",
+                                                name = personName.trim(),
+                                                avatarColor = LedgerTheme.avatarBlue,
+                                                balance = 0.0,
+                                                transactionCount = 0,
+                                                lastTransactionDate = ""
+                                            )
+                                            
+                                            ledgerDatabaseManager.insertLedgerPerson(newPerson)
+                                            
+                                            val transaction = LedgerTransaction(
+                                                id = "transaction_${Clock.System.now().toEpochMilliseconds()}_${++transactionCounter}",
+                                                personId = newPerson.id,
+                                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                                description = description,
+                                                date = selectedDate,
+                                                time = selectedTime,
+                                                type = currentTransactionType,
+                                                account = selectedAccount?.name
+                                                // balanceAtTime will be set in addLedgerTransactionAndUpdatePerson
+                                            )
+                                            
+                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, newPerson.id, transactionDatabaseManager)
+                                        }
                                     onDismiss()
                                 } catch (e: Exception) {
                                     // Handle error
@@ -798,6 +838,192 @@ fun AddLedgerEntryBottomSheet(
                 selectedAccount = account
                 showAccountSelection = false
             }
+        )
+    }
+    
+    // Show date picker dialog
+    if (showDatePicker) {
+        SimpleDatePickerDialog(
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { date ->
+                selectedDate = date
+                showDatePicker = false
+            },
+            initialDate = selectedDate
+        )
+    }
+    
+    // Show time picker dialog
+    if (showTimePicker) {
+        SimpleTimePickerDialog(
+            onDismiss = { showTimePicker = false },
+            onTimeSelected = { time ->
+                selectedTime = time
+                showTimePicker = false
+            },
+            initialTime = selectedTime
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimpleDatePickerDialog(
+    onDismiss: () -> Unit,
+    onDateSelected: (String) -> Unit,
+    initialDate: String
+) {
+    val datePickerState = rememberDatePickerState()
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Select Date",
+                    color = LedgerTheme.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    DatePicker(
+                        state = datePickerState,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = DatePickerDefaults.colors(
+                            containerColor = Color(0xFF1F1F1F),
+                            titleContentColor = LedgerTheme.textPrimary,
+                            headlineContentColor = LedgerTheme.textPrimary,
+                            weekdayContentColor = LedgerTheme.textSecondary,
+                            subheadContentColor = LedgerTheme.textSecondary,
+                            yearContentColor = LedgerTheme.textPrimary,
+                            currentYearContentColor = LedgerTheme.textPrimary,
+                            selectedYearContentColor = Color.White,
+                            selectedYearContainerColor = Color(0xFF2196F3),
+                            dayContentColor = LedgerTheme.textPrimary,
+                            disabledDayContentColor = LedgerTheme.textSecondary,
+                            selectedDayContentColor = Color.White,
+                            disabledSelectedDayContentColor = Color.White,
+                            selectedDayContainerColor = Color(0xFF2196F3),
+                            disabledSelectedDayContainerColor = LedgerTheme.textSecondary,
+                            todayContentColor = Color(0xFF2196F3),
+                            todayDateBorderColor = Color(0xFF2196F3),
+                            dayInSelectionRangeContentColor = LedgerTheme.textPrimary,
+                            dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val date = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
+                            onDateSelected(dateString)
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = LedgerTheme.textPrimary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        color = LedgerTheme.textSecondary
+                    )
+                }
+            },
+            containerColor = Color(0xFF1F1F1F)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimpleTimePickerDialog(
+    onDismiss: () -> Unit,
+    onTimeSelected: (String) -> Unit,
+    initialTime: String
+) {
+    val timePickerState = rememberTimePickerState(
+        initialHour = 12,
+        initialMinute = 0,
+        is24Hour = false
+    )
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = "Select Time",
+                    color = LedgerTheme.textPrimary,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = Color(0xFF2A2A2A),
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = LedgerTheme.textPrimary,
+                        selectorColor = Color(0xFF2196F3),
+                        periodSelectorBorderColor = LedgerTheme.textSecondary,
+                        periodSelectorSelectedContainerColor = Color(0xFF2196F3),
+                        periodSelectorUnselectedContainerColor = Color(0xFF2A2A2A),
+                        periodSelectorSelectedContentColor = Color.White,
+                        periodSelectorUnselectedContentColor = LedgerTheme.textPrimary,
+                        timeSelectorSelectedContainerColor = Color(0xFF2196F3),
+                        timeSelectorUnselectedContainerColor = Color(0xFF2A2A2A),
+                        timeSelectorSelectedContentColor = Color.White,
+                        timeSelectorUnselectedContentColor = LedgerTheme.textPrimary
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val hour = timePickerState.hour
+                        val minute = timePickerState.minute
+                        val timeString = String.format("%02d:%02d", hour, minute)
+                        onTimeSelected(timeString)
+                        showDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "OK",
+                        color = LedgerTheme.textPrimary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = "Cancel",
+                        color = LedgerTheme.textSecondary
+                    )
+                }
+            },
+            containerColor = Color(0xFF1F1F1F)
         )
     }
 }

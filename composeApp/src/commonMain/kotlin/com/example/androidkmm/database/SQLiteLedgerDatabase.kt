@@ -5,9 +5,14 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.database.CategoryDatabase
 import com.example.androidkmm.screens.ledger.LedgerPerson
 import com.example.androidkmm.screens.ledger.LedgerTransaction
+// import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 import com.example.androidkmm.screens.ledger.TransactionType
+import com.example.androidkmm.models.Transaction
+import com.example.androidkmm.models.TransactionType as MainTransactionType
 import com.example.androidkmm.database.parseColorHex
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -25,25 +30,25 @@ class SQLiteLedgerDatabase(
     
     // Ledger Person Operations
     fun getAllLedgerPersons(): Flow<List<LedgerPerson>> {
-        return database.categoryDatabaseQueries.selectAllLedgerPersons().asFlow().mapToList(Dispatchers.IO).map { rows ->
+        return database.categoryDatabaseQueries.selectAllLedgerPersons().asFlow().mapToList(Dispatchers.Default).map { rows ->
             rows.map { it.toLedgerPerson() }
         }
     }
     
     suspend fun getLedgerPersonById(id: String): LedgerPerson? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectLedgerPersonById(id).executeAsOneOrNull()?.toLedgerPerson()
         }
     }
     
     suspend fun getLedgerPersonByName(name: String): LedgerPerson? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectLedgerPersonByName(name).executeAsOneOrNull()?.toLedgerPerson()
         }
     }
     
     suspend fun insertLedgerPerson(ledgerPerson: LedgerPerson) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertLedgerPerson(
                 id = ledgerPerson.id,
                 name = ledgerPerson.name,
@@ -56,7 +61,7 @@ class SQLiteLedgerDatabase(
     }
     
     suspend fun updateLedgerPerson(ledgerPerson: LedgerPerson) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateLedgerPerson(
                 name = ledgerPerson.name,
                 avatar_color_hex = ledgerPerson.avatarColor.toHexString(),
@@ -69,44 +74,44 @@ class SQLiteLedgerDatabase(
     }
     
     suspend fun updateLedgerPersonBalance(id: String, balance: Double) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateLedgerPersonBalance(balance = balance, id = id)
         }
     }
     
     suspend fun deleteLedgerPerson(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteLedgerPerson(id)
         }
     }
     
     suspend fun getLedgerPersonCount(): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getLedgerPersonCount().executeAsOne()
         }
     }
     
     // Ledger Transaction Operations
     fun getAllLedgerTransactions(): Flow<List<LedgerTransaction>> {
-        return database.categoryDatabaseQueries.selectAllLedgerTransactions().asFlow().mapToList(Dispatchers.IO).map { rows ->
+        return database.categoryDatabaseQueries.selectAllLedgerTransactions().asFlow().mapToList(Dispatchers.Default).map { rows ->
             rows.map { it.toLedgerTransaction() }
         }
     }
     
     fun getLedgerTransactionsByPerson(personId: String): Flow<List<LedgerTransaction>> {
-        return database.categoryDatabaseQueries.selectLedgerTransactionsByPerson(personId).asFlow().mapToList(Dispatchers.IO).map { rows ->
+        return database.categoryDatabaseQueries.selectLedgerTransactionsByPerson(personId).asFlow().mapToList(Dispatchers.Default).map { rows ->
             rows.map { it.toLedgerTransaction() }
         }
     }
     
     suspend fun getLedgerTransactionById(id: String): LedgerTransaction? {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.selectLedgerTransactionById(id).executeAsOneOrNull()?.toLedgerTransaction()
         }
     }
     
     suspend fun insertLedgerTransaction(ledgerTransaction: LedgerTransaction) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.insertLedgerTransaction(
                 id = ledgerTransaction.id,
                 ledger_person_id = ledgerTransaction.personId,
@@ -115,13 +120,14 @@ class SQLiteLedgerDatabase(
                 date = ledgerTransaction.date,
                 time = ledgerTransaction.time,
                 type = ledgerTransaction.type.name,
-                account_name = ledgerTransaction.account
+                account_name = ledgerTransaction.account,
+                balance_at_time = ledgerTransaction.balanceAtTime
             )
         }
     }
     
     suspend fun updateLedgerTransaction(ledgerTransaction: LedgerTransaction) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateLedgerTransaction(
                 amount = ledgerTransaction.amount,
                 description = ledgerTransaction.description,
@@ -129,25 +135,26 @@ class SQLiteLedgerDatabase(
                 time = ledgerTransaction.time,
                 type = ledgerTransaction.type.name,
                 account_name = ledgerTransaction.account,
+                balance_at_time = ledgerTransaction.balanceAtTime,
                 id = ledgerTransaction.id
             )
         }
     }
     
     suspend fun deleteLedgerTransaction(id: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteLedgerTransaction(id)
         }
     }
     
     suspend fun deleteLedgerTransactionsByPerson(personId: String) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.deleteLedgerTransactionsByPerson(personId)
         }
     }
     
     suspend fun getLedgerTransactionCount(): Long {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.getLedgerTransactionCount().executeAsOne()
         }
     }
@@ -156,13 +163,11 @@ class SQLiteLedgerDatabase(
     @OptIn(ExperimentalTime::class)
     suspend fun addLedgerTransactionAndUpdatePerson(
         ledgerTransaction: LedgerTransaction,
-        personId: String
+        personId: String,
+        transactionDatabaseManager: SQLiteTransactionDatabase? = null
     ) {
-        withContext(Dispatchers.IO) {
-            // Insert the ledger transaction
-            insertLedgerTransaction(ledgerTransaction)
-            
-            // Update person's balance and transaction count
+        withContext(Dispatchers.Default) {
+            // First, get the person and calculate the new balance
             val person = getLedgerPersonById(personId)
             if (person != null) {
                 val newBalance = when (ledgerTransaction.type) {
@@ -172,6 +177,39 @@ class SQLiteLedgerDatabase(
                 val newTransactionCount = person.transactionCount + 1
                 val lastTransactionDate = "Today"
                 
+                // Create transaction with the NEW balance (after the transaction)
+                val transactionWithNewBalance = ledgerTransaction.copy(balanceAtTime = newBalance)
+                
+                // Insert the ledger transaction with the new balance
+                insertLedgerTransaction(transactionWithNewBalance)
+                
+                // Create corresponding transaction entry in main transaction history
+                transactionDatabaseManager?.let { txDb ->
+                    val (transactionTitle, transactionType) = when (ledgerTransaction.type) {
+                        TransactionType.SENT -> "Sent to ${person.name} - Transfer" to MainTransactionType.EXPENSE
+                        TransactionType.RECEIVED -> "Received from ${person.name} - Transfer" to MainTransactionType.INCOME
+                    }
+                    
+                    val mainTransaction = Transaction(
+                        id = "main_${ledgerTransaction.id}",
+                        title = transactionTitle,
+                        amount = ledgerTransaction.amount,
+                        category = "Ledger",
+                        categoryIcon = Icons.Default.SwapHoriz,
+                        categoryColor = Color(0xFF2196F3),
+                        account = ledgerTransaction.account ?: "Cash",
+                        accountIcon = Icons.Default.AttachMoney,
+                        accountColor = Color(0xFF4CAF50),
+                        time = ledgerTransaction.time,
+                        type = transactionType,
+                        description = ledgerTransaction.description,
+                        date = ledgerTransaction.date
+                    )
+                    
+                    txDb.addLedgerTransaction(mainTransaction, personId, person.name)
+                }
+                
+                // Update person's balance and transaction count
                 updateLedgerPerson(
                     person.copy(
                         balance = newBalance,
@@ -187,7 +225,7 @@ class SQLiteLedgerDatabase(
         transactionId: String,
         personId: String
     ) {
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             // Get the transaction to reverse its effect
             val transaction = getLedgerTransactionById(transactionId)
             if (transaction != null) {
@@ -245,7 +283,8 @@ private fun com.example.androidkmm.database.Ledger_transactions.toLedgerTransact
             "RECEIVED" -> TransactionType.RECEIVED
             else -> TransactionType.SENT
         },
-        account = account_name
+        account = account_name,
+        balanceAtTime = balance_at_time
     )
 }
 
@@ -255,5 +294,5 @@ private fun Color.toHexString(): String {
     val red = (red * 255).toInt()
     val green = (green * 255).toInt()
     val blue = (blue * 255).toInt()
-    return "#%02X%02X%02X%02X".format(alpha, red, green, blue)
+    return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
 }

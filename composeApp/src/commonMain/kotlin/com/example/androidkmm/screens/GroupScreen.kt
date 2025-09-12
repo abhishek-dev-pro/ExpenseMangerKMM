@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -404,8 +405,8 @@ fun GroupCard(
 // Helper function to format date for group display
 fun formatDateForGroup(timestamp: Long): String {
     // For now, return a simple format. We can enhance this later
-    val currentTime = System.currentTimeMillis() / 1000
-    val daysDiff = ((currentTime - timestamp) / (24 * 60 * 60)).toInt()
+    val currentTime = System.currentTimeMillis() / 1000L
+    val daysDiff = ((currentTime - timestamp) / (24L * 60L * 60L)).toInt()
     
     return when {
         daysDiff == 0 -> "Today"
@@ -572,7 +573,7 @@ fun CreateGroupBottomSheetContent(
                     name = groupName,
                     description = "",
                     color = Color(0xFF9333EA), // Default purple color
-                    createdAt = System.currentTimeMillis() / 1000,
+                    createdAt = System.currentTimeMillis() / 1000L,
                     totalSpent = 0.0,
                     memberCount = members.size
                 )
@@ -621,15 +622,16 @@ fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = 0.5.dp,
-                color = Color.LightGray.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(12.dp)
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (isAdmin) Color(0xFF181818) else Color.Black
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
     ) {
         Row(
             modifier = Modifier
@@ -692,12 +694,17 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .border(
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            ),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
             containerColor = Color.Black
-        ),
-        border = BorderStroke(0.5.dp, Color.LightGray.copy(alpha = 0.2f))
+        )
     ) {
         Row(
             modifier = Modifier

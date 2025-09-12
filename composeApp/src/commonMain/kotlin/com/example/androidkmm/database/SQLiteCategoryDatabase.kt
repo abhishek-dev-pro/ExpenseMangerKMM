@@ -16,6 +16,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOne
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
+// import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
 fun rememberSQLiteCategoryDatabase(): SQLiteCategoryDatabase {
@@ -49,25 +50,25 @@ class SQLiteCategoryDatabase(
     }
     
     fun getAllCategories(): Flow<List<Category>> {
-        return database.categoryDatabaseQueries.selectAll().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectAll().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toCategory() }
         }
     }
     
     fun getCategoriesByType(type: CategoryType): Flow<List<Category>> {
-        return database.categoryDatabaseQueries.selectByType(type.name).asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectByType(type.name).asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toCategory() }
         }
     }
     
     fun getCustomCategories(): Flow<List<Category>> {
-        return database.categoryDatabaseQueries.selectCustomCategories().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectCustomCategories().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toCategory() }
         }
     }
     
     fun getDefaultCategories(): Flow<List<Category>> {
-        return database.categoryDatabaseQueries.selectDefaultCategories().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectDefaultCategories().asFlow().mapToList(Dispatchers.Default).map { list ->
             list.map { it.toCategory() }
         }
     }

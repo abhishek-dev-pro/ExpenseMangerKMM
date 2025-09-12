@@ -1,11 +1,13 @@
 package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -25,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.design.DesignSystem
 import androidx.compose.runtime.collectAsState
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -127,11 +130,17 @@ fun LedgerMainScreen() {
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .height(100.dp),
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                    .border(
+                        width = 0.5.dp, // very thin border
+                        color = Color.White.copy(alpha = 0.2f), // subtle white
+                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF0F2419)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
                 Column(
                     modifier = Modifier
@@ -150,7 +159,7 @@ fun LedgerMainScreen() {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "To Receive",
+                            text = "To Send",
                             fontSize = 14.sp,
                             color = LedgerTheme.textSecondary
                         )
@@ -176,11 +185,17 @@ fun LedgerMainScreen() {
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .height(100.dp),
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                    .border(
+                        width = 0.5.dp, // very thin border
+                        color = Color.White.copy(alpha = 0.2f), // subtle white
+                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    ),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF2A1919)
                 ),
-                shape = RoundedCornerShape(20.dp)
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
                 Column(
                     modifier = Modifier
@@ -199,7 +214,7 @@ fun LedgerMainScreen() {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "To Send",
+                            text = "To Receive",
                             fontSize = 14.sp,
                             color = LedgerTheme.textSecondary
                         )

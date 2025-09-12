@@ -21,7 +21,8 @@ import com.example.androidkmm.design.DesignSystem
 
 @Composable
 fun TransactionItem(
-    transaction: LedgerTransaction
+    transaction: LedgerTransaction,
+    balanceAtTransaction: Double
 ) {
     Card(
         modifier = Modifier
@@ -48,7 +49,7 @@ fun TransactionItem(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        if (transaction.type == TransactionType.SENT) Color(0xFF0F2419) else Color(0xFF2A1919),
+                        if (transaction.type == TransactionType.SENT) Color(0xFF2A1919) else Color(0xFF0F2419),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -60,7 +61,7 @@ fun TransactionItem(
                         Icons.Default.ArrowDownward
                     },
                     contentDescription = null,
-                    tint = if (transaction.type == TransactionType.SENT) LedgerTheme.greenAmount else LedgerTheme.redAmount,
+                    tint = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount,
                     modifier = Modifier.size(16.dp)
                 )
 
@@ -135,7 +136,7 @@ fun TransactionItem(
                     color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
                 )
                 Text(
-                    text = "Balance: $${formatDouble(if (transaction.type == TransactionType.SENT) 30.00 else 40.00)}",
+                    text = "Balance: $${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
                     fontSize = 12.sp,
                     color = LedgerTheme.textSecondary
                 )
