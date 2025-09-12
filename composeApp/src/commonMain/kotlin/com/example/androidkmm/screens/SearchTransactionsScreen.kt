@@ -1,12 +1,14 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.utils.formatDouble
 
@@ -375,8 +378,14 @@ private fun SearchTransactionItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+            .clickable { onClick() }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .border(
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            ),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(containerColor = SearchColors.surface)
     ) {
         Row(

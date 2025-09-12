@@ -41,6 +41,7 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.design.DesignSystem
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -751,8 +752,14 @@ fun TransactionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick(transaction) },
-        shape = RoundedCornerShape(16.dp),
+            .clickable { onClick(transaction) }
+            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .border(
+                width = 0.5.dp, // very thin border
+                color = Color.White.copy(alpha = 0.2f), // subtle white
+                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            ),
+        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(containerColor = TransactionColors.cardBackground),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {

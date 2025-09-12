@@ -90,6 +90,8 @@ fun GroupsScreen() {
     
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
+    var selectedGroup by remember { mutableStateOf<Group?>(null) }
+    var showGroupDetails by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -175,7 +177,15 @@ fun GroupsScreen() {
                         initialOffsetY = { it } // slide in from bottom
                     ) + fadeIn()
                 ) {
-                    GroupCard(group, groupMembers, groupDatabaseManager)
+                    GroupCard(
+                        group = group,
+                        members = groupMembers,
+                        groupDatabaseManager = groupDatabaseManager,
+                        onClick = {
+                            selectedGroup = group
+                            showGroupDetails = true
+                        }
+                    )
                 }
             }
         }
@@ -193,7 +203,20 @@ fun GroupsScreen() {
                 )
             }
         }
-
+    }
+    
+    // Show Group Details Screen
+    if (showGroupDetails && selectedGroup != null) {
+        GroupDetailsScreen(
+            group = selectedGroup!!,
+            onBack = {
+                showGroupDetails = false
+                selectedGroup = null
+            },
+            onAddExpense = {
+                // TODO: Navigate to AddGroupExpenseScreen
+            }
+        )
     }
 }
 
@@ -232,12 +255,13 @@ fun SummaryCard(
 fun GroupCard(
     group: Group,
     members: List<GroupMember>,
-    groupDatabaseManager: SQLiteGroupDatabase
+    groupDatabaseManager: SQLiteGroupDatabase,
+    onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-
+            .clickable { onClick() }
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
