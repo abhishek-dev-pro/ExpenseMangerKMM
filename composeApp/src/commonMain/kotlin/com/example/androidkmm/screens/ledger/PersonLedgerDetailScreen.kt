@@ -59,7 +59,7 @@ fun PersonLedgerDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LedgerTheme.backgroundColor)
+            .background(LedgerTheme.backgroundColor())
             .statusBarsPadding()
     ) {
         // Header
@@ -73,7 +73,7 @@ fun PersonLedgerDetailScreen(
                 Icon(
                     imageVector = Icons.Default.ChevronLeft,
                     contentDescription = "Back",
-                    tint = LedgerTheme.textPrimary,
+                    tint = LedgerTheme.textPrimary(),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -106,12 +106,12 @@ fun PersonLedgerDetailScreen(
                     text = updatedPerson.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = LedgerTheme.textPrimary
+                    color = LedgerTheme.textPrimary()
                 )
                 Text(
                     text = "${updatedPerson.transactionCount} transactions",
                     fontSize = 14.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
 
@@ -121,7 +121,7 @@ fun PersonLedgerDetailScreen(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
-                    tint = LedgerTheme.textPrimary,
+                    tint = LedgerTheme.textPrimary(),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -163,7 +163,7 @@ fun PersonLedgerDetailScreen(
                     Text(
                         text = "Current Balance",
                         fontSize = 14.sp,
-                        color = LedgerTheme.textSecondary
+                        color = LedgerTheme.textSecondary()
                     )
                 }
 
@@ -187,7 +187,7 @@ fun PersonLedgerDetailScreen(
                         else -> "You will give"
                     },
                     fontSize = 16.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
         }
@@ -266,7 +266,7 @@ fun PersonLedgerDetailScreen(
                 text = "Transaction History",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = LedgerTheme.textPrimary
+                color = LedgerTheme.textPrimary()
             )
 
             Box(
@@ -280,7 +280,7 @@ fun PersonLedgerDetailScreen(
                 Text(
                     text = "${updatedPerson.transactionCount} entries",
                     fontSize = 12.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
         }

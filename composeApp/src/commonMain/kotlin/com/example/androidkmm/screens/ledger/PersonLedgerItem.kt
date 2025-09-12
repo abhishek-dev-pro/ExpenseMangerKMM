@@ -78,12 +78,12 @@ fun PersonLedgerItem(
                     text = person.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = LedgerTheme.textPrimary
+                    color = LedgerTheme.textPrimary()
                 )
                 Text(
                     text = "${person.lastTransactionDate} • ${person.transactionCount} transaction${if (person.transactionCount > 1) "s" else ""}",
                     fontSize = 14.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
 
@@ -112,7 +112,7 @@ fun PersonLedgerItem(
                         else -> "you will get"
                     },
                     fontSize = 12.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
 
@@ -121,7 +121,7 @@ fun PersonLedgerItem(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "View details",
-                tint = LedgerTheme.textSecondary,
+                tint = LedgerTheme.textSecondary(),
                 modifier = Modifier.size(20.dp)
             )
         }

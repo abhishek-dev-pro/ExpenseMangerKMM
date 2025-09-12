@@ -43,8 +43,8 @@ fun AccountSelectionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = LedgerTheme.backgroundColor,
-        contentColor = LedgerTheme.textPrimary,
+        containerColor = LedgerTheme.backgroundColor(),
+        contentColor = LedgerTheme.textPrimary(),
         dragHandle = null
     ) {
         LazyColumn(
@@ -67,7 +67,7 @@ fun AccountSelectionBottomSheet(
 
                     Text(
                         text = title,
-                        color = LedgerTheme.textPrimary,
+                        color = LedgerTheme.textPrimary(),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -79,7 +79,7 @@ fun AccountSelectionBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = LedgerTheme.textPrimary,
+                            tint = LedgerTheme.textPrimary(),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -90,7 +90,7 @@ fun AccountSelectionBottomSheet(
                 // Subtitle
                 Text(
                     text = subtitle,
-                    color = LedgerTheme.textSecondary,
+                    color = LedgerTheme.textSecondary(),
                     fontSize = 16.sp,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,7 +167,7 @@ private fun AccountCard(
             ) {
                 Text(
                     text = account.name,
-                    color = LedgerTheme.textPrimary,
+                    color = LedgerTheme.textPrimary(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )

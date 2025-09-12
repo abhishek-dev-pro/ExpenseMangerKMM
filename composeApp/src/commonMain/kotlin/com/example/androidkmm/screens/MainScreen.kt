@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.androidkmm.components.*
 import com.example.androidkmm.database.InitializeDatabase
+import com.example.androidkmm.theme.AppTheme
 
 /**
  * Main screen with bottom navigation and content switching
@@ -22,34 +23,36 @@ fun MainScreen() {
     // Initialize database
     InitializeDatabase()
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selected = selectedTab,
-                onSelect = { selectedTab = it }
-            )
-        },
-        containerColor = Color.Black
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            when (selectedTab) {
-                0 -> HomeScreenContent()
-                1 -> TransactionsScreen(
-                    onNavigateToLedger = { personName ->
-                        navigateToLedgerPerson = personName
-                        selectedTab = 3 // Switch to ledger tab
-                    }
+    AppTheme {
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(
+                    selected = selectedTab,
+                    onSelect = { selectedTab = it }
                 )
-                2 -> GroupsScreen()
-                3 -> LedgerMainScreen(
-                    navigateToPerson = navigateToLedgerPerson,
-                    onPersonNavigated = { navigateToLedgerPerson = null }
-                )
-                4 -> ProfileMainScreen()
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                when (selectedTab) {
+                    0 -> HomeScreenContent()
+                    1 -> TransactionsScreen(
+                        onNavigateToLedger = { personName ->
+                            navigateToLedgerPerson = personName
+                            selectedTab = 3 // Switch to ledger tab
+                        }
+                    )
+                    2 -> GroupsScreen()
+                    3 -> LedgerMainScreen(
+                        navigateToPerson = navigateToLedgerPerson,
+                        onPersonNavigated = { navigateToLedgerPerson = null }
+                    )
+                    4 -> ProfileMainScreen()
+                }
             }
         }
     }

@@ -36,6 +36,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import com.example.androidkmm.models.Account
+import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,16 +56,9 @@ import com.example.androidkmm.design.DesignSystem
 
 // Color definitions matching the iOS design
 object TransactionColors {
-    val background = Color(0xFF000000)
-    val surface = Color(0xFF1A1A1A)
-    val primaryText = Color(0xFFFFFFFF)
-    val secondaryText = Color(0xFF8E8E93)
     val income = Color(0xFF10B981)
     val expense = Color(0xFFEF4444)
     val transfer = Color(0xFF3B82F6)
-    val cardBackground = Color(0xFF1C1C1E)
-    val searchBackground = Color(0xFF1C1C1E)
-    val divider = Color(0xFF38383A)
 }
 
 // Data classes
@@ -238,7 +232,7 @@ fun TransactionsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(TransactionColors.background)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .padding(top = 8.dp)
     ) {
@@ -375,7 +369,7 @@ private fun ImagePickerDialog(
             title = {
                 Text(
                     text = "Select Image Source",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -400,18 +394,18 @@ private fun ImagePickerDialog(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = "Camera",
                             modifier = Modifier.size(24.dp),
-                            tint = TransactionColors.primaryText
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Take Photo",
-                            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
                     
-                    Divider(color = TransactionColors.divider)
+                    Divider(color = MaterialTheme.colorScheme.outline)
                     
                     // Gallery option
                     Row(
@@ -429,12 +423,12 @@ private fun ImagePickerDialog(
                             imageVector = Icons.Default.PhotoLibrary,
                             contentDescription = "Gallery",
                             modifier = Modifier.size(24.dp),
-                            tint = TransactionColors.primaryText
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Choose from Gallery",
-                            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -445,11 +439,11 @@ private fun ImagePickerDialog(
                 TextButton(onClick = onDismiss) {
                     Text(
                         text = "Cancel",
-                        color = TransactionColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
-            containerColor = TransactionColors.background
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
@@ -469,13 +463,13 @@ private fun TransactionHeader(
         Column {
             Text(
                 text = "Transactions",
-                color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "$transactionCount transactions",
-                color = TransactionColors.secondaryText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -484,8 +478,8 @@ private fun TransactionHeader(
         FloatingActionButton(
             onClick = onAddClick,
             modifier = Modifier.size(56.dp),
-            containerColor = TransactionColors.primaryText,
-            contentColor = TransactionColors.background,
+            containerColor = MaterialTheme.colorScheme.onBackground,
+            contentColor = MaterialTheme.colorScheme.surface,
             shape = CircleShape
         ) {
             Icon(
@@ -522,19 +516,19 @@ private fun MonthNavigation(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(TransactionColors.surface)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowLeft,
                 contentDescription = "Previous Month",
-                tint = TransactionColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
 
         Text(
             text = currentMonthYear,
-            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -544,12 +538,12 @@ private fun MonthNavigation(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(TransactionColors.surface)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = "Next Month",
-                tint = TransactionColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -582,7 +576,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
-        colors = CardDefaults.cardColors(containerColor = TransactionColors.cardBackground)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -653,7 +647,7 @@ private fun SummaryColumn(
 
         Text(
             text = label,
-            color = TransactionColors.secondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
@@ -683,26 +677,26 @@ private fun SearchAndFilter(
             placeholder = {
                 Text(
                     text = "Search transactions...",
-                    color = TransactionColors.secondaryText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
-                    tint = TransactionColors.secondaryText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
             },
                 modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = TransactionColors.searchBackground,
-                unfocusedContainerColor = TransactionColors.searchBackground,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = TransactionColors.primaryText,
-                unfocusedTextColor = TransactionColors.primaryText
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                 ),
                 readOnly = true,
                 enabled = false
@@ -714,12 +708,12 @@ private fun SearchAndFilter(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(TransactionColors.searchBackground)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Icon(
                 imageVector = Icons.Default.FilterList,
                 contentDescription = "Filter",
-                tint = TransactionColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -749,7 +743,7 @@ private fun DayGroupSection(
         ) {
                 Text(
                 text = "${dayGroup.displayDate} (${dayGroup.transactions.size})",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
                 fontStyle = FontStyle.Normal
@@ -893,7 +887,7 @@ fun TransactionCard(
                     } else {
                         "Transfer"
                     },
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     fontStyle = FontStyle.Normal,
@@ -903,14 +897,14 @@ fun TransactionCard(
                 
                 Text(
                     text = "${transaction.time} • Transfer",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     fontStyle = FontStyle.Normal
                 )
             } else {
                 Text(
                     text = transaction.title,
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     fontStyle = FontStyle.Normal,
@@ -924,21 +918,21 @@ fun TransactionCard(
                 ) {
                     Text(
                         text = transaction.time,
-                        color = TransactionColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = "•",
-                        color = TransactionColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = transaction.category,
-                        color = TransactionColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         fontStyle = FontStyle.Normal
                     )
@@ -979,7 +973,7 @@ fun TransactionCard(
             if (transaction.type != com.example.androidkmm.models.TransactionType.TRANSFER) {
                 Text(
                     text = transaction.account,
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
@@ -1024,15 +1018,15 @@ fun AddTransactionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = TransactionColors.background,
-        contentColor = TransactionColors.primaryText,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         dragHandle = {
             Box(
                 modifier = Modifier
                     .width(36.dp)
                     .height(4.dp)
                     .background(
-                        color = TransactionColors.secondaryText.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(2.dp)
                     )
             )
@@ -1253,7 +1247,7 @@ private fun AddTransactionContent(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = TransactionColors.secondaryText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1261,7 +1255,7 @@ private fun AddTransactionContent(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Add Transaction",
-                        color = TransactionColors.primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -1272,7 +1266,7 @@ private fun AddTransactionContent(
                     }
                     Text(
                         text = subtitle,
-                        color = TransactionColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                 }
@@ -1316,7 +1310,7 @@ private fun AddTransactionContent(
                         title = "From Account",
                         selectedText = formData.account?.name ?: "Select",
                         icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: TransactionColors.secondaryText,
+                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = onShowFromAccountSheet
                     )
 
@@ -1325,7 +1319,7 @@ private fun AddTransactionContent(
                         title = "To Account",
                         selectedText = formData.toAccount?.name ?: "Select",
                         icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.toAccount?.color ?: TransactionColors.secondaryText,
+                        iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = onShowToAccountSheet
                     )
                 }
@@ -1340,7 +1334,7 @@ private fun AddTransactionContent(
                         title = "Category",
                         selectedText = formData.category?.name ?: "Select",
                         icon = formData.category?.icon ?: Icons.Default.AttachMoney,
-                        iconColor = formData.category?.color ?: TransactionColors.secondaryText,
+                        iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = onShowCategorySheet
                     )
 
@@ -1349,7 +1343,7 @@ private fun AddTransactionContent(
                         title = "Account",
                         selectedText = formData.account?.name ?: "Select",
                         icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: TransactionColors.secondaryText,
+                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = onShowFromAccountSheet
                     )
                 }
@@ -1373,7 +1367,7 @@ private fun AddTransactionContent(
             // Date and Time
             Text(
                 text = "Date & Time",
-                color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -1442,14 +1436,14 @@ private fun AddTransactionContent(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isReady) {
-                        TransactionColors.primaryText.copy(alpha = 0.8f)
+                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                     } else {
-                        TransactionColors.secondaryText.copy(alpha = 0.2f)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     },
                     contentColor = if (isReady) {
-                        TransactionColors.background
+                        MaterialTheme.colorScheme.surface
                     } else {
-                        TransactionColors.primaryText
+                        MaterialTheme.colorScheme.onBackground
                     }
                 )
             ) {
@@ -1478,7 +1472,7 @@ private fun TransactionTypeSelector(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(TransactionColors.surface)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -1495,14 +1489,14 @@ private fun TransactionTypeSelector(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) TransactionColors.primaryText.copy(alpha = 0.15f)
+                    containerColor = if (isSelected) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f)
                     else Color.Transparent,
-                    contentColor = if (isSelected) TransactionColors.primaryText
-                    else TransactionColors.secondaryText
+                    contentColor = if (isSelected) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 border = if (isSelected) BorderStroke(
                     width = 1.dp,
-                    color = TransactionColors.primaryText.copy(alpha = 0.3f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
                 ) else null,
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
                 contentPadding = PaddingValues(vertical = 8.dp)
@@ -1541,16 +1535,16 @@ private fun AmountInputSection(
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center,
-                color = TransactionColors.primaryText
+                color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = errorMessage != null,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
-                cursorColor = TransactionColors.primaryText,
-                focusedTextColor = TransactionColors.primaryText,
-                unfocusedTextColor = TransactionColors.primaryText,
+                cursorColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 errorBorderColor = Color.Red,
@@ -1559,7 +1553,7 @@ private fun AmountInputSection(
             leadingIcon = {
             Text(
                 text = "$",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 36.sp,
                 fontWeight = FontWeight.Light
             )
@@ -1569,7 +1563,7 @@ private fun AmountInputSection(
 
         Text(
             text = "Enter amount",
-            color = TransactionColors.secondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 17.sp
         )
         
@@ -1591,7 +1585,7 @@ private fun CategoryAccountSelector(
     title: String,
     selectedText: String,
     icon: ImageVector,
-    iconColor: Color = TransactionColors.secondaryText,
+    iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     onClick: () -> Unit
 ) {
     Column(
@@ -1600,7 +1594,7 @@ private fun CategoryAccountSelector(
     ) {
         Text(
             text = title,
-            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -1611,11 +1605,11 @@ private fun CategoryAccountSelector(
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
-                contentColor = TransactionColors.secondaryText
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             border = BorderStroke(
                 width = 1.dp,
-                color = TransactionColors.secondaryText.copy(alpha = 0.3f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             ),
             contentPadding = PaddingValues(12.dp)
         ) {
@@ -1652,7 +1646,7 @@ private fun InputField(
     ) {
         Text(
             text = label,
-            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -1663,21 +1657,21 @@ private fun InputField(
             placeholder = {
                 Text(
                     text = placeholder,
-                    color = TransactionColors.secondaryText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             isError = errorMessage != null,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = TransactionColors.cardBackground,
-                unfocusedContainerColor = TransactionColors.cardBackground,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent,
-                focusedTextColor = TransactionColors.primaryText,
-                unfocusedTextColor = TransactionColors.primaryText,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                 errorBorderColor = Color.Red,
-                errorContainerColor = TransactionColors.cardBackground
+                errorContainerColor = MaterialTheme.colorScheme.surface
             )
         )
         
@@ -1706,10 +1700,10 @@ private fun DateTimeSelector(
         modifier = modifier.height(40.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) TransactionColors.primaryText
-            else TransactionColors.cardBackground,
-            contentColor = if (isSelected) TransactionColors.background
-            else TransactionColors.primaryText
+            containerColor = if (isSelected) MaterialTheme.colorScheme.onBackground
+            else MaterialTheme.colorScheme.surface,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.surface
+            else MaterialTheme.colorScheme.onBackground
         ),
         contentPadding = PaddingValues(12.dp)
     ) {
@@ -1739,7 +1733,7 @@ private fun ReceiptUploadSection(
     ) {
         Text(
             text = "Receipt (Optional)",
-            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -1758,7 +1752,7 @@ private fun ReceiptUploadSection(
                     ),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
                 colors = CardDefaults.cardColors(
-                    containerColor = TransactionColors.surface
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Row(
@@ -1771,19 +1765,19 @@ private fun ReceiptUploadSection(
                         imageVector = Icons.Default.Image,
                         contentDescription = "Receipt Image",
                         modifier = Modifier.size(32.dp),
-                        tint = TransactionColors.primaryText
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Receipt attached",
-                            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
                             text = "Tap to change",
-                            color = TransactionColors.secondaryText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp
                         )
                     }
@@ -1793,7 +1787,7 @@ private fun ReceiptUploadSection(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Remove",
-                            tint = TransactionColors.secondaryText,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -1808,13 +1802,13 @@ private fun ReceiptUploadSection(
                 .height(120.dp)
                 .border(
                     width = 2.dp,
-                    brush = SolidColor(TransactionColors.secondaryText.copy(alpha = 0.3f)),
+                    brush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
                     shape = RoundedCornerShape(12.dp)
                 ),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
-                contentColor = TransactionColors.secondaryText
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
         ) {
             Column(
@@ -1835,7 +1829,7 @@ private fun ReceiptUploadSection(
                     Text(
                         text = "Images only",
                         fontSize = 12.sp,
-                        color = TransactionColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -1873,8 +1867,8 @@ fun AccountSelectionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = TransactionColors.background,
-        contentColor = TransactionColors.primaryText,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         dragHandle = null
     ) {
         LazyColumn(
@@ -1897,7 +1891,7 @@ fun AccountSelectionBottomSheet(
 
                     Text(
                         text = title,
-                        color = TransactionColors.primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -1909,7 +1903,7 @@ fun AccountSelectionBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TransactionColors.primaryText,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -1920,7 +1914,7 @@ fun AccountSelectionBottomSheet(
                 // Subtitle
                 Text(
                     text = subtitle,
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1963,7 +1957,7 @@ private fun AccountCard(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = TransactionColors.cardBackground
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -1979,12 +1973,12 @@ private fun AccountCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(TransactionColors.surface),
+                    .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "$",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1997,7 +1991,7 @@ private fun AccountCard(
             ) {
                 Text(
                     text = account.name,
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -2058,15 +2052,15 @@ fun CategorySelectionBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = bottomSheetState,
-        containerColor = TransactionColors.background,
-        contentColor = TransactionColors.primaryText,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         dragHandle = {
             Box(
                 modifier = Modifier
                     .width(36.dp)
                     .height(4.dp)
                     .background(
-                        color = TransactionColors.secondaryText.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(2.dp)
                     )
             )
@@ -2094,13 +2088,13 @@ fun CategorySelectionBottomSheet(
                                 com.example.androidkmm.models.TransactionType.INCOME -> "Select Income Category"
                                 com.example.androidkmm.models.TransactionType.TRANSFER -> "Select Category"
                             },
-                            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
                             text = "Choose a category for your transaction",
-                            color = TransactionColors.secondaryText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -2112,7 +2106,7 @@ fun CategorySelectionBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TransactionColors.secondaryText,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                 }
@@ -2157,7 +2151,7 @@ private fun CategoryCard(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = TransactionColors.cardBackground
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -2186,7 +2180,7 @@ private fun CategoryCard(
 
             Text(
                 text = category.name,
-                color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -2212,7 +2206,7 @@ private fun CategoryGridCard(
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = TransactionColors.cardBackground
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -2241,7 +2235,7 @@ private fun CategoryGridCard(
 
             Text(
                 text = category.name,
-                color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -2384,7 +2378,7 @@ private fun AnimatedSummaryCard(
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
-        colors = CardDefaults.cardColors(containerColor = TransactionColors.cardBackground)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -2421,7 +2415,7 @@ private fun AnimatedSummaryCard(
                 )
                 Text(
                     text = "Income",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = animatedLabelSize.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2456,7 +2450,7 @@ private fun AnimatedSummaryCard(
                 )
                 Text(
                     text = "Expenses",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = animatedLabelSize.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2491,7 +2485,7 @@ private fun AnimatedSummaryCard(
                 )
                 Text(
                     text = "Total",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = animatedLabelSize.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2525,7 +2519,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
-        colors = CardDefaults.cardColors(containerColor = TransactionColors.cardBackground)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -2545,7 +2539,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 )
                 Text(
                     text = "Income",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2563,7 +2557,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 )
                 Text(
                     text = "Expenses",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2581,7 +2575,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 )
                 Text(
                     text = "Total",
-                    color = TransactionColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2614,7 +2608,7 @@ private fun EmptyTransactionState(
             modifier = Modifier
                 .size(120.dp)
                 .background(
-                    color = TransactionColors.surface,
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(24.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -2623,7 +2617,7 @@ private fun EmptyTransactionState(
                 imageVector = Icons.Default.Receipt,
                 contentDescription = "No transactions",
                 modifier = Modifier.size(60.dp),
-                tint = TransactionColors.secondaryText
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         
@@ -2632,7 +2626,7 @@ private fun EmptyTransactionState(
         // Title
         Text(
             text = "No transactions yet",
-            color = TransactionColors.primaryText,
+                            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -2642,7 +2636,7 @@ private fun EmptyTransactionState(
         // Subtitle
         Text(
             text = "No transactions found for $monthName $selectedYear",
-            color = TransactionColors.secondaryText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 16.sp,
             textAlign = TextAlign.Center
         )
@@ -2716,7 +2710,7 @@ private fun getSampleAccounts(): List<Account> {
             name = "Personal Account",
             balance = "₹10,000",
             icon = Icons.Default.AccountBalance,
-            color = BlueAccent,
+            color = AppColors.Info,
             type = "Savings"
         ),
         Account(
@@ -2789,7 +2783,7 @@ private fun DatePickerDialog(
             title = {
                 Text(
                     text = "Select Date",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -2804,24 +2798,24 @@ private fun DatePickerDialog(
                         state = datePickerState,
                         modifier = Modifier.fillMaxWidth(),
                         colors = DatePickerDefaults.colors(
-                            containerColor = TransactionColors.background,
-                            titleContentColor = TransactionColors.primaryText,
-                            headlineContentColor = TransactionColors.primaryText,
-                            weekdayContentColor = TransactionColors.secondaryText,
-                            subheadContentColor = TransactionColors.secondaryText,
-                            yearContentColor = TransactionColors.primaryText,
-                            currentYearContentColor = TransactionColors.primaryText,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onBackground,
+                            headlineContentColor = MaterialTheme.colorScheme.onBackground,
+                            weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            yearContentColor = MaterialTheme.colorScheme.onBackground,
+                            currentYearContentColor = MaterialTheme.colorScheme.onBackground,
                             selectedYearContentColor = Color.White,
                             selectedYearContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
-                            dayContentColor = TransactionColors.primaryText,
-                            disabledDayContentColor = TransactionColors.secondaryText,
+                            dayContentColor = MaterialTheme.colorScheme.onBackground,
+                            disabledDayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             selectedDayContentColor = Color.White,
                             disabledSelectedDayContentColor = Color.White,
                             selectedDayContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
-                            disabledSelectedDayContainerColor = TransactionColors.secondaryText,
+                            disabledSelectedDayContainerColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             todayContentColor = Color(0xFF2196F3), // Blue accent for today
                             todayDateBorderColor = Color(0xFF2196F3),
-                            dayInSelectionRangeContentColor = TransactionColors.primaryText,
+                            dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onBackground,
                             dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
                         )
                     )
@@ -2842,7 +2836,7 @@ private fun DatePickerDialog(
                 ) {
                     Text(
                         text = "OK",
-                        color = TransactionColors.primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -2851,11 +2845,11 @@ private fun DatePickerDialog(
                 TextButton(onClick = onDismiss) {
                     Text(
                         text = "Cancel",
-                        color = TransactionColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
-            containerColor = TransactionColors.background
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
@@ -2880,7 +2874,7 @@ private fun TimePickerDialog(
             title = {
                 Text(
                     text = "Select Time",
-                    color = TransactionColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -2889,19 +2883,19 @@ private fun TimePickerDialog(
                 TimePicker(
                     state = timePickerState,
                     colors = TimePickerDefaults.colors(
-                        clockDialColor = TransactionColors.cardBackground,
+                        clockDialColor = MaterialTheme.colorScheme.surface,
                         clockDialSelectedContentColor = Color.White,
-                        clockDialUnselectedContentColor = TransactionColors.primaryText,
+                        clockDialUnselectedContentColor = MaterialTheme.colorScheme.onBackground,
                         selectorColor = Color(0xFF2196F3), // Blue accent for better visibility
-                        periodSelectorBorderColor = TransactionColors.secondaryText,
+                        periodSelectorBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         periodSelectorSelectedContainerColor = Color(0xFF2196F3),
-                        periodSelectorUnselectedContainerColor = TransactionColors.cardBackground,
+                        periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
                         periodSelectorSelectedContentColor = Color.White,
-                        periodSelectorUnselectedContentColor = TransactionColors.primaryText,
+                        periodSelectorUnselectedContentColor = MaterialTheme.colorScheme.onBackground,
                         timeSelectorSelectedContainerColor = Color(0xFF2196F3),
-                        timeSelectorUnselectedContainerColor = TransactionColors.cardBackground,
+                        timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
                         timeSelectorSelectedContentColor = Color.White,
-                        timeSelectorUnselectedContentColor = TransactionColors.primaryText
+                        timeSelectorUnselectedContentColor = MaterialTheme.colorScheme.onBackground
                     )
                 )
             },
@@ -2917,7 +2911,7 @@ private fun TimePickerDialog(
                 ) {
                     Text(
                         text = "OK",
-                        color = TransactionColors.primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -2926,11 +2920,11 @@ private fun TimePickerDialog(
                 TextButton(onClick = onDismiss) {
                     Text(
                         text = "Cancel",
-                        color = TransactionColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
-            containerColor = TransactionColors.background
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }

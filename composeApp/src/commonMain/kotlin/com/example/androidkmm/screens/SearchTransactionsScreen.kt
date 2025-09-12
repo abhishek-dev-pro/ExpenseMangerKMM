@@ -34,15 +34,9 @@ import com.example.androidkmm.utils.formatDouble
 
 // Color definitions matching the search screen design
 object SearchColors {
-    val background = Color(0xFF121212)
-    val surface = Color(0xFF1E1E1E)
-    val primaryText = Color(0xFFFFFFFF)
-    val secondaryText = Color(0xFF8E8E93)
     val income = Color(0xFF10B981)
     val expense = Color(0xFFEF4444)
     val transfer = Color(0xFF3B82F6)
-    val searchBackground = Color(0xFF2C2C2E)
-    val divider = Color(0xFF38383A)
 }
 
 @Composable
@@ -164,7 +158,7 @@ fun SearchTransactionsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SearchColors.background)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         // Header Section
@@ -261,12 +255,12 @@ private fun SearchHeader(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(SearchColors.surface)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = SearchColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -277,14 +271,14 @@ private fun SearchHeader(
         ) {
             Text(
                 text = "Search Transactions",
-                color = SearchColors.primaryText,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
             
             Text(
                 text = "$resultCount results found",
-                color = SearchColors.secondaryText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
         }
@@ -295,12 +289,12 @@ private fun SearchHeader(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(SearchColors.surface)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Close",
-                tint = SearchColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -328,7 +322,7 @@ private fun SearchAndFilterBar(
             placeholder = {
                 Text(
                     text = "Search by title, description,",
-                    color = SearchColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp
                 )
             },
@@ -336,18 +330,18 @@ private fun SearchAndFilterBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
-                    tint = SearchColors.secondaryText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = SearchColors.divider,
-                unfocusedBorderColor = SearchColors.divider,
-                focusedTextColor = SearchColors.primaryText,
-                unfocusedTextColor = SearchColors.primaryText,
-                focusedContainerColor = SearchColors.searchBackground,
-                unfocusedContainerColor = SearchColors.searchBackground,
-                cursorColor = SearchColors.primaryText
+                focusedBorderColor = MaterialTheme.colorScheme.outline,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                cursorColor = MaterialTheme.colorScheme.onBackground
             ),
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(
@@ -363,12 +357,12 @@ private fun SearchAndFilterBar(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(SearchColors.searchBackground)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Icon(
                 imageVector = Icons.Default.FilterList,
                 contentDescription = "Filter",
-                tint = SearchColors.primaryText,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -391,7 +385,7 @@ private fun SearchTransactionItem(
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
-        colors = CardDefaults.cardColors(containerColor = SearchColors.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
@@ -439,7 +433,7 @@ private fun SearchTransactionItem(
                     } else {
                         transaction.title
                     },
-                    color = SearchColors.primaryText,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
@@ -455,7 +449,7 @@ private fun SearchTransactionItem(
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
                         contentDescription = "Date",
-                        tint = SearchColors.secondaryText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(12.dp)
                     )
                     
@@ -463,19 +457,19 @@ private fun SearchTransactionItem(
                     
                     Text(
                         text = formatDateForDisplay(transaction.date),
-                        color = SearchColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                     
                     Text(
                         text = " • ",
-                        color = SearchColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                     
                     Text(
                         text = transaction.category,
-                        color = SearchColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -514,7 +508,7 @@ private fun SearchTransactionItem(
                 // Account
                 Text(
                     text = transaction.account,
-                    color = SearchColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -574,7 +568,7 @@ private fun FilterSummary(
                     shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                 ),
             shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
-            colors = CardDefaults.cardColors(containerColor = SearchColors.searchBackground)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(
                 modifier = Modifier
@@ -586,7 +580,7 @@ private fun FilterSummary(
                 Column {
                     Text(
                         text = "Active Filters",
-                        color = SearchColors.primaryText,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -615,7 +609,7 @@ private fun FilterSummary(
                                 append("Amount: ${filterOptions.amountRange!!.predefined!!.name}")
                             }
                         },
-                        color = SearchColors.secondaryText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
                     )
                 }
@@ -623,7 +617,7 @@ private fun FilterSummary(
                 TextButton(
                     onClick = onClearFilters,
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = SearchColors.primaryText
+                        contentColor = MaterialTheme.colorScheme.onBackground
                     )
                 ) {
                     Text(

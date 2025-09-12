@@ -44,15 +44,8 @@ import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab
 import com.example.androidkmm.models.Account
-
-// Color definitions
-val DarkBackground = Color(0xFF000000)  // True black
-val DarkSurface = Color(0xFF1C1C1E)     // Dark gray for cards
-val DarkSurfaceVariant = Color(0xFF2C2C2E) // Slightly lighter for variants
-val GreenSuccess = Color(0xFF4CAF50)
-val BlueAccent = Color(0xFF2196F3)
-val WhiteText = Color(0xFFFFFFFF)
-val GrayText = Color(0xFF8E8E93)        // Lighter gray for better contrast
+import com.example.androidkmm.theme.AppTheme
+import com.example.androidkmm.theme.AppColors
 
 // Account data class is now defined in models/AccountModels.kt
 
@@ -114,7 +107,7 @@ fun ProfileMainScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when (currentScreen) {
             "profile" -> ProfileScreen(
@@ -140,7 +133,7 @@ fun ProfileMainScreen() {
         if (showAddAccountSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAddAccountSheet = false },
-                containerColor = DarkSurface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
                 AddAccountBottomSheet(
@@ -164,7 +157,7 @@ fun ProfileMainScreen() {
         if (showCategorySheet) {
             ModalBottomSheet(
                 onDismissRequest = { showCategorySheet = false },
-                containerColor = DarkSurface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
                 CategoriesBottomSheet(
@@ -189,7 +182,7 @@ fun ProfileMainScreen() {
         if (showAddCategorySheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAddCategorySheet = false },
-                containerColor = DarkSurface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
                 AddCategoryBottomSheet(
@@ -225,7 +218,7 @@ fun ProfileScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
@@ -233,9 +226,9 @@ fun ProfileScreen(
             // Profile Header Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Black),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp)
@@ -265,32 +258,33 @@ fun ProfileScreen(
 
                         // User Details
                         Column {
-                            Text(
-                                text = "Abhishek Kumar",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = WhiteText
-                            )
-                            
-                            Spacer(modifier = Modifier.height(4.dp))
-                            
-                            Text(
-                                text = "abhishek@example.com",
-                                fontSize = 14.sp,
-                                color = GrayText
-                            )
+                                    Text(
+                                        text = "Abhishek Kumar",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = "abhishek@example.com",
+                                        fontSize = 14.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             // Member since tag
                             Card(
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2E)),
-                                shape = RoundedCornerShape(8.dp)
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                             ) {
                                 Text(
                                     text = "Member since March 2024",
                                     fontSize = 12.sp,
-                                    color = WhiteText,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
                             }
@@ -357,13 +351,13 @@ fun ProfileScreen(
             text = "Account Information",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.Black),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
             border = BorderStroke(1.dp, Color(0xFF3A3A3A))
         ) {
@@ -374,7 +368,7 @@ fun ProfileScreen(
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
-                    tint = GrayText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -384,12 +378,12 @@ fun ProfileScreen(
                     Text(
                         text = "Email",
                         fontSize = 14.sp,
-                        color = GrayText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "abhishek@example.com",
                         fontSize = 16.sp,
-                        color = WhiteText
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -412,9 +406,9 @@ fun ProfileScreen(
 fun StatCard(value: String, label: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -424,13 +418,13 @@ fun StatCard(value: String, label: String) {
                 text = value,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = WhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 14.sp,
-                color = GrayText
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -447,9 +441,9 @@ fun MenuCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -459,13 +453,14 @@ fun MenuCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF2C2C2E)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = WhiteText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -477,19 +472,19 @@ fun MenuCard(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     fontSize = 14.sp,
-                    color = GrayText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = GrayText
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -520,12 +515,12 @@ fun CategoriesBottomSheet(
                     text = "Manage Categories",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Add, edit, or manage your expense and income categories",
                     fontSize = 14.sp,
-                    color = GrayText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -533,7 +528,7 @@ fun CategoriesBottomSheet(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
-                    tint = WhiteText
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -546,8 +541,8 @@ fun CategoriesBottomSheet(
                 CategoryTab.EXPENSE -> 0
                 CategoryTab.INCOME -> 1
             },
-            containerColor = DarkSurfaceVariant,
-            contentColor = WhiteText,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     modifier = Modifier.tabIndicatorOffset(tabPositions[when (selectedTab) {
@@ -561,12 +556,12 @@ fun CategoriesBottomSheet(
             Tab(
                 selected = selectedTab == CategoryTab.EXPENSE,
                 onClick = { onTabSelected(CategoryTab.EXPENSE) },
-                text = { Text("Expense", color = WhiteText) }
+                text = { Text("Expense", color = MaterialTheme.colorScheme.onSurface) }
             )
             Tab(
                 selected = selectedTab == CategoryTab.INCOME,
                 onClick = { onTabSelected(CategoryTab.INCOME) },
-                text = { Text("Income", color = WhiteText) }
+                text = { Text("Income", color = MaterialTheme.colorScheme.onSurface) }
             )
         }
 
@@ -594,7 +589,7 @@ fun CategoriesBottomSheet(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(2.dp, DarkSurfaceVariant, RoundedCornerShape(16.dp))
+                    .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
                     .padding(20.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -602,7 +597,7 @@ fun CategoriesBottomSheet(
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        tint = WhiteText,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -610,7 +605,7 @@ fun CategoriesBottomSheet(
                         text = "Add New Category",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = WhiteText
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -623,8 +618,9 @@ fun CategoriesBottomSheet(
 @Composable
 fun CategoryItem(category: Category) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        shape = RoundedCornerShape(16.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -654,12 +650,12 @@ fun CategoryItem(category: Category) {
                     text = category.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = category.type.name,
                     fontSize = 12.sp,
-                    color = GrayText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -668,7 +664,7 @@ fun CategoryItem(category: Category) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = GrayText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -713,12 +709,12 @@ fun CategoriesBottomSheet(
                     text = "Manage Categories",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Add, edit, or organize your transaction categories",
                     fontSize = 14.sp,
-                    color = GrayText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -726,7 +722,7 @@ fun CategoriesBottomSheet(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
-                    tint = WhiteText
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -735,8 +731,9 @@ fun CategoriesBottomSheet(
 
         // Tab Row
         Card(
-            colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant),
-            shape = RoundedCornerShape(12.dp)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
         ) {
             Row(modifier = Modifier.padding(4.dp)) {
                 TabButton(
@@ -802,7 +799,7 @@ private fun IncomeCategoriesContent(
             text = "Default Categories",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = GrayText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -830,7 +827,7 @@ private fun IncomeCategoriesContent(
                 text = "Custom Categories",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = GrayText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -868,7 +865,7 @@ private fun ExpenseCategoriesContent(
             text = "Default Categories",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = GrayText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -896,7 +893,7 @@ private fun ExpenseCategoriesContent(
                 text = "Custom Categories",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = GrayText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -929,8 +926,9 @@ private fun CategoryCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         modifier = modifier
     ) {
         Column(
@@ -960,7 +958,7 @@ private fun CategoryCard(
                 text = category.name,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = WhiteText,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -976,8 +974,9 @@ private fun CustomCategoryItem(
     onDelete: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        shape = RoundedCornerShape(16.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -1007,12 +1006,12 @@ private fun CustomCategoryItem(
                     text = category.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Custom",
                     fontSize = 14.sp,
-                    color = GrayText
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -1021,7 +1020,7 @@ private fun CustomCategoryItem(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = GrayText
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 IconButton(onClick = onDelete) {
@@ -1051,7 +1050,7 @@ private fun AddCustomCategoryButton(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .dashedBorder(2.dp, DarkSurfaceVariant, RoundedCornerShape(16.dp))
+                .dashedBorder(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
                 .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -1059,7 +1058,7 @@ private fun AddCustomCategoryButton(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    tint = WhiteText,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1067,7 +1066,7 @@ private fun AddCustomCategoryButton(
                     text = text,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -1084,8 +1083,8 @@ private fun TabButton(
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) DarkSurface else Color.Transparent,
-            contentColor = WhiteText
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
         shape = RoundedCornerShape(8.dp),
         modifier = modifier.height(40.dp),
@@ -1135,7 +1134,7 @@ fun AddAccountBottomSheet(
             text = "Account Name",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1143,16 +1142,17 @@ fun AddAccountBottomSheet(
         BasicTextField(
             value = accountName,
             onValueChange = { accountName = it },
-            textStyle = TextStyle(color = WhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(DarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
                         text = "e.g. HDFC Savings, Cash Wallet",
-                        color = GrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -1167,7 +1167,7 @@ fun AddAccountBottomSheet(
             text = "Account Type",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1223,7 +1223,7 @@ fun AddAccountBottomSheet(
                 text = "Bank Name",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = WhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1250,7 +1250,7 @@ fun AddAccountBottomSheet(
             text = "Initial Balance",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1259,14 +1259,15 @@ fun AddAccountBottomSheet(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(DarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
             Text(
                 text = "₹",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = WhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(8.dp))
             BasicTextField(
@@ -1277,7 +1278,7 @@ fun AddAccountBottomSheet(
                     }
                 },
                 textStyle = TextStyle(
-                    color = WhiteText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp
                 ),
                 modifier = Modifier.weight(1f),
@@ -1303,7 +1304,7 @@ fun AddAccountBottomSheet(
                         "Digital Wallet" -> Icons.Default.Wallet
                         else -> Icons.Default.AccountBalance
                     },
-                    color = BlueAccent,
+                    color = AppColors.Info,
                     type = selectedAccountType
                 )
                 onAccountAdded(account)
@@ -1341,7 +1342,7 @@ fun AccountTypeCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) DarkSurfaceVariant else Color(0xFF2A2A2A)
+            containerColor = if (isSelected) Color.Black else Color.Black
         ),
         border = if (isSelected) BorderStroke(2.dp, Color.White) else null
     ) {
@@ -1370,7 +1371,7 @@ fun AccountTypeCard(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = WhiteText,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
         }
@@ -1390,7 +1391,7 @@ fun BankCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) DarkSurfaceVariant else Color(0xFF2A2A2A)
+            containerColor = if (isSelected) Color.Black else Color.Black
         ),
         border = if (isSelected) BorderStroke(1.dp, Color.White) else null
     ) {
@@ -1402,7 +1403,7 @@ fun BankCard(
                 text = bankName,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = WhiteText,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
         }
@@ -1437,7 +1438,7 @@ fun AddCategoryBottomSheet(
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = WhiteText
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1445,7 +1446,7 @@ fun AddCategoryBottomSheet(
                     text = "Add ${if (categoryType == CategoryTab.EXPENSE) "Expense" else "Income"} Category",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -1457,23 +1458,24 @@ fun AddCategoryBottomSheet(
             text = "Category Name",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         BasicTextField(
             value = categoryName,
             onValueChange = { categoryName = it },
-            textStyle = TextStyle(color = WhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(DarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (categoryName.isEmpty()) {
                     Text(
                         text = "Enter category name",
-                        color = GrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -1488,7 +1490,7 @@ fun AddCategoryBottomSheet(
             text = "Choose Icon",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -1515,7 +1517,7 @@ fun AddCategoryBottomSheet(
             text = "Choose Color",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -1541,13 +1543,14 @@ fun AddCategoryBottomSheet(
             text = "Preview",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = WhiteText,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = DarkSurface),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -1576,12 +1579,12 @@ fun AddCategoryBottomSheet(
                         text = categoryName.ifEmpty { "Category Name" },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = WhiteText
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "${if (categoryType == CategoryTab.EXPENSE) "Expense" else "Income"} Category",
                         fontSize = 14.sp,
-                        color = GrayText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -1634,7 +1637,7 @@ fun AddCategoryBottomSheet(
                 .fillMaxWidth()
                 .height(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else GrayText,
+                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant,
                 contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
             ),
             shape = RoundedCornerShape(12.dp)
@@ -1669,7 +1672,7 @@ fun IconSelector(
         modifier = Modifier
             .size(48.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) color else DarkSurfaceVariant)
+            .background(if (isSelected) color else MaterialTheme.colorScheme.surfaceVariant)
             .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
@@ -1723,7 +1726,7 @@ fun SettingsSection() {
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
@@ -1746,7 +1749,7 @@ fun SettingsSection() {
                 Icon(
                     imageVector = Icons.Default.TrendingUp,
                     contentDescription = "Carry Forward",
-                    tint = WhiteText,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1761,12 +1764,12 @@ fun SettingsSection() {
                     text = "Carry Forward",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Include previous months balance in current month",
                     fontSize = 14.sp,
-                    color = GrayText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -1782,10 +1785,10 @@ fun SettingsSection() {
                     }
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = WhiteText,
-                    checkedTrackColor = GreenSuccess,
-                    uncheckedThumbColor = GrayText,
-                    uncheckedTrackColor = DarkSurfaceVariant
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }
@@ -1799,7 +1802,7 @@ fun CustomizeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -1821,7 +1824,7 @@ fun CustomizeScreen(
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = WhiteText,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1832,7 +1835,7 @@ fun CustomizeScreen(
                     text = "Customize",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -1856,13 +1859,14 @@ fun CustomizeScreen(
 
 @Composable
 fun DarkModeSetting() {
-    var isDarkModeEnabled by remember { mutableStateOf(true) }
+    // Use the global AppTheme state directly
+    val isDarkModeEnabled = AppTheme.isDarkMode
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -1875,7 +1879,7 @@ fun DarkModeSetting() {
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        Color(0xFF2C2C2E),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -1883,7 +1887,7 @@ fun DarkModeSetting() {
                 Icon(
                     imageVector = Icons.Default.LightMode,
                     contentDescription = "Dark Mode",
-                    tint = WhiteText,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1898,12 +1902,12 @@ fun DarkModeSetting() {
                     text = "Dark Mode",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Toggle dark/light theme",
                     fontSize = 14.sp,
-                    color = GrayText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -1911,12 +1915,14 @@ fun DarkModeSetting() {
             // Toggle Switch
             Switch(
                 checked = isDarkModeEnabled,
-                onCheckedChange = { isDarkModeEnabled = it },
+                onCheckedChange = { 
+                    AppTheme.updateDarkMode(it)
+                },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = WhiteText,
-                    checkedTrackColor = GreenSuccess,
-                    uncheckedThumbColor = GrayText,
-                    uncheckedTrackColor = DarkSurfaceVariant
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }
@@ -1932,7 +1938,7 @@ fun CurrencySetting() {
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
@@ -1956,7 +1962,7 @@ fun CurrencySetting() {
                     text = "$",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             
@@ -1970,12 +1976,12 @@ fun CurrencySetting() {
                     text = "Currency",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = WhiteText
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Default currency for transactions",
                     fontSize = 14.sp,
-                    color = GrayText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -1987,10 +1993,10 @@ fun CurrencySetting() {
                         .clickable { showCurrencyDropdown = true }
                         .border(
                             width = 1.dp,
-                            color = DarkSurfaceVariant,
+                            color = MaterialTheme.colorScheme.outline,
                             shape = RoundedCornerShape(8.dp)
                         ),
-                    colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -2000,13 +2006,13 @@ fun CurrencySetting() {
                         Text(
                             text = selectedCurrency,
                             fontSize = 14.sp,
-                            color = WhiteText
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = "Dropdown",
-                            tint = WhiteText,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -2015,14 +2021,14 @@ fun CurrencySetting() {
                 DropdownMenu(
                     expanded = showCurrencyDropdown,
                     onDismissRequest = { showCurrencyDropdown = false },
-                    modifier = Modifier.background(DarkSurface)
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 ) {
                     currencies.forEach { currency ->
                         DropdownMenuItem(
                             text = {
                                 Text(
                                     text = currency,
-                                    color = WhiteText
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             onClick = {

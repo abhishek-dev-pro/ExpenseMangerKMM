@@ -31,14 +31,9 @@ import com.example.androidkmm.design.DesignSystem
 
 // Colors for Transaction Details
 object TransactionDetailColors {
-    val background = Color(0xFF1C1C1E)
-    val surface = Color(0xFF2C2C2E)
-    val primary = Color.White
-    val secondary = Color(0xFF8E8E93)
     val expense = Color(0xFFFF3B30)
     val income = Color(0xFF34C759)
     val transfer = Color(0xFF007AFF)
-    val divider = Color(0xFF38383A)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +61,7 @@ fun TransactionDetailsBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = bottomSheetState,
             modifier = Modifier.fillMaxSize(),
-            containerColor = TransactionDetailColors.background
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             if (isEditMode) {
                 EditTransactionContent(
@@ -248,14 +243,14 @@ private fun TransactionDetailsContent(
                 Column {
                     Text(
                         text = "Transaction Details",
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "${transaction.date}, ${transaction.time}",
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Normal
                     )
@@ -273,7 +268,7 @@ private fun TransactionDetailsContent(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = TransactionDetailColors.primary,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -327,12 +322,12 @@ private fun TransactionDetailsContent(
 
                 Text(
                     text = transaction.type.name.lowercase().replaceFirstChar { it.uppercase() },
-                    color = TransactionDetailColors.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier
                         .background(
-                            TransactionDetailColors.surface,
+                            MaterialTheme.colorScheme.surfaceVariant,
                             RoundedCornerShape(12.dp)
                         )
                         .padding(horizontal = 18.dp, vertical = 10.dp)
@@ -345,7 +340,7 @@ private fun TransactionDetailsContent(
             Column {
                 Text(
                     text = "Title",
-                    color = TransactionDetailColors.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -354,7 +349,7 @@ private fun TransactionDetailsContent(
 
                 Text(
                     text = transaction.title,
-                    color = TransactionDetailColors.primary,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -367,7 +362,7 @@ private fun TransactionDetailsContent(
                 Column {
                     Text(
                         text = "Description",
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -376,7 +371,7 @@ private fun TransactionDetailsContent(
 
                     Text(
                         text = transaction.description,
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -390,7 +385,7 @@ private fun TransactionDetailsContent(
                 Column {
                     Text(
                         text = "Category",
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -402,7 +397,7 @@ private fun TransactionDetailsContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                TransactionDetailColors.surface,
+                                MaterialTheme.colorScheme.surfaceVariant,
                                 RoundedCornerShape(12.dp)
                             )
                             .padding(16.dp)
@@ -426,7 +421,7 @@ private fun TransactionDetailsContent(
 
                         Text(
                             text = transaction.category,
-                            color = TransactionDetailColors.primary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -450,7 +445,7 @@ private fun TransactionDetailsContent(
                                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                             ),
                         colors = CardDefaults.cardColors(
-                            containerColor = TransactionDetailColors.surface
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                     ) {
@@ -487,14 +482,14 @@ private fun TransactionDetailsContent(
                                 ) {
                                     Text(
                                         text = "FROM",
-                                        color = TransactionDetailColors.secondary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = transaction.account,
-                                        color = TransactionDetailColors.primary,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         textAlign = TextAlign.Center
@@ -505,7 +500,7 @@ private fun TransactionDetailsContent(
                                 Icon(
                                     imageVector = Icons.Default.ArrowForward,
                                     contentDescription = "Transfer to",
-                                    tint = TransactionDetailColors.secondary,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
 
@@ -515,14 +510,14 @@ private fun TransactionDetailsContent(
                                 ) {
                                     Text(
                                         text = "TO",
-                                        color = TransactionDetailColors.secondary,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = transaction.transferTo ?: "Unknown Account",
-                                        color = TransactionDetailColors.primary,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         textAlign = TextAlign.Center
@@ -539,7 +534,7 @@ private fun TransactionDetailsContent(
                     Column {
                         Text(
                             text = "Account",
-                            color = TransactionDetailColors.secondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -551,7 +546,7 @@ private fun TransactionDetailsContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    TransactionDetailColors.surface,
+                                    MaterialTheme.colorScheme.surfaceVariant,
                                     RoundedCornerShape(12.dp)
                                 )
                                 .padding(16.dp)
@@ -575,7 +570,7 @@ private fun TransactionDetailsContent(
 
                             Text(
                                 text = transaction.account,
-                                color = TransactionDetailColors.primary,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -600,11 +595,11 @@ private fun TransactionDetailsContent(
                     .weight(1f)
                     .height(48.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = TransactionDetailColors.primary
+                    contentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 border = BorderStroke(
                     width = 1.5.dp,
-                    color = TransactionDetailColors.primary
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -751,7 +746,7 @@ private fun EditTransactionContent(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = TransactionDetailColors.secondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -759,13 +754,13 @@ private fun EditTransactionContent(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Edit Transaction",
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = "Update your transaction details",
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Normal
                     )
@@ -782,7 +777,7 @@ private fun EditTransactionContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        TransactionDetailColors.surface,
+                        MaterialTheme.colorScheme.surfaceVariant,
                         RoundedCornerShape(12.dp)
                     )
                     .padding(4.dp),
@@ -801,7 +796,7 @@ private fun EditTransactionContent(
                             .weight(1f)
                             .height(44.dp)
                             .background(
-                                if (isSelected) TransactionDetailColors.background
+                                if (isSelected) MaterialTheme.colorScheme.surface
                                 else Color.Transparent,
                                 RoundedCornerShape(8.dp)
                             )
@@ -814,8 +809,8 @@ private fun EditTransactionContent(
                             Icon(
                                 imageVector = icon,
                                 contentDescription = type.name,
-                                tint = if (isSelected) TransactionDetailColors.primary
-                                else TransactionDetailColors.secondary,
+                                tint = if (isSelected) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(18.dp)
                             )
 
@@ -823,8 +818,8 @@ private fun EditTransactionContent(
 
                             Text(
                                 text = text,
-                                color = if (isSelected) TransactionDetailColors.primary
-                                else TransactionDetailColors.secondary,
+                                color = if (isSelected) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp,
                                 fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
                             )
@@ -845,7 +840,7 @@ private fun EditTransactionContent(
                 ) {
                     Text(
                         text = "$",
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Light
                     )
@@ -857,15 +852,15 @@ private fun EditTransactionContent(
                             fontSize = 48.sp,
                             fontWeight = FontWeight.Light,
                             textAlign = TextAlign.Center,
-                            color = TransactionDetailColors.primary
+                            color = MaterialTheme.colorScheme.onSurface
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
                             unfocusedBorderColor = Color.Transparent,
-                            cursorColor = TransactionDetailColors.primary,
-                            focusedTextColor = TransactionDetailColors.primary,
-                            unfocusedTextColor = TransactionDetailColors.primary,
+                            cursorColor = MaterialTheme.colorScheme.onSurface,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent
                         ),
@@ -877,7 +872,7 @@ private fun EditTransactionContent(
 
                 Text(
                     text = "Enter amount",
-                    color = TransactionDetailColors.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 17.sp
                 )
             }
@@ -892,7 +887,7 @@ private fun EditTransactionContent(
                 ) {
                     Text(
                         text = "From Account",
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -908,7 +903,7 @@ private fun EditTransactionContent(
 
                     Text(
                         text = "To Account",
-                        color = TransactionDetailColors.primary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -931,7 +926,7 @@ private fun EditTransactionContent(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Category",
-                            color = TransactionDetailColors.primary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -950,7 +945,7 @@ private fun EditTransactionContent(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "Account",
-                            color = TransactionDetailColors.primary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -975,7 +970,7 @@ private fun EditTransactionContent(
             // Date & Time
             Text(
                 text = "Date & Time",
-                color = TransactionDetailColors.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -991,12 +986,12 @@ private fun EditTransactionContent(
                     onValueChange = { },
                     modifier = Modifier.weight(1f),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TransactionDetailColors.divider,
-                        unfocusedBorderColor = TransactionDetailColors.divider,
-                        focusedTextColor = TransactionDetailColors.primary,
-                        unfocusedTextColor = TransactionDetailColors.primary,
-                        focusedContainerColor = TransactionDetailColors.surface,
-                        unfocusedContainerColor = TransactionDetailColors.surface
+                        focusedBorderColor = MaterialTheme.colorScheme.outline,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -1009,17 +1004,17 @@ private fun EditTransactionContent(
                         Icon(
                             imageVector = Icons.Default.AccessTime,
                             contentDescription = "Time",
-                            tint = TransactionDetailColors.secondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TransactionDetailColors.divider,
-                        unfocusedBorderColor = TransactionDetailColors.divider,
-                        focusedTextColor = TransactionDetailColors.primary,
-                        unfocusedTextColor = TransactionDetailColors.primary,
-                        focusedContainerColor = TransactionDetailColors.surface,
-                        unfocusedContainerColor = TransactionDetailColors.surface
+                        focusedBorderColor = MaterialTheme.colorScheme.outline,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     shape = RoundedCornerShape(12.dp)
                 )
@@ -1030,7 +1025,7 @@ private fun EditTransactionContent(
             // Title
             Text(
                 text = "Title",
-                color = TransactionDetailColors.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -1042,12 +1037,12 @@ private fun EditTransactionContent(
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = TransactionDetailColors.divider,
-                    unfocusedBorderColor = TransactionDetailColors.divider,
-                    focusedTextColor = TransactionDetailColors.primary,
-                    unfocusedTextColor = TransactionDetailColors.primary,
-                    focusedContainerColor = TransactionDetailColors.surface,
-                    unfocusedContainerColor = TransactionDetailColors.surface
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -1057,7 +1052,7 @@ private fun EditTransactionContent(
             // Description
             Text(
                 text = "Description (Optional)",
-                color = TransactionDetailColors.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -1069,12 +1064,12 @@ private fun EditTransactionContent(
                 onValueChange = { description = it },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = TransactionDetailColors.divider,
-                    unfocusedBorderColor = TransactionDetailColors.divider,
-                    focusedTextColor = TransactionDetailColors.primary,
-                    unfocusedTextColor = TransactionDetailColors.primary,
-                    focusedContainerColor = TransactionDetailColors.surface,
-                    unfocusedContainerColor = TransactionDetailColors.surface
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                 ),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -1084,7 +1079,7 @@ private fun EditTransactionContent(
             // Receipt
             Text(
                 text = "Receipt (Optional)",
-                color = TransactionDetailColors.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -1097,7 +1092,7 @@ private fun EditTransactionContent(
                     .height(60.dp)
                     .border(
                         width = 1.dp,
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .clickable { },
@@ -1109,7 +1104,7 @@ private fun EditTransactionContent(
                     Icon(
                         imageVector = Icons.Default.CameraAlt,
                         contentDescription = "Add Receipt",
-                        tint = TransactionDetailColors.secondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
 
@@ -1117,7 +1112,7 @@ private fun EditTransactionContent(
 
                     Text(
                         text = "Add Receipt",
-                        color = TransactionDetailColors.secondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 17.sp
                     )
                 }
@@ -1136,11 +1131,11 @@ private fun EditTransactionContent(
                         .weight(1f)
                         .height(56.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = TransactionDetailColors.primary
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = BorderStroke(
                         width = 1.dp,
-                        color = TransactionDetailColors.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -1253,7 +1248,7 @@ private fun SelectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                TransactionDetailColors.surface,
+                MaterialTheme.colorScheme.surfaceVariant,
                 RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
@@ -1279,7 +1274,7 @@ private fun SelectionCard(
         Column {
             Text(
                 text = title,
-                color = TransactionDetailColors.primary,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -1287,7 +1282,7 @@ private fun SelectionCard(
             subtitle?.let {
                 Text(
                     text = it,
-                    color = TransactionDetailColors.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 15.sp
                 )
             }

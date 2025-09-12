@@ -78,14 +78,14 @@ fun TransactionItem(
                     text = if (transaction.type == TransactionType.SENT) "You sent" else "You received",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = LedgerTheme.textPrimary
+                    color = LedgerTheme.textPrimary()
                 )
 
                 if (transaction.description.isNotEmpty()) {
                     Text(
                         text = transaction.description,
                         fontSize = 14.sp,
-                        color = LedgerTheme.textSecondary
+                        color = LedgerTheme.textSecondary()
                     )
                 }
 
@@ -96,14 +96,14 @@ fun TransactionItem(
                         Icon(
                             imageVector = Icons.Default.Wallet,
                             contentDescription = null,
-                            tint = LedgerTheme.textSecondary,
+                            tint = LedgerTheme.textSecondary(),
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = account,
                             fontSize = 12.sp,
-                            color = LedgerTheme.textSecondary
+                            color = LedgerTheme.textSecondary()
                         )
                     }
                 }
@@ -114,14 +114,14 @@ fun TransactionItem(
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
                         contentDescription = null,
-                        tint = LedgerTheme.textSecondary,
+                        tint = LedgerTheme.textSecondary(),
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${transaction.date}, ${transaction.time}",
                         fontSize = 12.sp,
-                        color = LedgerTheme.textSecondary
+                        color = LedgerTheme.textSecondary()
                     )
                 }
             }
@@ -139,7 +139,7 @@ fun TransactionItem(
                 Text(
                     text = "Balance: $${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
                     fontSize = 12.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
 
@@ -156,7 +156,7 @@ fun TransactionItem(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = LedgerTheme.textSecondary,
+                        tint = LedgerTheme.textSecondary(),
                         modifier = Modifier.size(16.dp)
                     )
                 }

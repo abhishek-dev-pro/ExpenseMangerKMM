@@ -41,6 +41,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,7 +100,7 @@ fun GroupsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
     ) {
         // Header
@@ -115,7 +116,7 @@ fun GroupsScreen() {
                     text = "Groups",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "Track group expenses & splits",
@@ -129,14 +130,14 @@ fun GroupsScreen() {
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        Color.White,
+                        MaterialTheme.colorScheme.onBackground,
                         CircleShape
                     )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -157,11 +158,11 @@ fun GroupsScreen() {
                     .clip(RoundedCornerShape(16.dp))
                     .border(
                         width = 0.5.dp,
-                        color = Color.White.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(16.dp)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF0F2419)
+                    containerColor = Color(0xFF0F2419) // Keep green for "To Send"
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -212,11 +213,11 @@ fun GroupsScreen() {
                     .clip(RoundedCornerShape(16.dp))
                     .border(
                         width = 0.5.dp,
-                        color = Color.White.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(16.dp)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF2D1B1B)
+                    containerColor = Color(0xFF2D1B1B) // Keep red for "To Receive"
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -304,7 +305,7 @@ fun GroupsScreen() {
             ModalBottomSheet(
                 onDismissRequest = { showSheet = false },
                 sheetState = sheetState,
-                containerColor = Color.Black,
+                containerColor = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
             ) {
                 CreateGroupBottomSheetContent(
@@ -345,7 +346,7 @@ fun GroupCard(
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
-                color = Color.White.copy(alpha = 0.2f), // subtle white
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ).padding(16.dp),
 
@@ -366,7 +367,7 @@ fun GroupCard(
                     Icon(
                         imageVector = Icons.Default.Groups,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -374,7 +375,7 @@ fun GroupCard(
                 Column {
                     Text(
                         text = group.name,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Normal,
                         fontSize = DesignSystem.Typography.balanceLabel,
@@ -423,7 +424,7 @@ fun GroupCard(
                             } else {
                                 "?"
                             },
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -439,7 +440,7 @@ fun GroupCard(
                 )
                 Text(
                     text = "$${formatDouble(group.totalSpent)}",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     lineHeight = DesignSystem.Typography.caption1,
@@ -462,12 +463,12 @@ fun GroupCard(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (currentUserBalance < 0) Color.DarkGray else Color.White)
+                    .background(if (currentUserBalance < 0) Color.DarkGray else MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = balanceText,
-                    color = if (currentUserBalance < 0) Color.White else Color.Black,
+                    color = if (currentUserBalance < 0) Color.White else MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp
                 )
             }
@@ -521,11 +522,11 @@ fun CreateGroupBottomSheetContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Create Group", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color.White)
+            Text("Create Group", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Close",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.clickable { onClose() }
             )
         }
@@ -533,13 +534,13 @@ fun CreateGroupBottomSheetContent(
         Spacer(Modifier.height(16.dp))
 
         // Group Name
-        Text("Group Name", color = Color.White, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+        Text("Group Name", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
         Spacer(Modifier.height(4.dp))
         BasicTextField(
             value = groupName,
             onValueChange = { groupName = it },
             singleLine = true,
-            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(18.dp))
@@ -567,7 +568,7 @@ fun CreateGroupBottomSheetContent(
         Spacer(Modifier.height(16.dp))
 
         // Members List
-        Text("Members (${members.size})", color = Color.White, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+        Text("Members (${members.size})", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 14.sp)
         Spacer(Modifier.height(8.dp))
 
         members.forEach { member ->
@@ -581,14 +582,14 @@ fun CreateGroupBottomSheetContent(
         Spacer(Modifier.height(16.dp))
 
         // Add by Email
-        Text("Add by Email", color = Color.White, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+        Text("Add by Email", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(
                 value = email,
                 onValueChange = { email = it },
                 singleLine = true,
-                textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
                 modifier = Modifier
                     .weight(1f)
                     .background(Color.Black, RoundedCornerShape(12.dp))
@@ -621,14 +622,14 @@ fun CreateGroupBottomSheetContent(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(12.dp))
+                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(12.dp))
             }
         }
 
         Spacer(Modifier.height(24.dp))
 
         // Suggested Contacts
-        Text("Suggested Contacts", color = Color.White, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+        Text("Suggested Contacts", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
         Spacer(Modifier.height(4.dp))
         val contacts = listOf("Sarah Miller", "Mike Johnson", "Lisa Wilson", "Alex Chen")
         contacts.forEach { name ->
@@ -680,8 +681,8 @@ fun CreateGroupBottomSheetContent(
             },
             enabled = isButtonEnabled,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,   // background
-                contentColor = Color.Black      // text/icon color
+                containerColor = MaterialTheme.colorScheme.primary,   // background
+                contentColor = MaterialTheme.colorScheme.onPrimary      // text/icon color
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -704,7 +705,7 @@ fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
-                color = Color.White.copy(alpha = 0.2f), // subtle white
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         colors = CardDefaults.cardColors(
@@ -728,7 +729,7 @@ fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
                 ) {
                     Text(
                         text = name.take(2).uppercase(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -737,7 +738,7 @@ fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
                 Column {
                     Text(
                         if (isAdmin) "You" else name,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Normal,
                         style = TextStyle(
                             lineHeight = 18.sp // 👈 reduced line height
@@ -777,7 +778,7 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
-                color = Color.White.copy(alpha = 0.2f), // subtle white
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
@@ -801,7 +802,7 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
                 ) {
                     Text(
                         text = name.split(" ").map { it.first() }.joinToString(""),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -810,7 +811,7 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
                 Column {
                     Text(
                         text = name,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Normal,
                         style = TextStyle(
                             lineHeight = 18.sp // 👈 reduced line height
@@ -830,7 +831,7 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add contact",
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .size(16.dp)
                     .clickable { onAdd() }

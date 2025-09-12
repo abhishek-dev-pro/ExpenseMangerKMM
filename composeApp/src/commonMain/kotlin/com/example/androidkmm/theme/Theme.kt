@@ -8,7 +8,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontStyle
 
 @Composable
-fun AppTheme(
+fun LegacyAppTheme(
     content: @Composable () -> Unit
 ) {
     val platformFontFamily = getPlatformFontFamily()

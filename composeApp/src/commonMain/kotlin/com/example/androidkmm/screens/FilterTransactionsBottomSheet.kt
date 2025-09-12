@@ -66,11 +66,6 @@ enum class PredefinedAmountRange {
 
 // Color definitions
 object FilterColors {
-    val background = Color(0xFF121212)
-    val surface = Color(0xFF1E1E1E)
-    val primaryText = Color(0xFFFFFFFF)
-    val secondaryText = Color(0xFF8E8E93)
-    val divider = Color(0xFF38383A)
     val selectedBorder = Color(0xFFFFFFFF)
     val unselectedBackground = Color(0xFF2C2C2E)
     val income = Color(0xFF10B981)
@@ -91,15 +86,15 @@ fun FilterTransactionsBottomSheet(
     
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = FilterColors.background,
-        contentColor = FilterColors.primaryText,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
         dragHandle = {
             Box(
                 modifier = Modifier
                     .width(36.dp)
                     .height(4.dp)
                     .background(
-                        color = FilterColors.secondaryText.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(2.dp)
                     )
             )
@@ -225,12 +220,12 @@ private fun FilterHeader(onDismiss: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(FilterColors.surface)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Icon(
                 imageVector = Icons.Default.FilterList,
                 contentDescription = "Filter",
-                tint = FilterColors.primaryText,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .size(20.dp)
                     .align(Alignment.Center)
@@ -243,14 +238,14 @@ private fun FilterHeader(onDismiss: () -> Unit) {
         ) {
             Text(
                 text = "Filter Transactions",
-                color = FilterColors.primaryText,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
             
             Text(
                 text = "Customize your transaction view",
-                color = FilterColors.secondaryText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
         }
@@ -261,12 +256,12 @@ private fun FilterHeader(onDismiss: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(FilterColors.surface)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Close",
-                tint = FilterColors.primaryText,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -281,7 +276,7 @@ private fun TransactionTypeSection(
     Column {
         Text(
             text = "Transaction Type",
-            color = FilterColors.primaryText,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -294,7 +289,7 @@ private fun TransactionTypeSection(
             // All Transactions
             FilterOptionCard(
                 icon = Icons.Default.AttachMoney,
-                iconColor = FilterColors.secondaryText,
+                iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 title = "All Transactions",
                 subtitle = "Show all transactions",
                 isSelected = selectedType == null,
@@ -355,7 +350,7 @@ private fun FilterOptionCard(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
     ) {
         Row(
@@ -388,14 +383,14 @@ private fun FilterOptionCard(
             ) {
                 Text(
                     text = title,
-                    color = FilterColors.primaryText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
                 )
                 
                 Text(
                     text = subtitle,
-                    color = FilterColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -406,13 +401,13 @@ private fun FilterOptionCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(FilterColors.primaryText),
+                        .background(MaterialTheme.colorScheme.onSurface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        tint = FilterColors.background,
+                        tint = MaterialTheme.colorScheme.surface,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -435,7 +430,7 @@ private fun CategoriesSection(
         ) {
             Text(
                 text = "Categories",
-                color = FilterColors.primaryText,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -444,7 +439,7 @@ private fun CategoriesSection(
             if (selectedCategories.isNotEmpty()) {
                 Text(
                     text = "${selectedCategories.size} selected",
-                    color = FilterColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
             }
@@ -487,11 +482,11 @@ private fun CategoriesSection(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = FilterColors.primaryText
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
-                        FilterColors.divider
+                        MaterialTheme.colorScheme.outline
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -511,11 +506,11 @@ private fun CategoriesSection(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = FilterColors.primaryText
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
-                        FilterColors.divider
+                        MaterialTheme.colorScheme.outline
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -548,7 +543,7 @@ private fun CategoryChip(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
     ) {
         Column(
@@ -577,7 +572,7 @@ private fun CategoryChip(
             
             Text(
                 text = category.name,
-                color = FilterColors.primaryText,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -592,13 +587,13 @@ private fun CategoryChip(
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .background(FilterColors.primaryText),
+                        .background(MaterialTheme.colorScheme.onSurface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        tint = FilterColors.background,
+                        tint = MaterialTheme.colorScheme.surface,
                         modifier = Modifier.size(10.dp)
                     )
                 }
@@ -621,7 +616,7 @@ private fun AccountsSection(
         ) {
             Text(
                 text = "Accounts",
-                color = FilterColors.primaryText,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -630,7 +625,7 @@ private fun AccountsSection(
             if (selectedAccounts.isNotEmpty()) {
                 Text(
                     text = "${selectedAccounts.size} selected",
-                    color = FilterColors.secondaryText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
             }
@@ -673,11 +668,11 @@ private fun AccountsSection(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = FilterColors.primaryText
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
-                        FilterColors.divider
+                        MaterialTheme.colorScheme.outline
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -697,11 +692,11 @@ private fun AccountsSection(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = FilterColors.primaryText
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = androidx.compose.foundation.BorderStroke(
                         1.dp,
-                        FilterColors.divider
+                        MaterialTheme.colorScheme.outline
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -734,7 +729,7 @@ private fun AccountChip(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
     ) {
         Row(
@@ -763,7 +758,7 @@ private fun AccountChip(
             
             Text(
                 text = account.name,
-                color = FilterColors.primaryText,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 maxLines = 1,
@@ -777,13 +772,13 @@ private fun AccountChip(
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .background(FilterColors.primaryText),
+                        .background(MaterialTheme.colorScheme.onSurface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "Selected",
-                        tint = FilterColors.background,
+                        tint = MaterialTheme.colorScheme.surface,
                         modifier = Modifier.size(10.dp)
                     )
                 }
@@ -800,7 +795,7 @@ private fun DateRangeSection(
     Column {
         Text(
             text = "Date Range",
-            color = FilterColors.primaryText,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -844,24 +839,24 @@ private fun DateRangeSection(
                 placeholder = {
                     Text(
                         text = "From",
-                        color = FilterColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "From Date",
-                        tint = FilterColors.secondaryText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = FilterColors.unselectedBackground,
                     unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = FilterColors.divider,
-                    unfocusedBorderColor = FilterColors.divider,
-                    focusedTextColor = FilterColors.primaryText,
-                    unfocusedTextColor = FilterColors.primaryText
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true
@@ -877,24 +872,24 @@ private fun DateRangeSection(
                 placeholder = {
                     Text(
                         text = "To",
-                        color = FilterColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "To Date",
-                        tint = FilterColors.secondaryText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = FilterColors.unselectedBackground,
                     unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = FilterColors.divider,
-                    unfocusedBorderColor = FilterColors.divider,
-                    focusedTextColor = FilterColors.primaryText,
-                    unfocusedTextColor = FilterColors.primaryText
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true
@@ -920,12 +915,12 @@ private fun DateRangeChip(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
     ) {
         Text(
             text = label,
-            color = FilterColors.primaryText,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -941,7 +936,7 @@ private fun AmountRangeSection(
     Column {
         Text(
             text = "Amount Range",
-            color = FilterColors.primaryText,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -985,13 +980,13 @@ private fun AmountRangeSection(
                 placeholder = {
                     Text(
                         text = "Min Amount",
-                        color = FilterColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 leadingIcon = {
                     Text(
                         text = "$",
-                        color = FilterColors.primaryText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -999,10 +994,10 @@ private fun AmountRangeSection(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = FilterColors.unselectedBackground,
                     unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = FilterColors.divider,
-                    unfocusedBorderColor = FilterColors.divider,
-                    focusedTextColor = FilterColors.primaryText,
-                    unfocusedTextColor = FilterColors.primaryText
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(
@@ -1023,13 +1018,13 @@ private fun AmountRangeSection(
                 placeholder = {
                     Text(
                         text = "Max Amount",
-                        color = FilterColors.secondaryText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 leadingIcon = {
                     Text(
                         text = "$",
-                        color = FilterColors.primaryText,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -1037,10 +1032,10 @@ private fun AmountRangeSection(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = FilterColors.unselectedBackground,
                     unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = FilterColors.divider,
-                    unfocusedBorderColor = FilterColors.divider,
-                    focusedTextColor = FilterColors.primaryText,
-                    unfocusedTextColor = FilterColors.primaryText
+                    focusedBorderColor = MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(
@@ -1070,12 +1065,12 @@ private fun AmountRangeChip(
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) FilterColors.surface else FilterColors.unselectedBackground
+            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
     ) {
         Text(
             text = label,
-            color = FilterColors.primaryText,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 14.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -1097,11 +1092,11 @@ private fun ActionButtons(
             onClick = onCancel,
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = FilterColors.primaryText
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
             border = androidx.compose.foundation.BorderStroke(
                 1.dp,
-                FilterColors.divider
+                MaterialTheme.colorScheme.outline
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
@@ -1117,8 +1112,8 @@ private fun ActionButtons(
             onClick = onApplyFilters,
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = FilterColors.primaryText,
-                contentColor = FilterColors.background
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(12.dp)
         ) {

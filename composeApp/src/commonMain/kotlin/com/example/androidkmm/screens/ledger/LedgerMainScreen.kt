@@ -109,7 +109,7 @@ fun LedgerMainScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(LedgerTheme.backgroundColor)
+            .background(LedgerTheme.backgroundColor())
             .statusBarsPadding()
     ) {
         // Header
@@ -125,12 +125,12 @@ fun LedgerMainScreen(
                     text = "Ledger",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = LedgerTheme.textPrimary
+                    color = LedgerTheme.textPrimary()
                 )
                 Text(
                     text = "Track borrowed & lent money",
                     fontSize = 16.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
 
@@ -146,7 +146,7 @@ fun LedgerMainScreen(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = Color.Black,
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -171,7 +171,7 @@ fun LedgerMainScreen(
                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF0F2419)
+                    containerColor = Color(0xFF0F2419) // Keep green for "To Send"
                 ),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
@@ -194,7 +194,7 @@ fun LedgerMainScreen(
                         Text(
                             text = "To Send",
                             fontSize = 14.sp,
-                            color = LedgerTheme.textSecondary
+                            color = LedgerTheme.textSecondary()
                         )
                     }
 
@@ -208,7 +208,7 @@ fun LedgerMainScreen(
                         Text(
                             text = if (toReceiveCount == 1) "1 person" else "$toReceiveCount people",
                             fontSize = 12.sp,
-                            color = LedgerTheme.textSecondary
+                            color = LedgerTheme.textSecondary()
                         )
                     }
                 }
@@ -226,7 +226,7 @@ fun LedgerMainScreen(
                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF2A1919)
+                    containerColor = Color(0xFF2A1919) // Keep red for "To Receive"
                 ),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
@@ -249,7 +249,7 @@ fun LedgerMainScreen(
                         Text(
                             text = "To Receive",
                             fontSize = 14.sp,
-                            color = LedgerTheme.textSecondary
+                            color = LedgerTheme.textSecondary()
                         )
                     }
 
@@ -263,7 +263,7 @@ fun LedgerMainScreen(
                         Text(
                             text = if (toSendCount == 1) "1 person" else "$toSendCount people",
                             fontSize = 12.sp,
-                            color = LedgerTheme.textSecondary
+                            color = LedgerTheme.textSecondary()
                         )
                     }
                 }
@@ -286,7 +286,7 @@ fun LedgerMainScreen(
                 placeholder = {
                     Text(
                         text = "Search people...",
-                        color = LedgerTheme.textSecondary,
+                        color = LedgerTheme.textSecondary(),
                         fontSize = 13.sp,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -296,15 +296,15 @@ fun LedgerMainScreen(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = LedgerTheme.textSecondary,
+                        tint = LedgerTheme.textSecondary(),
                         modifier = Modifier.size(16.dp)
                     )
                 },
                 colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFF2A2A2A),
-                    focusedContainerColor = Color(0xFF2A2A2A),
-                    unfocusedTextColor = LedgerTheme.textPrimary,
-                    focusedTextColor = LedgerTheme.textPrimary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedTextColor = LedgerTheme.textPrimary(),
+                    focusedTextColor = LedgerTheme.textPrimary(),
                     unfocusedIndicatorColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent
                 ),
@@ -323,8 +323,8 @@ fun LedgerMainScreen(
                         .height(44.dp)
                         .width(100.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color(0xFF2A2A2A),
-                        contentColor = LedgerTheme.textPrimary
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = LedgerTheme.textPrimary()
                     ),
                     shape = RoundedCornerShape(16.dp),
                     border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent)
@@ -343,7 +343,7 @@ fun LedgerMainScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowDownward,
                             contentDescription = null,
-                            tint = LedgerTheme.textSecondary,
+                            tint = LedgerTheme.textSecondary(),
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -353,8 +353,8 @@ fun LedgerMainScreen(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier
-                        .background(Color(0xFF1F1F1F))
-                        .border(1.dp, Color(0xFF404040), RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
                         .width(260.dp)
                 ) {
                     filterOptions.forEach { (option, description) ->
@@ -365,13 +365,13 @@ fun LedgerMainScreen(
                                 ) {
                                     Text(
                                         text = option,
-                                        color = if (option == selectedFilter) LedgerTheme.greenAmount else LedgerTheme.textPrimary,
+                                        color = if (option == selectedFilter) LedgerTheme.greenAmount else LedgerTheme.textPrimary(),
                                         fontWeight = if (option == selectedFilter) FontWeight.Bold else FontWeight.SemiBold,
                                         fontSize = 13.sp
                                     )
                                     Text(
                                         text = description,
-                                        color = LedgerTheme.textSecondary,
+                                        color = LedgerTheme.textSecondary(),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Normal
                                     )
@@ -418,7 +418,7 @@ fun LedgerMainScreen(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontStyle = FontStyle.Normal,
-                color = LedgerTheme.textPrimary,
+                color = LedgerTheme.textPrimary(),
                 style = androidx.compose.ui.text.TextStyle(
                     fontStyle = FontStyle.Normal,
                     fontWeight = FontWeight.SemiBold
@@ -428,7 +428,7 @@ fun LedgerMainScreen(
             Box(
                 modifier = Modifier
                     .background(
-                        Color(0xFF1F1F1F),
+                        MaterialTheme.colorScheme.surfaceVariant,
                         RoundedCornerShape(16.dp)
                     )
                     .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -436,7 +436,7 @@ fun LedgerMainScreen(
                 Text(
                     text = if (people.size == 1) "1 contact" else "${people.size} contacts",
                     fontSize = 12.sp,
-                    color = LedgerTheme.textSecondary
+                    color = LedgerTheme.textSecondary()
                 )
             }
         }

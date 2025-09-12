@@ -128,7 +128,7 @@ fun AddLedgerEntryBottomSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(LedgerTheme.backgroundColor)
+                    .background(LedgerTheme.backgroundColor())
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -148,14 +148,14 @@ fun AddLedgerEntryBottomSheet(
                             },
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = LedgerTheme.textPrimary
+                            color = LedgerTheme.textPrimary()
                         )
 
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
-                                tint = LedgerTheme.textPrimary
+                                tint = LedgerTheme.textPrimary()
                             )
                         }
                     }
@@ -191,7 +191,7 @@ fun AddLedgerEntryBottomSheet(
                             text = "Person's Name",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = LedgerTheme.textPrimary
+                            color = LedgerTheme.textPrimary()
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
@@ -206,21 +206,21 @@ fun AddLedgerEntryBottomSheet(
                                 placeholder = {
                                     Text(
                                         text = "Enter name",
-                                        color = LedgerTheme.textSecondary
+                                        color = LedgerTheme.textSecondary()
                                     )
                                 },
                                 leadingIcon = {
                                     Icon(
                                         imageVector = Icons.Default.Person,
                                         contentDescription = null,
-                                        tint = LedgerTheme.textSecondary
+                                        tint = LedgerTheme.textSecondary()
                                     )
                                 },
                                 colors = TextFieldDefaults.colors(
-                                    unfocusedContainerColor = Color(0xFF1F1F1F),
-                                    focusedContainerColor = Color(0xFF1F1F1F),
-                                    unfocusedTextColor = LedgerTheme.textPrimary,
-                                    focusedTextColor = LedgerTheme.textPrimary,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    unfocusedTextColor = LedgerTheme.textPrimary(),
+                                    focusedTextColor = LedgerTheme.textPrimary(),
                                     unfocusedIndicatorColor = Color.Transparent,
                                     focusedIndicatorColor = Color.Transparent
                                 ),
@@ -241,7 +241,7 @@ fun AddLedgerEntryBottomSheet(
                                             shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                                         ),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFF2A2A2A)
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                                     ),
                                     shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                                 ) {
@@ -260,13 +260,13 @@ fun AddLedgerEntryBottomSheet(
                                                 Icon(
                                                     imageVector = Icons.Default.Person,
                                                     contentDescription = null,
-                                                    tint = LedgerTheme.textSecondary,
+                                                    tint = LedgerTheme.textSecondary(),
                                                     modifier = Modifier.size(20.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
                                                     text = suggestion.name,
-                                                    color = LedgerTheme.textPrimary,
+                                                    color = LedgerTheme.textPrimary(),
                                                     fontSize = 14.sp
                                                 )
                                             }
@@ -293,7 +293,7 @@ fun AddLedgerEntryBottomSheet(
                             text = "Transaction Type",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = LedgerTheme.textPrimary
+                            color = LedgerTheme.textPrimary()
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -315,7 +315,7 @@ fun AddLedgerEntryBottomSheet(
                                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                                     ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else Color(0xFF1A1A1A)
+                                    containerColor = if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.SENT) BorderStroke(2.dp, LedgerTheme.greenAmount) else null,
                                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
@@ -331,7 +331,7 @@ fun AddLedgerEntryBottomSheet(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .background(
-                                                if (currentTransactionType == TransactionType.SENT) LedgerTheme.greenAmount else Color(0xFF404040),
+                                                if (currentTransactionType == TransactionType.SENT) LedgerTheme.greenAmount else MaterialTheme.colorScheme.onSurfaceVariant,
                                                 CircleShape
                                             ),
                                         contentAlignment = Alignment.Center
@@ -339,7 +339,7 @@ fun AddLedgerEntryBottomSheet(
                                         Icon(
                                             imageVector = Icons.Default.ArrowUpward,
                                             contentDescription = null,
-                                            tint = if (currentTransactionType == TransactionType.SENT) Color.White else LedgerTheme.textSecondary,
+                                            tint = if (currentTransactionType == TransactionType.SENT) Color.White else LedgerTheme.textSecondary(),
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -350,12 +350,12 @@ fun AddLedgerEntryBottomSheet(
                                         text = "You Sent",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = if (currentTransactionType == TransactionType.SENT) LedgerTheme.greenAmount else LedgerTheme.textSecondary
+                                        color = if (currentTransactionType == TransactionType.SENT) LedgerTheme.greenAmount else LedgerTheme.textSecondary()
                                     )
                                     Text(
                                         text = "Money you sent",
                                         fontSize = 10.sp,
-                                        color = LedgerTheme.textSecondary
+                                        color = LedgerTheme.textSecondary()
                                     )
                                 }
                             }
@@ -373,7 +373,7 @@ fun AddLedgerEntryBottomSheet(
                                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                                     ),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (currentTransactionType == TransactionType.RECEIVED) Color(0xFF2A1919) else Color(0xFF1A1A1A)
+                                    containerColor = if (currentTransactionType == TransactionType.RECEIVED) Color(0xFF2A1919) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.RECEIVED) BorderStroke(2.dp, LedgerTheme.redAmount) else null,
                                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
@@ -389,7 +389,7 @@ fun AddLedgerEntryBottomSheet(
                                         modifier = Modifier
                                             .size(32.dp)
                                             .background(
-                                                if (currentTransactionType == TransactionType.RECEIVED) LedgerTheme.redAmount else Color(0xFF404040),
+                                                if (currentTransactionType == TransactionType.RECEIVED) LedgerTheme.redAmount else MaterialTheme.colorScheme.onSurfaceVariant,
                                                 CircleShape
                                             ),
                                         contentAlignment = Alignment.Center
@@ -397,7 +397,7 @@ fun AddLedgerEntryBottomSheet(
                                         Icon(
                                             imageVector = Icons.Default.ArrowDownward,
                                             contentDescription = null,
-                                            tint = if (currentTransactionType == TransactionType.RECEIVED) Color.White else LedgerTheme.textSecondary,
+                                            tint = if (currentTransactionType == TransactionType.RECEIVED) Color.White else LedgerTheme.textSecondary(),
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -408,12 +408,12 @@ fun AddLedgerEntryBottomSheet(
                                         text = "You Received",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = if (currentTransactionType == TransactionType.RECEIVED) LedgerTheme.redAmount else LedgerTheme.textSecondary
+                                        color = if (currentTransactionType == TransactionType.RECEIVED) LedgerTheme.redAmount else LedgerTheme.textSecondary()
                                     )
                                     Text(
                                         text = "Money you received",
                                         fontSize = 10.sp,
-                                        color = LedgerTheme.textSecondary
+                                        color = LedgerTheme.textSecondary()
                                     )
                                 }
                             }
@@ -427,7 +427,7 @@ fun AddLedgerEntryBottomSheet(
                         text = "Amount",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = LedgerTheme.textPrimary
+                        color = LedgerTheme.textPrimary()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -449,21 +449,21 @@ fun AddLedgerEntryBottomSheet(
                             placeholder = {
                                 Text(
                                     text = "Enter amount",
-                                    color = LedgerTheme.textSecondary
+                                    color = LedgerTheme.textSecondary()
                                 )
                             },
                             prefix = {
                                 Text(
                                     text = "$",
-                                    color = LedgerTheme.textPrimary,
+                                    color = LedgerTheme.textPrimary(),
                                     fontSize = 18.sp
                                 )
                             },
                             colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = Color(0xFF1F1F1F),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedContainerColor = Color(0xFF1F1F1F),
-                                unfocusedTextColor = LedgerTheme.textPrimary,
-                                focusedTextColor = LedgerTheme.textPrimary,
+                                unfocusedTextColor = LedgerTheme.textPrimary(),
+                                focusedTextColor = LedgerTheme.textPrimary(),
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
@@ -490,7 +490,7 @@ fun AddLedgerEntryBottomSheet(
                         text = "Description (Optional)",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = LedgerTheme.textPrimary
+                        color = LedgerTheme.textPrimary()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -502,14 +502,14 @@ fun AddLedgerEntryBottomSheet(
                             placeholder = {
                                 Text(
                                     text = "e.g., Dinner split, Uber ride share (optional)",
-                                    color = LedgerTheme.textSecondary
+                                    color = LedgerTheme.textSecondary()
                                 )
                             },
                             colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = Color(0xFF1F1F1F),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedContainerColor = Color(0xFF1F1F1F),
-                                unfocusedTextColor = LedgerTheme.textPrimary,
-                                focusedTextColor = LedgerTheme.textPrimary,
+                                unfocusedTextColor = LedgerTheme.textPrimary(),
+                                focusedTextColor = LedgerTheme.textPrimary(),
                                 unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent
                             ),
@@ -538,7 +538,7 @@ fun AddLedgerEntryBottomSheet(
                         text = "Date & Time",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = LedgerTheme.textPrimary
+                        color = LedgerTheme.textPrimary()
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -559,13 +559,13 @@ fun AddLedgerEntryBottomSheet(
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
                                 contentDescription = null,
-                                tint = LedgerTheme.textPrimary,
+                                tint = LedgerTheme.textPrimary(),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = selectedDate,
-                                color = LedgerTheme.textPrimary,
+                                color = LedgerTheme.textPrimary(),
                                 fontSize = 14.sp
                             )
                         }
@@ -582,20 +582,20 @@ fun AddLedgerEntryBottomSheet(
                             Icon(
                                 imageVector = Icons.Default.AccessTime,
                                 contentDescription = null,
-                                tint = LedgerTheme.textPrimary,
+                                tint = LedgerTheme.textPrimary(),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = selectedTime,
-                                color = LedgerTheme.textPrimary,
+                                color = LedgerTheme.textPrimary(),
                                 fontSize = 14.sp
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
                                 contentDescription = null,
-                                tint = LedgerTheme.textSecondary,
+                                tint = LedgerTheme.textSecondary(),
                                 modifier = Modifier.size(12.dp)
                             )
                         }
@@ -608,7 +608,7 @@ fun AddLedgerEntryBottomSheet(
                         text = "Account",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = LedgerTheme.textPrimary
+                        color = LedgerTheme.textPrimary()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -630,7 +630,7 @@ fun AddLedgerEntryBottomSheet(
                                 Icon(
                                     imageVector = Icons.Default.Wallet,
                                     contentDescription = null,
-                                    tint = LedgerTheme.textPrimary,
+                                    tint = LedgerTheme.textPrimary(),
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -642,7 +642,7 @@ fun AddLedgerEntryBottomSheet(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = selectedAccount?.name ?: "Select account",
-                                    color = LedgerTheme.textPrimary,
+                                    color = LedgerTheme.textPrimary(),
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f),
                                     textAlign = TextAlign.Start
@@ -650,7 +650,7 @@ fun AddLedgerEntryBottomSheet(
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowDown,
                                     contentDescription = null,
-                                    tint = LedgerTheme.textSecondary,
+                                    tint = LedgerTheme.textSecondary(),
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -670,7 +670,7 @@ fun AddLedgerEntryBottomSheet(
                     Text(
                         text = "Account from which you sent the money",
                         fontSize = 12.sp,
-                        color = LedgerTheme.textSecondary,
+                        color = LedgerTheme.textSecondary(),
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -682,7 +682,7 @@ fun AddLedgerEntryBottomSheet(
                             text = "Common Examples",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
-                            color = LedgerTheme.textPrimary
+                            color = LedgerTheme.textPrimary()
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -712,14 +712,14 @@ fun AddLedgerEntryBottomSheet(
                                     ) {
                                         Text(
                                             text = title,
-                                            color = LedgerTheme.textPrimary,
+                                            color = LedgerTheme.textPrimary(),
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium,
                                             textAlign = TextAlign.Center
                                         )
                                         Text(
                                             text = subtitle,
-                                            color = LedgerTheme.textSecondary,
+                                            color = LedgerTheme.textSecondary(),
                                             fontSize = 10.sp,
                                             textAlign = TextAlign.Center
                                         )
@@ -808,7 +808,7 @@ fun AddLedgerEntryBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = if (isFormValid) Color.White else LedgerTheme.textSecondary,
+                            tint = if (isFormValid) Color.White else LedgerTheme.textSecondary(),
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -818,7 +818,7 @@ fun AddLedgerEntryBottomSheet(
                                 person != null && currentTransactionType == TransactionType.RECEIVED -> "Record Received"
                                 else -> "Add Entry"
                             },
-                            color = if (isFormValid) Color.White else LedgerTheme.textSecondary,
+                            color = if (isFormValid) Color.White else LedgerTheme.textSecondary(),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -882,7 +882,7 @@ fun SimpleDatePickerDialog(
             title = {
                 Text(
                     text = "Select Date",
-                    color = LedgerTheme.textPrimary,
+                    color = LedgerTheme.textPrimary(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -898,23 +898,23 @@ fun SimpleDatePickerDialog(
                         modifier = Modifier.fillMaxWidth(),
                         colors = DatePickerDefaults.colors(
                             containerColor = Color(0xFF1F1F1F),
-                            titleContentColor = LedgerTheme.textPrimary,
-                            headlineContentColor = LedgerTheme.textPrimary,
-                            weekdayContentColor = LedgerTheme.textSecondary,
-                            subheadContentColor = LedgerTheme.textSecondary,
-                            yearContentColor = LedgerTheme.textPrimary,
-                            currentYearContentColor = LedgerTheme.textPrimary,
+                            titleContentColor = LedgerTheme.textPrimary(),
+                            headlineContentColor = LedgerTheme.textPrimary(),
+                            weekdayContentColor = LedgerTheme.textSecondary(),
+                            subheadContentColor = LedgerTheme.textSecondary(),
+                            yearContentColor = LedgerTheme.textPrimary(),
+                            currentYearContentColor = LedgerTheme.textPrimary(),
                             selectedYearContentColor = Color.White,
                             selectedYearContainerColor = Color(0xFF2196F3),
-                            dayContentColor = LedgerTheme.textPrimary,
-                            disabledDayContentColor = LedgerTheme.textSecondary,
+                            dayContentColor = LedgerTheme.textPrimary(),
+                            disabledDayContentColor = LedgerTheme.textSecondary(),
                             selectedDayContentColor = Color.White,
                             disabledSelectedDayContentColor = Color.White,
                             selectedDayContainerColor = Color(0xFF2196F3),
-                            disabledSelectedDayContainerColor = LedgerTheme.textSecondary,
+                            disabledSelectedDayContainerColor = LedgerTheme.textSecondary(),
                             todayContentColor = Color(0xFF2196F3),
                             todayDateBorderColor = Color(0xFF2196F3),
-                            dayInSelectionRangeContentColor = LedgerTheme.textPrimary,
+                            dayInSelectionRangeContentColor = LedgerTheme.textPrimary(),
                             dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
                         )
                     )
@@ -935,7 +935,7 @@ fun SimpleDatePickerDialog(
                 ) {
                     Text(
                         text = "OK",
-                        color = LedgerTheme.textPrimary,
+                        color = LedgerTheme.textPrimary(),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -944,7 +944,7 @@ fun SimpleDatePickerDialog(
                 TextButton(onClick = onDismiss) {
                     Text(
                         text = "Cancel",
-                        color = LedgerTheme.textSecondary
+                        color = LedgerTheme.textSecondary()
                     )
                 }
             },
@@ -973,7 +973,7 @@ fun SimpleTimePickerDialog(
             title = {
                 Text(
                     text = "Select Time",
-                    color = LedgerTheme.textPrimary,
+                    color = LedgerTheme.textPrimary(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -984,17 +984,17 @@ fun SimpleTimePickerDialog(
                     colors = TimePickerDefaults.colors(
                         clockDialColor = Color(0xFF2A2A2A),
                         clockDialSelectedContentColor = Color.White,
-                        clockDialUnselectedContentColor = LedgerTheme.textPrimary,
+                        clockDialUnselectedContentColor = LedgerTheme.textPrimary(),
                         selectorColor = Color(0xFF2196F3),
-                        periodSelectorBorderColor = LedgerTheme.textSecondary,
+                        periodSelectorBorderColor = LedgerTheme.textSecondary(),
                         periodSelectorSelectedContainerColor = Color(0xFF2196F3),
                         periodSelectorUnselectedContainerColor = Color(0xFF2A2A2A),
                         periodSelectorSelectedContentColor = Color.White,
-                        periodSelectorUnselectedContentColor = LedgerTheme.textPrimary,
+                        periodSelectorUnselectedContentColor = LedgerTheme.textPrimary(),
                         timeSelectorSelectedContainerColor = Color(0xFF2196F3),
                         timeSelectorUnselectedContainerColor = Color(0xFF2A2A2A),
                         timeSelectorSelectedContentColor = Color.White,
-                        timeSelectorUnselectedContentColor = LedgerTheme.textPrimary
+                        timeSelectorUnselectedContentColor = LedgerTheme.textPrimary()
                     )
                 )
             },
@@ -1010,7 +1010,7 @@ fun SimpleTimePickerDialog(
                 ) {
                     Text(
                         text = "OK",
-                        color = LedgerTheme.textPrimary,
+                        color = LedgerTheme.textPrimary(),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -1019,7 +1019,7 @@ fun SimpleTimePickerDialog(
                 TextButton(onClick = onDismiss) {
                     Text(
                         text = "Cancel",
-                        color = LedgerTheme.textSecondary
+                        color = LedgerTheme.textSecondary()
                     )
                 }
             },

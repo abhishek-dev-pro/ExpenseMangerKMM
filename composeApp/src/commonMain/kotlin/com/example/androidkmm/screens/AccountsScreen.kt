@@ -37,12 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.models.Account
 
-// Color definitions for AccountsScreen
-internal val AccountsDarkBackground = Color(0xFF000000)  // True black
-internal val AccountsDarkSurface = Color(0xFF000000)     // Black for cards
-internal val AccountsDarkSurfaceVariant = Color(0xFF2C2C2E) // Light gray for variants
-internal val AccountsWhiteText = Color(0xFFFFFFFF)
-internal val AccountsGrayText = Color(0xFF8E8E93)        // Better contrast
+// Color definitions for AccountsScreen - now using MaterialTheme
 internal val AccountsGreenSuccess = Color(0xFF4CAF50)
 internal val AccountsRedError = Color(0xFFF44336)
 internal val AccountsBluePrimary = Color(0xFF2196F3)
@@ -64,11 +59,11 @@ fun AccountsScreen(
     val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
     val accounts = accountsState.value
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AccountsDarkBackground)
-    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -87,12 +82,12 @@ fun AccountsScreen(
                         text = "Manage Accounts",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = AccountsWhiteText
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "Add, edit, or manage your financial accounts",
                         fontSize = 14.sp,
-                        color = AccountsGrayText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -103,7 +98,7 @@ fun AccountsScreen(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = AccountsWhiteText,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -112,8 +107,8 @@ fun AccountsScreen(
             // Tabs
             TabRow(
                 selectedTabIndex = selectedTab,
-                containerColor = AccountsDarkBackground,
-                contentColor = AccountsWhiteText,
+                containerColor = MaterialTheme.colorScheme.background,
+                contentColor = MaterialTheme.colorScheme.onBackground,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
@@ -124,12 +119,12 @@ fun AccountsScreen(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("Accounts", color = AccountsWhiteText) }
+                    text = { Text("Accounts", color = MaterialTheme.colorScheme.onBackground) }
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("Overview", color = AccountsWhiteText) }
+                    text = { Text("Overview", color = MaterialTheme.colorScheme.onBackground) }
                 )
             }
 
@@ -186,7 +181,7 @@ fun AccountsScreen(
         if (showAddAccountSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAddAccountSheet = false },
-                containerColor = AccountsDarkSurface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
                 AddAccountBottomSheet(
@@ -209,7 +204,7 @@ fun AccountsScreen(
                     showEditAccountSheet = false
                     selectedAccount = null
                 },
-                containerColor = AccountsDarkSurface,
+                containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
                 EditAccountBottomSheet(
@@ -242,9 +237,9 @@ private fun AccountCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onEditClick() },
-        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -267,7 +262,7 @@ private fun AccountCard(
                     Icon(
                         imageVector = getAccountTypeIcon(account.type),
                         contentDescription = account.type,
-                        tint = AccountsWhiteText,
+                        tint = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -280,12 +275,12 @@ private fun AccountCard(
                         text = account.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AccountsWhiteText
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = account.type,
                         fontSize = 14.sp,
-                        color = AccountsGrayText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -301,12 +296,12 @@ private fun AccountCard(
                         text = "$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AccountsWhiteText
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "Balance",
                         fontSize = 12.sp,
-                        color = AccountsGrayText
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -336,7 +331,7 @@ private fun EmptyAccountsState(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 32.dp),
-        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
@@ -348,7 +343,7 @@ private fun EmptyAccountsState(
             Icon(
                 imageVector = Icons.Default.AccountBalance,
                 contentDescription = "No Accounts",
-                tint = AccountsGrayText,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(64.dp)
             )
 
@@ -358,7 +353,7 @@ private fun EmptyAccountsState(
                 text = "No Accounts Yet",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = AccountsWhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -366,7 +361,7 @@ private fun EmptyAccountsState(
             Text(
                 text = "Add your first account to start tracking your finances",
                 fontSize = 14.sp,
-                color = AccountsGrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -423,7 +418,7 @@ private fun AddAccountBottomSheet(
             text = "Account Name",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -431,16 +426,16 @@ private fun AddAccountBottomSheet(
         BasicTextField(
             value = accountName,
             onValueChange = { accountName = it },
-            textStyle = TextStyle(color = AccountsWhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AccountsDarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
                         text = "e.g. HDFC Savings, Cash Wallet",
-                        color = AccountsGrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -455,7 +450,7 @@ private fun AddAccountBottomSheet(
             text = "Account Type",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -511,7 +506,7 @@ private fun AddAccountBottomSheet(
                 text = "Bank Name",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = AccountsWhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -538,7 +533,7 @@ private fun AddAccountBottomSheet(
             text = "Initial Balance",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -546,17 +541,17 @@ private fun AddAccountBottomSheet(
         BasicTextField(
             value = initialBalance,
             onValueChange = { initialBalance = it },
-            textStyle = TextStyle(color = AccountsWhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AccountsDarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
                     Text(
                         text = "0.00",
-                        color = AccountsGrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -634,7 +629,7 @@ private fun EditAccountBottomSheet(
             text = "Account Name",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -642,16 +637,16 @@ private fun EditAccountBottomSheet(
         BasicTextField(
             value = accountName,
             onValueChange = { accountName = it },
-            textStyle = TextStyle(color = AccountsWhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AccountsDarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
                         text = "e.g. HDFC Savings, Cash Wallet",
-                        color = AccountsGrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -666,7 +661,7 @@ private fun EditAccountBottomSheet(
             text = "Account Type",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -722,7 +717,7 @@ private fun EditAccountBottomSheet(
                 text = "Bank Name",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                color = AccountsWhiteText
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -749,7 +744,7 @@ private fun EditAccountBottomSheet(
             text = "Initial Balance",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = AccountsWhiteText
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -757,17 +752,17 @@ private fun EditAccountBottomSheet(
         BasicTextField(
             value = initialBalance,
             onValueChange = { initialBalance = it },
-            textStyle = TextStyle(color = AccountsWhiteText, fontSize = 16.sp),
+            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(AccountsDarkSurfaceVariant, RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
                     Text(
                         text = "0.00",
-                        color = AccountsGrayText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
                 }
@@ -828,7 +823,7 @@ private fun AccountsAccountTypeCard(
             .fillMaxWidth()
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) AccountsBluePrimary.copy(alpha = 0.2f) else AccountsDarkSurfaceVariant
+            containerColor = if (isSelected) AccountsBluePrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(12.dp),
         border = if (isSelected) BorderStroke(2.dp, AccountsBluePrimary) else null
@@ -850,7 +845,7 @@ private fun AccountsAccountTypeCard(
                 text = title,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = AccountsWhiteText,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
         }
@@ -868,7 +863,7 @@ private fun BankSelectionCard(
             .fillMaxWidth()
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) AccountsBluePrimary.copy(alpha = 0.2f) else AccountsDarkSurfaceVariant
+            containerColor = if (isSelected) AccountsBluePrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(12.dp),
         border = if (isSelected) BorderStroke(2.dp, AccountsBluePrimary) else null
@@ -883,7 +878,7 @@ private fun BankSelectionCard(
                 text = bankName,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color = AccountsWhiteText,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -923,9 +918,9 @@ private fun NewAccountCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onEditClick() },
-        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
@@ -941,7 +936,7 @@ private fun NewAccountCard(
                 Icon(
                     imageVector = Icons.Default.AttachMoney,
                     contentDescription = account.type,
-                    tint = AccountsWhiteText,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -953,7 +948,7 @@ private fun NewAccountCard(
                         text = account.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AccountsWhiteText
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -986,7 +981,7 @@ private fun NewAccountCard(
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = AccountsGrayText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -1015,9 +1010,9 @@ private fun AddNewAccountButton(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, AccountsGrayText.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -1029,7 +1024,7 @@ private fun AddNewAccountButton(
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add",
-                tint = AccountsGrayText,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -1037,7 +1032,7 @@ private fun AddNewAccountButton(
                 text = "Add New Account",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = AccountsGrayText
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -1059,14 +1054,14 @@ private fun OverviewContent(accounts: List<Account>) {
                     text = "Financial Overview",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = AccountsWhiteText,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(
                         modifier = Modifier
@@ -1082,7 +1077,7 @@ private fun OverviewContent(accounts: List<Account>) {
                             Text(
                                 text = "Total Assets",
                                 fontSize = 16.sp,
-                                color = AccountsWhiteText
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
                                 text = "$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
@@ -1096,7 +1091,7 @@ private fun OverviewContent(accounts: List<Account>) {
 
                         // Divider
                         HorizontalDivider(
-                            color = AccountsGrayText.copy(alpha = 0.3f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                             thickness = 1.dp
                         )
 
@@ -1111,7 +1106,7 @@ private fun OverviewContent(accounts: List<Account>) {
                             Text(
                                 text = "Total Liabilities",
                                 fontSize = 16.sp,
-                                color = AccountsWhiteText
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
                                 text = "$0",
@@ -1125,7 +1120,7 @@ private fun OverviewContent(accounts: List<Account>) {
 
                         // Divider
                         HorizontalDivider(
-                            color = AccountsGrayText.copy(alpha = 0.3f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                             thickness = 1.dp
                         )
 
@@ -1140,7 +1135,7 @@ private fun OverviewContent(accounts: List<Account>) {
                             Text(
                                 text = "Net Worth",
                                 fontSize = 16.sp,
-                                color = AccountsWhiteText
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
                                 text = "+$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
