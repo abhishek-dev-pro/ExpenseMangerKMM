@@ -24,34 +24,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import androidx.compose.runtime.collectAsState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.datetime.Clock as DateTimeClock
 
 // LedgerMainScreen.kt
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun LedgerMainScreen() {
+    val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
+    val peopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
+    val allPeople = peopleState.value
+    
     var selectedPerson by remember { mutableStateOf<LedgerPerson?>(null) }
     var showAddBottomSheet by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
-
-    val people = remember {
-        listOf(
-            LedgerPerson(
-                id = "1",
-                name = "Sarah Chen",
-                avatarColor = LedgerTheme.avatarBlue,
-                balance = -40.00,
-                transactionCount = 1,
-                lastTransactionDate = "Sep 6"
-            ),
-            LedgerPerson(
-                id = "2",
-                name = "Alex Johnson",
-                avatarColor = LedgerTheme.avatarBlue,
-                balance = 15.50,
-                transactionCount = 2,
-                lastTransactionDate = "Yesterday"
-            )
-        )
+    
+    // Filter people based on search text
+    val people = remember(allPeople, searchText) {
+        if (searchText.isBlank()) {
+            allPeople
+        } else {
+            allPeople.filter { person ->
+                person.name.contains(searchText, ignoreCase = true)
+            }
+        }
+    }
+    
+    // Calculate real-time amounts
+    val toReceiveAmount = remember(allPeople) {
+        allPeople.filter { it.balance > 0 }.sumOf { it.balance }
+    }
+    
+    val toSendAmount = remember(allPeople) {
+        allPeople.filter { it.balance < 0 }.sumOf { kotlin.math.abs(it.balance) }
+    }
+    
+    val toReceiveCount = remember(allPeople) {
+        allPeople.count { it.balance > 0 }
+    }
+    
+    val toSendCount = remember(allPeople) {
+        allPeople.count { it.balance < 0 }
     }
 
     Column(
@@ -142,13 +158,13 @@ fun LedgerMainScreen() {
 
                     Column {
                         Text(
-                            text = "$15.50",
+                            text = formatDouble(toReceiveAmount),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = LedgerTheme.greenAmount
                         )
                         Text(
-                            text = "1 person",
+                            text = if (toReceiveCount == 1) "1 person" else "$toReceiveCount people",
                             fontSize = 12.sp,
                             color = LedgerTheme.textSecondary
                         )
@@ -191,13 +207,13 @@ fun LedgerMainScreen() {
 
                     Column {
                         Text(
-                            text = "$40.00",
+                            text = formatDouble(toSendAmount),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = LedgerTheme.redAmount
                         )
                         Text(
-                            text = "1 person",
+                            text = if (toSendCount == 1) "1 person" else "$toSendCount people",
                             fontSize = 12.sp,
                             color = LedgerTheme.textSecondary
                         )
@@ -301,7 +317,7 @@ fun LedgerMainScreen() {
                     .padding(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = "2 contacts",
+                    text = if (people.size == 1) "1 contact" else "${people.size} contacts",
                     fontSize = 12.sp,
                     color = LedgerTheme.textSecondary
                 )
@@ -326,6 +342,7 @@ fun LedgerMainScreen() {
             }
         }
     }
+    
     
     // Show person detail screen when a person is selected
     selectedPerson?.let { person ->

@@ -40,6 +40,7 @@ import kotlin.time.ExperimentalTime
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -114,9 +115,37 @@ fun TransactionsScreen() {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     
     val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
-    val allTransactions = transactionsState.value
+    val ledgerTransactionsState = ledgerDatabaseManager.getAllLedgerTransactions().collectAsState(initial = emptyList<com.example.androidkmm.screens.ledger.LedgerTransaction>())
+    
+    val allTransactions = remember(transactionsState.value, ledgerTransactionsState.value) {
+        val regularTransactions = transactionsState.value
+        val ledgerTransactions = ledgerTransactionsState.value.map { ledgerTransaction ->
+            // Convert ledger transaction to regular transaction format
+            com.example.androidkmm.models.Transaction(
+                id = ledgerTransaction.id,
+                title = ledgerTransaction.description.ifEmpty { 
+                    if (ledgerTransaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) "Sent to ${ledgerTransaction.personId}" 
+                    else "Received from ${ledgerTransaction.personId}" 
+                },
+                amount = if (ledgerTransaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) -ledgerTransaction.amount else ledgerTransaction.amount,
+                category = if (ledgerTransaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) "Transfer" else "Transfer",
+                categoryIcon = Icons.Default.SwapHoriz,
+                categoryColor = Color(0xFF3B82F6),
+                account = ledgerTransaction.account ?: "Cash",
+                accountIcon = Icons.Default.AttachMoney,
+                accountColor = Color(0xFF4CAF50),
+                transferTo = null,
+                time = ledgerTransaction.time,
+                type = if (ledgerTransaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) com.example.androidkmm.models.TransactionType.EXPENSE else com.example.androidkmm.models.TransactionType.INCOME,
+                description = ledgerTransaction.description,
+                date = ledgerTransaction.date
+            )
+        }
+        (regularTransactions + ledgerTransactions).sortedByDescending { it.date }
+    }
     
     // Current month state management
     val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -212,7 +241,7 @@ fun TransactionsScreen() {
             onSave = { transactionFormData ->
                 // Convert TransactionFormData to Transaction and save to database
                 val transaction = com.example.androidkmm.models.Transaction(
-                    id = System.currentTimeMillis().toString(),
+                    id = "${Clock.System.now().epochSeconds}",
                     title = transactionFormData.title,
                     amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
                     category = if (transactionFormData.type == TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),

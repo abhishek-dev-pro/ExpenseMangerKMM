@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import androidx.compose.runtime.collectAsState
 import kotlin.math.abs
 
 // PersonLedgerDetailScreen.kt
@@ -27,28 +29,22 @@ fun PersonLedgerDetailScreen(
     onBack: () -> Unit,
     onAddTransaction: () -> Unit
 ) {
+    val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
+    val transactionsState = ledgerDatabaseManager.getLedgerTransactionsByPerson(person.id).collectAsState(initial = emptyList<LedgerTransaction>())
+    val transactions = transactionsState.value
+    
+    // Get updated person data from database - use LaunchedEffect to get the latest person data
+    var updatedPerson by remember { mutableStateOf(person) }
+    
+    LaunchedEffect(person.id) {
+        val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
+        if (latestPerson != null) {
+            updatedPerson = latestPerson
+        }
+    }
+    
     var showSentBottomSheet by remember { mutableStateOf(false) }
     var showReceivedBottomSheet by remember { mutableStateOf(false) }
-    val transactions = remember {
-        listOf(
-            LedgerTransaction(
-                id = "1",
-                amount = 10.00,
-                description = "",
-                date = "Sep 10, 2025",
-                time = "01:38 PM",
-                type = TransactionType.SENT
-            ),
-            LedgerTransaction(
-                id = "2",
-                amount = 40.00,
-                description = "Emergency cash",
-                date = "Sep 6, 2024",
-                time = "05:30 AM",
-                type = TransactionType.RECEIVED
-            )
-        )
-    }
 
     Column(
         modifier = Modifier
@@ -82,7 +78,11 @@ fun PersonLedgerDetailScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = person.name.split(" ").map { it.first() }.joinToString(""),
+                    text = if (updatedPerson.name.isNotBlank()) {
+                        updatedPerson.name.split(" ").mapNotNull { if (it.isNotBlank()) it.first() else null }.joinToString("")
+                    } else {
+                        "?"
+                    },
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -93,7 +93,7 @@ fun PersonLedgerDetailScreen(
 
             Column {
                 Text(
-                    text = person.name,
+                    text = updatedPerson.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = LedgerTheme.textPrimary
@@ -123,7 +123,7 @@ fun PersonLedgerDetailScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (person.balance < 0) Color(0xFF2A1919) else Color(0xFF0F2419)
+                containerColor = if (updatedPerson.balance < 0) Color(0xFF2A1919) else Color(0xFF0F2419)
             ),
             shape = RoundedCornerShape(20.dp)
         ) {
@@ -137,9 +137,9 @@ fun PersonLedgerDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (person.balance < 0) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                        imageVector = if (updatedPerson.balance < 0) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                         contentDescription = null,
-                        tint = if (person.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount,
+                        tint = if (updatedPerson.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount,
                         modifier = Modifier.size(16.dp)
                     )
 
@@ -154,14 +154,14 @@ fun PersonLedgerDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "$${formatDouble(abs(person.balance))}",
+                    text = "$${formatDouble(abs(updatedPerson.balance))}",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (person.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount
+                    color = if (updatedPerson.balance < 0) LedgerTheme.redAmount else LedgerTheme.greenAmount
                 )
 
                 Text(
-                    text = if (person.balance < 0) "You owe ${person.name}" else "${person.name} owes you",
+                    text = if (updatedPerson.balance < 0) "You owe ${updatedPerson.name}" else "${updatedPerson.name} owes you",
                     fontSize = 16.sp,
                     color = LedgerTheme.textSecondary
                 )

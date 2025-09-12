@@ -33,6 +33,8 @@ class SQLiteCategoryDatabase(
     private val scope: kotlinx.coroutines.CoroutineScope
 ) {
     
+    fun getDatabase(): CategoryDatabase = database
+    
     init {
         // Initialize database with default categories if empty
         scope.launch {
@@ -187,4 +189,10 @@ private fun com.example.androidkmm.database.Category.toCategory(): com.example.a
         type = CategoryType.valueOf(this.type),
         isCustom = this.is_custom == 1L
     )
+}
+
+@Composable
+fun rememberSQLiteLedgerDatabase(): SQLiteLedgerDatabase {
+    val database = rememberSQLiteCategoryDatabase()
+    return remember { SQLiteLedgerDatabase(database.getDatabase()) }
 }

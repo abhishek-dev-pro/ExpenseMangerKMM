@@ -119,10 +119,10 @@ fun TransactionItem(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = "${if (transaction.type == TransactionType.SENT) "+" else "-"}$${formatDouble(transaction.amount)}",
+                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$${formatDouble(transaction.amount)}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (transaction.type == TransactionType.SENT) LedgerTheme.greenAmount else LedgerTheme.redAmount
+                    color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
                 )
                 Text(
                     text = "Balance: $${formatDouble(if (transaction.type == TransactionType.SENT) 30.00 else 40.00)}",

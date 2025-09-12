@@ -37,7 +37,7 @@ object SampleData {
         NavigationItem("Pal", Icons.Default.Home),
         NavigationItem("Transactions", Icons.Default.AttachMoney),
         NavigationItem("Groups", Icons.Default.Group),
-        NavigationItem("Insights", Icons.Default.ShowChart),
+        NavigationItem("Ledger", Icons.Default.ShowChart),
         NavigationItem("Profile", Icons.Default.Person)
     )
 }

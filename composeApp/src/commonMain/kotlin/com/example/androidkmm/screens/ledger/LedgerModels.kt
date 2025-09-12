@@ -15,6 +15,7 @@ data class LedgerPerson(
 
 data class LedgerTransaction(
     val id: String,
+    val personId: String,
     val amount: Double,
     val description: String,
     val date: String,
@@ -27,12 +28,3 @@ enum class TransactionType {
     SENT, RECEIVED
 }
 
-// Data classes for account selection
-data class Account(
-    val id: String,
-    val name: String,
-    val balance: String,
-    val icon: ImageVector,
-    val color: Color,
-    val type: String
-)

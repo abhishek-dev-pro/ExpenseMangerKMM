@@ -48,7 +48,11 @@ fun PersonLedgerItem(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = person.name.split(" ").map { it.first() }.joinToString(""),
+                    text = if (person.name.isNotBlank()) {
+                        person.name.split(" ").mapNotNull { if (it.isNotBlank()) it.first() else null }.joinToString("")
+                    } else {
+                        "?"
+                    },
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium

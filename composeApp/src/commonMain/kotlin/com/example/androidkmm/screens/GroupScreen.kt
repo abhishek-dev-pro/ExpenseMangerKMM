@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,15 +57,37 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.database.rememberSQLiteGroupDatabase
+import com.example.androidkmm.database.SQLiteGroupDatabase
+import com.example.androidkmm.models.Group
+import com.example.androidkmm.models.GroupMember
+import com.example.androidkmm.utils.formatDouble
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupsScreen(
-    totalOwed: String = "+$245.70",
-    totalOwe: String = "-$23.50",
-    groups: List<GroupItem> = sampleGroups()
-) {
+fun GroupsScreen() {
+    val groupDatabaseManager = rememberSQLiteGroupDatabase()
+    val allGroups by groupDatabaseManager.getAllGroups().collectAsState(initial = emptyList())
+    val allMembers by groupDatabaseManager.getAllGroupMembers().collectAsState(initial = emptyList())
+    
+    // Calculate total owed and owe from all groups
+    val totalOwed = remember(allMembers) {
+        val total = allMembers.sumOf { if (it.balance > 0) it.balance else 0.0 }
+        "+$${formatDouble(total)}"
+    }
+    
+    val totalOwe = remember(allMembers) {
+        val total = allMembers.sumOf { if (it.balance < 0) kotlin.math.abs(it.balance) else 0.0 }
+        "-$${formatDouble(total)}"
+    }
+    
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     Column(
@@ -137,8 +160,9 @@ fun GroupsScreen(
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            itemsIndexed(groups) { index, group ->
+            itemsIndexed(allGroups) { index, group ->
                 var visible by remember { mutableStateOf(false) }
+                val groupMembers by groupDatabaseManager.getGroupMembersByGroup(group.id).collectAsState(initial = emptyList())
 
                 LaunchedEffect(Unit) {
                     delay(index * 100L) // stagger each item by 100ms
@@ -151,7 +175,7 @@ fun GroupsScreen(
                         initialOffsetY = { it } // slide in from bottom
                     ) + fadeIn()
                 ) {
-                    GroupCard(group)
+                    GroupCard(group, groupMembers, groupDatabaseManager)
                 }
             }
         }
@@ -163,7 +187,10 @@ fun GroupsScreen(
                 containerColor = Color.Black,
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
             ) {
-                CreateGroupBottomSheetContent(onClose = { showSheet = false })
+                CreateGroupBottomSheetContent(
+                    onClose = { showSheet = false },
+                    groupDatabaseManager = groupDatabaseManager
+                )
             }
         }
 
@@ -202,7 +229,11 @@ fun SummaryCard(
 }
 
 @Composable
-fun GroupCard(group: GroupItem) {
+fun GroupCard(
+    group: Group,
+    members: List<GroupMember>,
+    groupDatabaseManager: SQLiteGroupDatabase
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,7 +279,7 @@ fun GroupCard(group: GroupItem) {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "${group.membersCount} members • ${group.date}",
+                        text = "${members.size} members • ${formatDateForGroup(group.createdAt)}",
                         color = Color.Gray,
                         fontStyle = FontStyle.Normal,
                         fontSize = DesignSystem.Typography.caption1,
@@ -274,16 +305,20 @@ fun GroupCard(group: GroupItem) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(-8.dp)) {
-                group.members.take(5).forEach {
+                members.take(5).forEach { member ->
                     Box(
                         modifier = Modifier
                             .size(28.dp)
                             .clip(CircleShape)
-                            .background(Color.DarkGray),
+                            .background(member.avatarColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = it,
+                            text = if (member.name.isNotBlank()) {
+                                member.name.split(" ").mapNotNull { if (it.isNotBlank()) it.first() else null }.joinToString("")
+                            } else {
+                                "?"
+                            },
                             color = Color.White,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Medium
@@ -299,7 +334,7 @@ fun GroupCard(group: GroupItem) {
                     lineHeight = DesignSystem.Typography.caption1,
                 )
                 Text(
-                    text = "$${group.totalSpent}",
+                    text = "$${formatDouble(group.totalSpent)}",
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
@@ -316,21 +351,25 @@ fun GroupCard(group: GroupItem) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val currentUserBalance = members.firstOrNull()?.balance ?: 0.0
+            val balanceText = if (currentUserBalance < 0) "You owe" else "You get back"
+            val balanceAmount = if (currentUserBalance < 0) "-$${formatDouble(kotlin.math.abs(currentUserBalance))}" else "+$${formatDouble(currentUserBalance)}"
+            
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (group.balance.startsWith("-")) Color.DarkGray else Color.White)
+                    .background(if (currentUserBalance < 0) Color.DarkGray else Color.White)
                     .padding(horizontal = 8.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = if (group.balance.startsWith("-")) "You owe" else "You get back",
-                    color = if (group.balance.startsWith("-")) Color.White else Color.Black,
+                    text = balanceText,
+                    color = if (currentUserBalance < 0) Color.White else Color.Black,
                     fontSize = 12.sp
                 )
             }
             Text(
-                text = group.balance,
-                color = if (group.balance.startsWith("-")) Color(0xFFDC2626) else Color(0xFF16A34A),
+                text = balanceAmount,
+                color = if (currentUserBalance < 0) Color(0xFFDC2626) else Color(0xFF16A34A),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Normal
             )
@@ -338,42 +377,26 @@ fun GroupCard(group: GroupItem) {
     }
 }
 
-// Data model
-data class GroupItem(
-    val name: String,
-    val membersCount: Int,
-    val date: String,
-    val members: List<String>,
-    val totalSpent: String,
-    val balance: String,
-    val color: Color
-)
-
-// Sample
-fun sampleGroups(): List<GroupItem> = listOf(
-    GroupItem(
-        name = "Vacation Trip",
-        membersCount = 4,
-        date = "Today",
-        members = listOf("AB", "SM", "MJ", "LW"),
-        totalSpent = "1247.50",
-        balance = "+156.40",
-        color = Color(0xFF9333EA) // Purple
-    ),
-    GroupItem(
-        name = "Office Lunch",
-        membersCount = 6,
-        date = "Yesterday",
-        members = listOf("AB", "JD", "EW", "DL", "+2"),
-        totalSpent = "234.80",
-        balance = "-23.50",
-        color = Color(0xFFF97316) // Orange
-    )
-)
+// Helper function to format date for group display
+fun formatDateForGroup(timestamp: Long): String {
+    // For now, return a simple format. We can enhance this later
+    val currentTime = System.currentTimeMillis() / 1000
+    val daysDiff = ((currentTime - timestamp) / (24 * 60 * 60)).toInt()
+    
+    return when {
+        daysDiff == 0 -> "Today"
+        daysDiff == 1 -> "Yesterday"
+        daysDiff < 7 -> "${daysDiff} days ago"
+        else -> "Older"
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateGroupBottomSheetContent(onClose: () -> Unit) {
+fun CreateGroupBottomSheetContent(
+    onClose: () -> Unit,
+    groupDatabaseManager: SQLiteGroupDatabase
+) {
     var groupName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
 
@@ -517,7 +540,40 @@ fun CreateGroupBottomSheetContent(onClose: () -> Unit) {
 
         // Create Group Button
         Button(
-            onClick = { /* Create group */ },
+            onClick = {
+                // Create the group with members
+                val groupId = "group_${System.currentTimeMillis()}"
+                val group = Group(
+                    id = groupId,
+                    name = groupName,
+                    description = "",
+                    color = Color(0xFF9333EA), // Default purple color
+                    createdAt = System.currentTimeMillis() / 1000,
+                    totalSpent = 0.0,
+                    memberCount = members.size
+                )
+                
+                val groupMembers = members.mapIndexed { index, memberName ->
+                    GroupMember(
+                        id = "member_${groupId}_${index}",
+                        groupId = groupId,
+                        name = memberName,
+                        email = if (memberName == "You") "" else email,
+                        phone = "",
+                        avatarColor = Color(0xFF2196F3), // Default blue color
+                        balance = 0.0,
+                        totalPaid = 0.0,
+                        totalOwed = 0.0
+                    )
+                }
+                
+                // Save to database
+                kotlinx.coroutines.GlobalScope.launch {
+                    groupDatabaseManager.addGroupWithMembers(group, groupMembers)
+                }
+                
+                onClose()
+            },
             enabled = isButtonEnabled,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,   // background

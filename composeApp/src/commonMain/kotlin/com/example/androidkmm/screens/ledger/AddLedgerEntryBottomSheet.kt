@@ -23,24 +23,89 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.collectAsState
+import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.Clock as DateTimeClock
+import kotlin.time.ExperimentalTime
 
 // AddLedgerEntryBottomSheet.kt
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun AddLedgerEntryBottomSheet(
     onDismiss: () -> Unit,
     person: LedgerPerson? = null,
     transactionType: TransactionType = TransactionType.SENT
 ) {
+    val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val coroutineScope = rememberCoroutineScope()
+    var transactionCounter by remember { mutableStateOf(0) }
+    var personCounter by remember { mutableStateOf(0) }
+    
+    // Get all existing people for suggestions
+    val allPeopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
+    val allPeople = allPeopleState.value
+    
     val bottomSheetState = rememberModalBottomSheetState()
     var personName by remember { mutableStateOf(person?.name ?: "") }
+    var showSuggestions by remember { mutableStateOf(false) }
     var currentTransactionType by remember { mutableStateOf(transactionType) }
+    
+    // Filter suggestions based on person name input
+    val suggestions = remember(personName, allPeople) {
+        if (personName.isBlank()) {
+            emptyList()
+        } else {
+            allPeople.filter { it.name.contains(personName, ignoreCase = true) }
+        }
+    }
     var amount by remember { mutableStateOf("0") }
     var description by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf("Sep 10, 2025") }
     var selectedTime by remember { mutableStateOf("01:43 PM") }
-    var selectedAccount by remember { mutableStateOf<Account?>(null) }
+    var selectedAccount by remember { mutableStateOf<com.example.androidkmm.models.Account?>(null) }
     var showAccountSelection by remember { mutableStateOf(false) }
+    
+    // Validation state
+    var validationErrors by remember { mutableStateOf(mapOf<String, String>()) }
+    
+    // Validation function
+    fun validateForm(): Boolean {
+        val errors = mutableMapOf<String, String>()
+        
+        if (personName.isBlank()) {
+            errors["personName"] = "Person name is required"
+        }
+        
+        val amountValue = amount.toDoubleOrNull()
+        if (amount.isBlank() || amountValue == null || amountValue <= 0) {
+            errors["amount"] = "Please enter a valid amount"
+        }
+        
+        if (description.isBlank()) {
+            errors["description"] = "Description is required"
+        }
+        
+        if (selectedAccount == null) {
+            errors["account"] = "Please select an account"
+        }
+        
+        validationErrors = errors
+        return errors.isEmpty()
+    }
+    
+    // Check if form is valid for button state
+    val isFormValid = personName.isNotBlank() && 
+                     amount.isNotBlank() && 
+                     amount.toDoubleOrNull() != null && 
+                     amount.toDoubleOrNull()!! > 0 &&
+                     description.isNotBlank() && 
+                     selectedAccount != null
 
     val commonExamples = listOf(
         "Dinner Split" to "Restaurant bill",
@@ -124,33 +189,89 @@ fun AddLedgerEntryBottomSheet(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        TextField(
-                            value = personName,
-                            onValueChange = { personName = it },
-                            placeholder = {
-                                Text(
-                                    text = "Enter name",
-                                    color = LedgerTheme.textSecondary
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = LedgerTheme.textSecondary
-                                )
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = Color(0xFF1F1F1F),
-                                focusedContainerColor = Color(0xFF1F1F1F),
-                                unfocusedTextColor = LedgerTheme.textPrimary,
-                                focusedTextColor = LedgerTheme.textPrimary,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        Column {
+                            TextField(
+                                value = personName,
+                                onValueChange = { 
+                                    personName = it
+                                    showSuggestions = it.isNotBlank() && suggestions.isNotEmpty()
+                                },
+                                placeholder = {
+                                    Text(
+                                        text = "Enter name",
+                                        color = LedgerTheme.textSecondary
+                                    )
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        tint = LedgerTheme.textSecondary
+                                    )
+                                },
+                                colors = TextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color(0xFF1F1F1F),
+                                    focusedContainerColor = Color(0xFF1F1F1F),
+                                    unfocusedTextColor = LedgerTheme.textPrimary,
+                                    focusedTextColor = LedgerTheme.textPrimary,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent
+                                ),
+                                shape = RoundedCornerShape(20.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            // Show suggestions dropdown
+                            if (showSuggestions && suggestions.isNotEmpty()) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFF2A2A2A)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Column {
+                                        suggestions.take(5).forEach { suggestion ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        personName = suggestion.name
+                                                        showSuggestions = false
+                                                    }
+                                                    .padding(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Person,
+                                                    contentDescription = null,
+                                                    tint = LedgerTheme.textSecondary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = suggestion.name,
+                                                    color = LedgerTheme.textPrimary,
+                                                    fontSize = 14.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Show error message for person name
+                        validationErrors["personName"]?.let { error ->
+                            Text(
+                                text = error,
+                                color = LedgerTheme.redAmount,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 4.dp, start = 16.dp)
+                            )
+                        }
                     }
 
                     item {
@@ -286,34 +407,46 @@ fun AddLedgerEntryBottomSheet(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    TextField(
-                        value = amount,
-                        onValueChange = { amount = it },
-                        placeholder = {
+                    Column {
+                        TextField(
+                            value = amount,
+                            onValueChange = { amount = it },
+                            placeholder = {
+                                Text(
+                                    text = "0",
+                                    color = LedgerTheme.textSecondary
+                                )
+                            },
+                            prefix = {
+                                Text(
+                                    text = "$",
+                                    color = LedgerTheme.textPrimary,
+                                    fontSize = 18.sp
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = Color(0xFF1F1F1F),
+                                focusedContainerColor = Color(0xFF1F1F1F),
+                                unfocusedTextColor = LedgerTheme.textPrimary,
+                                focusedTextColor = LedgerTheme.textPrimary,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        )
+                        
+                        // Show error message
+                        validationErrors["amount"]?.let { error ->
                             Text(
-                                text = "0",
-                                color = LedgerTheme.textSecondary
+                                text = error,
+                                color = LedgerTheme.redAmount,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 4.dp, start = 16.dp)
                             )
-                        },
-                        prefix = {
-                            Text(
-                                text = "$",
-                                color = LedgerTheme.textPrimary,
-                                fontSize = 18.sp
-                            )
-                        },
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = Color(0xFF1F1F1F),
-                            focusedContainerColor = Color(0xFF1F1F1F),
-                            unfocusedTextColor = LedgerTheme.textPrimary,
-                            focusedTextColor = LedgerTheme.textPrimary,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                    )
+                        }
+                    }
                 }
 
                 item {
@@ -327,29 +460,41 @@ fun AddLedgerEntryBottomSheet(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    TextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        placeholder = {
+                    Column {
+                        TextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            placeholder = {
+                                Text(
+                                    text = "e.g., Dinner split, Uber ride share (optional)",
+                                    color = LedgerTheme.textSecondary
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                unfocusedContainerColor = Color(0xFF1F1F1F),
+                                focusedContainerColor = Color(0xFF1F1F1F),
+                                unfocusedTextColor = LedgerTheme.textPrimary,
+                                focusedTextColor = LedgerTheme.textPrimary,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp),
+                            maxLines = 3
+                        )
+                        
+                        // Show error message
+                        validationErrors["description"]?.let { error ->
                             Text(
-                                text = "e.g., Dinner split, Uber ride share (optional)",
-                                color = LedgerTheme.textSecondary
+                                text = error,
+                                color = LedgerTheme.redAmount,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 4.dp, start = 16.dp)
                             )
-                        },
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = Color(0xFF1F1F1F),
-                            focusedContainerColor = Color(0xFF1F1F1F),
-                            unfocusedTextColor = LedgerTheme.textPrimary,
-                            focusedTextColor = LedgerTheme.textPrimary,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        maxLines = 3
-                    )
+                        }
+                    }
                 }
 
                 item {
@@ -433,44 +578,56 @@ fun AddLedgerEntryBottomSheet(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Button(
-                        onClick = { showAccountSelection = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF1F1F1F)
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
-                        Row(
+                    Column {
+                        Button(
+                            onClick = { showAccountSelection = true },
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1F1F1F)
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            contentPadding = PaddingValues(16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Wallet,
-                                contentDescription = null,
-                                tint = LedgerTheme.textPrimary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(LedgerTheme.greenAmount, CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Wallet,
+                                    contentDescription = null,
+                                    tint = LedgerTheme.textPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(LedgerTheme.greenAmount, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = selectedAccount?.name ?: "Select account (optional)",
+                                    color = LedgerTheme.textPrimary,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.Start
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = null,
+                                    tint = LedgerTheme.textSecondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        
+                        // Show error message
+                        validationErrors["account"]?.let { error ->
                             Text(
-                                text = selectedAccount?.name ?: "Select account (optional)",
-                                color = LedgerTheme.textPrimary,
-                                fontSize = 14.sp,
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.Start
-                            )
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = LedgerTheme.textSecondary,
-                                modifier = Modifier.size(16.dp)
+                                text = error,
+                                color = LedgerTheme.redAmount,
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 4.dp, start = 16.dp)
                             )
                         }
                     }
@@ -542,15 +699,68 @@ fun AddLedgerEntryBottomSheet(
                 item {
                     // Add Entry Button
                     Button(
-                        onClick = { },
+                        onClick = { 
+                            if (validateForm()) {
+                                coroutineScope.launch {
+                                    try {
+                                    if (person != null) {
+                                        // Add transaction to existing person
+                                        val transaction = LedgerTransaction(
+                                            id = "transaction_${System.currentTimeMillis()}_${++transactionCounter}",
+                                            personId = person.id,
+                                            amount = amount.toDoubleOrNull() ?: 0.0,
+                                            description = description,
+                                            date = selectedDate,
+                                            time = "12:00",
+                                            type = currentTransactionType,
+                                            account = selectedAccount?.name
+                                        )
+                                        
+                                        ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, person.id)
+                                    } else {
+                                        // Create new person and add transaction
+                                        val newPerson = LedgerPerson(
+                                            id = "person_${System.currentTimeMillis()}_${++personCounter}",
+                                            name = personName,
+                                            avatarColor = LedgerTheme.avatarBlue,
+                                            balance = 0.0,
+                                            transactionCount = 0,
+                                            lastTransactionDate = ""
+                                        )
+                                        
+                                        ledgerDatabaseManager.insertLedgerPerson(newPerson)
+                                        
+                                        val transaction = LedgerTransaction(
+                                            id = "transaction_${System.currentTimeMillis()}_${++transactionCounter}",
+                                            personId = newPerson.id,
+                                            amount = amount.toDoubleOrNull() ?: 0.0,
+                                            description = description,
+                                            date = selectedDate,
+                                            time = "12:00",
+                                            type = currentTransactionType,
+                                            account = selectedAccount?.name
+                                        )
+                                        
+                                        ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, newPerson.id)
+                                    }
+                                    onDismiss()
+                                } catch (e: Exception) {
+                                    // Handle error
+                                    println("Error saving ledger transaction: ${e.message}")
+                                }
+                            }
+                        }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
+                        enabled = isFormValid,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = when {
+                                !isFormValid -> Color(0xFF404040)
                                 person != null && currentTransactionType == TransactionType.SENT -> LedgerTheme.greenAmount
                                 person != null && currentTransactionType == TransactionType.RECEIVED -> LedgerTheme.redAmount
-                                else -> Color(0xFF404040)
+                                else -> LedgerTheme.avatarBlue
                             }
                         ),
                         shape = RoundedCornerShape(20.dp)
@@ -558,7 +768,7 @@ fun AddLedgerEntryBottomSheet(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = if (person != null) Color.White else LedgerTheme.textSecondary,
+                            tint = if (isFormValid) Color.White else LedgerTheme.textSecondary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -568,7 +778,7 @@ fun AddLedgerEntryBottomSheet(
                                 person != null && currentTransactionType == TransactionType.RECEIVED -> "Record Received"
                                 else -> "Add Entry"
                             },
-                            color = if (person != null) Color.White else LedgerTheme.textSecondary,
+                            color = if (isFormValid) Color.White else LedgerTheme.textSecondary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )

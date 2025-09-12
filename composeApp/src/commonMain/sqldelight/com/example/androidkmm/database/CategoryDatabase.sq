@@ -32,7 +32,33 @@ CREATE TABLE transactions (
     type TEXT NOT NULL,
     description TEXT DEFAULT '',
     date TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    is_ledger_transaction INTEGER NOT NULL DEFAULT 0,
+    ledger_person_id TEXT,
+    ledger_person_name TEXT
+);
+
+CREATE TABLE ledger_persons (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    avatar_color_hex TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 0.0,
+    transaction_count INTEGER NOT NULL DEFAULT 0,
+    last_transaction_date TEXT,
     created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+CREATE TABLE ledger_transactions (
+    id TEXT PRIMARY KEY,
+    ledger_person_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT NOT NULL,
+    date TEXT NOT NULL,
+    time TEXT NOT NULL,
+    type TEXT NOT NULL,
+    account_name TEXT,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (ledger_person_id) REFERENCES ledger_persons (id) ON DELETE CASCADE
 );
 
 -- Insert default categories
@@ -63,6 +89,12 @@ INSERT INTO category (id, name, icon_name, color_hex, type, is_custom) VALUES
 -- Insert default account
 INSERT INTO account (id, name, balance, icon_name, color_hex, type, is_custom) VALUES
 ('1', 'Cash', '₹0', 'AttachMoney', '#FF4CAF50', 'CASH', 0);
+
+-- Insert sample ledger persons
+INSERT INTO ledger_persons (id, name, avatar_color_hex, balance, transaction_count, last_transaction_date) VALUES
+('sample_person_1', 'Sarah Chen', '#FF2196F3', -40.00, 1, 'Sep 6'),
+('sample_person_2', 'Alex Johnson', '#FF2196F3', 15.50, 2, 'Yesterday'),
+('sample_person_3', 'Maria Garcia', '#FF4CAF50', 0.00, 0, '');
 
 -- Queries
 selectAll:
@@ -170,3 +202,256 @@ DELETE FROM transactions WHERE id = ?;
 
 getTransactionCount:
 SELECT COUNT(*) FROM transactions;
+
+-- Ledger Person Queries
+selectAllLedgerPersons:
+SELECT * FROM ledger_persons ORDER BY name ASC;
+
+selectLedgerPersonById:
+SELECT * FROM ledger_persons WHERE id = ?;
+
+selectLedgerPersonByName:
+SELECT * FROM ledger_persons WHERE name = ?;
+
+insertLedgerPerson:
+INSERT INTO ledger_persons (id, name, avatar_color_hex, balance, transaction_count, last_transaction_date)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateLedgerPerson:
+UPDATE ledger_persons 
+SET name = ?, avatar_color_hex = ?, balance = ?, transaction_count = ?, last_transaction_date = ?
+WHERE id = ?;
+
+updateLedgerPersonBalance:
+UPDATE ledger_persons 
+SET balance = ?
+WHERE id = ?;
+
+deleteLedgerPerson:
+DELETE FROM ledger_persons WHERE id = ?;
+
+getLedgerPersonCount:
+SELECT COUNT(*) FROM ledger_persons;
+
+-- Ledger Transaction Queries
+selectAllLedgerTransactions:
+SELECT * FROM ledger_transactions ORDER BY created_at DESC;
+
+selectLedgerTransactionsByPerson:
+SELECT * FROM ledger_transactions WHERE ledger_person_id = ? ORDER BY created_at DESC;
+
+selectLedgerTransactionById:
+SELECT * FROM ledger_transactions WHERE id = ?;
+
+insertLedgerTransaction:
+INSERT INTO ledger_transactions (id, ledger_person_id, amount, description, date, time, type, account_name)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateLedgerTransaction:
+UPDATE ledger_transactions 
+SET amount = ?, description = ?, date = ?, time = ?, type = ?, account_name = ?
+WHERE id = ?;
+
+deleteLedgerTransaction:
+DELETE FROM ledger_transactions WHERE id = ?;
+
+deleteLedgerTransactionsByPerson:
+DELETE FROM ledger_transactions WHERE ledger_person_id = ?;
+
+getLedgerTransactionCount:
+SELECT COUNT(*) FROM ledger_transactions;
+
+-- Combined transaction queries (includes both regular and ledger transactions)
+selectAllTransactionsIncludingLedger:
+SELECT * FROM transactions ORDER BY created_at DESC;
+
+-- Group Tables
+CREATE TABLE groups (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    color_hex TEXT NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    total_spent REAL NOT NULL DEFAULT 0.0,
+    member_count INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE group_members (
+    id TEXT PRIMARY KEY,
+    group_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    avatar_color_hex TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 0.0,
+    total_paid REAL NOT NULL DEFAULT 0.0,
+    total_owed REAL NOT NULL DEFAULT 0.0,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE
+);
+
+CREATE TABLE group_expenses (
+    id TEXT PRIMARY KEY,
+    group_id TEXT NOT NULL,
+    paid_by TEXT NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'General',
+    date TEXT NOT NULL,
+    time TEXT NOT NULL,
+    split_type TEXT NOT NULL DEFAULT 'EQUAL',
+    split_details TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
+    FOREIGN KEY (paid_by) REFERENCES group_members (id) ON DELETE CASCADE
+);
+
+CREATE TABLE group_expense_splits (
+    id TEXT PRIMARY KEY,
+    expense_id TEXT NOT NULL,
+    member_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    is_paid INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (expense_id) REFERENCES group_expenses (id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES group_members (id) ON DELETE CASCADE
+);
+
+-- Insert sample groups
+INSERT INTO groups (id, name, description, color_hex, total_spent, member_count) VALUES
+('sample_group_1', 'Vacation Trip', 'Summer vacation with friends', '#FF9333EA', 1247.50, 4),
+('sample_group_2', 'Office Lunch', 'Weekly office lunch group', '#FFF97316', 234.80, 6);
+
+-- Insert sample group members
+INSERT INTO group_members (id, group_id, name, avatar_color_hex, balance, total_paid, total_owed) VALUES
+('sample_member_1', 'sample_group_1', 'Abhishek', '#FF2196F3', 156.40, 400.00, 243.60),
+('sample_member_2', 'sample_group_1', 'Sarah', '#FF4CAF50', -78.20, 300.00, 378.20),
+('sample_member_3', 'sample_group_1', 'Mike', '#FFE91E63', -39.10, 250.00, 289.10),
+('sample_member_4', 'sample_group_1', 'Lisa', '#FFFF9800', -39.10, 297.50, 336.60),
+('sample_member_5', 'sample_group_2', 'Abhishek', '#FF2196F3', -23.50, 50.00, 73.50),
+('sample_member_6', 'sample_group_2', 'John', '#FF4CAF50', 15.30, 60.00, 44.70),
+('sample_member_7', 'sample_group_2', 'Emma', '#FFE91E63', 8.20, 45.00, 36.80);
+
+-- Group Queries
+selectAllGroups:
+SELECT * FROM groups ORDER BY created_at DESC;
+
+selectGroupById:
+SELECT * FROM groups WHERE id = ?;
+
+selectGroupByName:
+SELECT * FROM groups WHERE name = ?;
+
+insertGroup:
+INSERT INTO groups (id, name, description, color_hex, total_spent, member_count)
+VALUES (?, ?, ?, ?, ?, ?);
+
+updateGroup:
+UPDATE groups 
+SET name = ?, description = ?, color_hex = ?, total_spent = ?, member_count = ?
+WHERE id = ?;
+
+deleteGroup:
+DELETE FROM groups WHERE id = ?;
+
+getGroupCount:
+SELECT COUNT(*) FROM groups;
+
+-- Group Member Queries
+selectAllGroupMembers:
+SELECT * FROM group_members ORDER BY name ASC;
+
+selectGroupMembersByGroup:
+SELECT * FROM group_members WHERE group_id = ? ORDER BY name ASC;
+
+selectGroupMemberById:
+SELECT * FROM group_members WHERE id = ?;
+
+selectGroupMemberByName:
+SELECT * FROM group_members WHERE name = ? AND group_id = ?;
+
+insertGroupMember:
+INSERT INTO group_members (id, group_id, name, email, phone, avatar_color_hex, balance, total_paid, total_owed)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateGroupMember:
+UPDATE group_members 
+SET name = ?, email = ?, phone = ?, avatar_color_hex = ?, balance = ?, total_paid = ?, total_owed = ?
+WHERE id = ?;
+
+deleteGroupMember:
+DELETE FROM group_members WHERE id = ?;
+
+deleteGroupMembersByGroup:
+DELETE FROM group_members WHERE group_id = ?;
+
+getGroupMemberCount:
+SELECT COUNT(*) FROM group_members;
+
+getGroupMemberCountByGroup:
+SELECT COUNT(*) FROM group_members WHERE group_id = ?;
+
+-- Group Expense Queries
+selectAllGroupExpenses:
+SELECT * FROM group_expenses ORDER BY created_at DESC;
+
+selectGroupExpensesByGroup:
+SELECT * FROM group_expenses WHERE group_id = ? ORDER BY created_at DESC;
+
+selectGroupExpenseById:
+SELECT * FROM group_expenses WHERE id = ?;
+
+insertGroupExpense:
+INSERT INTO group_expenses (id, group_id, paid_by, amount, description, category, date, time, split_type, split_details)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateGroupExpense:
+UPDATE group_expenses 
+SET paid_by = ?, amount = ?, description = ?, category = ?, date = ?, time = ?, split_type = ?, split_details = ?
+WHERE id = ?;
+
+deleteGroupExpense:
+DELETE FROM group_expenses WHERE id = ?;
+
+deleteGroupExpensesByGroup:
+DELETE FROM group_expenses WHERE group_id = ?;
+
+getGroupExpenseCount:
+SELECT COUNT(*) FROM group_expenses;
+
+getGroupExpenseCountByGroup:
+SELECT COUNT(*) FROM group_expenses WHERE group_id = ?;
+
+-- Group Expense Split Queries
+selectAllGroupExpenseSplits:
+SELECT * FROM group_expense_splits ORDER BY created_at DESC;
+
+selectGroupExpenseSplitsByExpense:
+SELECT * FROM group_expense_splits WHERE expense_id = ? ORDER BY created_at DESC;
+
+selectGroupExpenseSplitsByMember:
+SELECT * FROM group_expense_splits WHERE member_id = ? ORDER BY created_at DESC;
+
+selectGroupExpenseSplitById:
+SELECT * FROM group_expense_splits WHERE id = ?;
+
+insertGroupExpenseSplit:
+INSERT INTO group_expense_splits (id, expense_id, member_id, amount, is_paid)
+VALUES (?, ?, ?, ?, ?);
+
+updateGroupExpenseSplit:
+UPDATE group_expense_splits 
+SET amount = ?, is_paid = ?
+WHERE id = ?;
+
+deleteGroupExpenseSplit:
+DELETE FROM group_expense_splits WHERE id = ?;
+
+deleteGroupExpenseSplitsByExpense:
+DELETE FROM group_expense_splits WHERE expense_id = ?;
+
+deleteGroupExpenseSplitsByMember:
+DELETE FROM group_expense_splits WHERE member_id = ?;
+
+getGroupExpenseSplitCount:
+SELECT COUNT(*) FROM group_expense_splits;

@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import androidx.compose.runtime.collectAsState
 
 // Account Selection Bottom Sheet - Exact replica from TransactionListScreen.kt
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,12 +29,14 @@ fun AccountSelectionBottomSheet(
     onDismiss: () -> Unit,
     title: String = "Select Account",
     subtitle: String = "Choose an account for your transaction",
-    onAccountSelected: (Account) -> Unit
+    onAccountSelected: (com.example.androidkmm.models.Account) -> Unit
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val accounts = remember { getSampleAccounts() }
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
+    val accounts = accountsState.value
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -110,7 +114,7 @@ fun AccountSelectionBottomSheet(
 
 @Composable
 private fun AccountCard(
-    account: Account,
+    account: com.example.androidkmm.models.Account,
     onClick: () -> Unit
 ) {
     Card(
@@ -132,19 +136,19 @@ private fun AccountCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Dollar sign icon
+            // Account icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1F1F1F)),
+                    .background(account.color.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "$",
-                    color = LedgerTheme.textPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = account.icon,
+                    contentDescription = null,
+                    tint = account.color,
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
@@ -184,47 +188,3 @@ private fun AccountCard(
     }
 }
 
-private fun getSampleAccounts(): List<Account> {
-    return listOf(
-        Account(
-            id = "1",
-            name = "Personal Account",
-            balance = "₹10,000",
-            icon = Icons.Default.AccountBalance,
-            color = Color(0xFF3B82F6),
-            type = "Savings"
-        ),
-        Account(
-            id = "2",
-            name = "Business Account",
-            balance = "₹50,000",
-            icon = Icons.Default.Business,
-            color = Color(0xFF4CAF50),
-            type = "Current"
-        ),
-        Account(
-            id = "3",
-            name = "Travel Fund",
-            balance = "₹5,000",
-            icon = Icons.Default.Flight,
-            color = Color(0xFFFF9800),
-            type = "Savings"
-        ),
-        Account(
-            id = "4",
-            name = "Emergency Fund",
-            balance = "₹25,000",
-            icon = Icons.Default.Savings,
-            color = Color(0xFF2196F3),
-            type = "Savings"
-        ),
-        Account(
-            id = "5",
-            name = "Joint Account",
-            balance = "₹15,000",
-            icon = Icons.Default.Group,
-            color = Color(0xFFE91E63),
-            type = "Shared"
-        )
-    )
-}
