@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -45,13 +46,13 @@ import com.example.androidkmm.models.CategoryTab
 import com.example.androidkmm.models.Account
 
 // Color definitions
-val DarkBackground = Color(0xFF1A1A1A)
-val DarkSurface = Color(0xFF2A2A2A)
-val DarkSurfaceVariant = Color(0xFF3A3A3A)
+val DarkBackground = Color(0xFF000000)  // True black
+val DarkSurface = Color(0xFF1C1C1E)     // Dark gray for cards
+val DarkSurfaceVariant = Color(0xFF2C2C2E) // Slightly lighter for variants
 val GreenSuccess = Color(0xFF4CAF50)
 val BlueAccent = Color(0xFF2196F3)
 val WhiteText = Color(0xFFFFFFFF)
-val GrayText = Color(0xFF9E9E9E)
+val GrayText = Color(0xFF8E8E93)        // Lighter gray for better contrast
 
 // Account data class is now defined in models/AccountModels.kt
 
@@ -225,103 +226,129 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
-            // Profile Header
+            // Profile Header Card
             Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = DarkSurface),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.Black),
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, Color(0xFF3A3A3A))
             ) {
-                // Profile Picture
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .background(Color.White),
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier.padding(24.dp)
                 ) {
-                    Text(
-                        text = "AK",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                }
+                    // User Info Section
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Profile Picture
+                        Box(
+                            modifier = Modifier
+                                .size(60.dp)
+                                .clip(CircleShape)
+                                .background(Color.White),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "AK",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
 
-                Text(
-                    text = "Abhishek Kumar",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = WhiteText
-                )
+                        // User Details
+                        Column {
+                            Text(
+                                text = "Abhishek Kumar",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = WhiteText
+                            )
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Text(
+                                text = "abhishek@example.com",
+                                fontSize = 14.sp,
+                                color = GrayText
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // Member since tag
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C2C2E)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = "Member since March 2024",
+                                    fontSize = 12.sp,
+                                    color = WhiteText,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
+                    }
 
-                Text(
-                    text = "abhishek@example.com",
-                    fontSize = 16.sp,
-                    color = GrayText
-                )
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Member since March 2024",
-                    fontSize = 14.sp,
-                    color = GrayText
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Stats Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    StatCard("234", "Transactions")
-                    Spacer(modifier = Modifier.width(12.dp))
-                    StatCard("5", "Groups")
+                    // Stats Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            StatCard("234", "Transactions")
+                        }
+                        Box(modifier = Modifier.weight(1f)) {
+                            StatCard("5", "Groups")
+                        }
+                    }
                 }
             }
         }
+
+        item {
+            MenuCard(
+                icon = Icons.Default.AccountBalance,
+                title = "Accounts",
+                subtitle = "Manage bank accounts and wallets",
+                onClick = onAccountsClick
+            )
         }
 
         item {
-            // Menu Items
             MenuCard(
-            icon = Icons.Default.AccountBalance,
-            title = "Accounts",
-            subtitle = "Manage bank accounts and wallets",
-            onClick = onAccountsClick
-        )
+                icon = Icons.Default.Category,
+                title = "Categories",
+                subtitle = "Manage expense and income categories",
+                onClick = onCategoriesClick
+            )
+        }
 
-        MenuCard(
-            icon = Icons.Default.Category,
-            title = "Categories",
-            subtitle = "Manage expense and income categories",
-            onClick = onCategoriesClick
-        )
+        item {
+            MenuCard(
+                icon = Icons.Default.Security,
+                title = "Privacy & Security",
+                subtitle = "Account security settings",
+                onClick = { }
+            )
+        }
 
-        MenuCard(
-            icon = Icons.Default.Security,
-            title = "Privacy & Security",
-            subtitle = "Account security settings",
-            onClick = { }
-        )
-
-        MenuCard(
-            icon = Icons.Default.Settings,
-            title = "Customize",
-            subtitle = "Customize app settings and preferences",
-            onClick = onCustomizeClick
-        )
+        item {
+            MenuCard(
+                icon = Icons.Default.Settings,
+                title = "Customize",
+                subtitle = "Customize app settings and preferences",
+                onClick = onCustomizeClick
+            )
         }
 
         item {
@@ -336,8 +363,9 @@ fun ProfileScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = DarkSurface),
-            shape = RoundedCornerShape(16.dp)
+            colors = CardDefaults.cardColors(containerColor = Color.Black),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, Color(0xFF3A3A3A))
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -383,19 +411,22 @@ fun ProfileScreen(
 @Composable
 fun StatCard(value: String, label: String) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant),
-        shape = RoundedCornerShape(16.dp)
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
         Column(
-            modifier = Modifier.padding(24.dp, 16.dp),
+            modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = value,
-                fontSize = 32.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = WhiteText
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 14.sp,
@@ -416,8 +447,9 @@ fun MenuCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        shape = RoundedCornerShape(16.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -427,7 +459,7 @@ fun MenuCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(DarkSurfaceVariant),
+                    .background(Color(0xFF2C2C2E)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -950,7 +982,7 @@ private fun CustomCategoryItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -1691,63 +1723,71 @@ fun SettingsSection() {
     
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
-        shape = RoundedCornerShape(20.dp)
+        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
-        Column(
-            modifier = Modifier.padding(24.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Preferences",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = WhiteText
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Carry Forward Toggle
-            Row(
+            // Carry Forward Icon
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Carry Forward",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = WhiteText
-                    )
-                    Text(
-                        text = "Include previous months balance in current month",
-                        fontSize = 14.sp,
-                        color = GrayText,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-                
-                Switch(
-                    checked = appSettings.value.carryForwardEnabled,
-                    onCheckedChange = { enabled ->
-                        println("Toggle clicked: $enabled")
-                        scope.launch {
-                            settingsDatabaseManager.updateCarryForwardEnabled(enabled)
-                            println("Updated carry forward to: $enabled")
-                        }
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = WhiteText,
-                        checkedTrackColor = GreenSuccess,
-                        uncheckedThumbColor = GrayText,
-                        uncheckedTrackColor = DarkSurfaceVariant
-                    )
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = "Carry Forward",
+                    tint = WhiteText,
+                    modifier = Modifier.size(20.dp)
                 )
             }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Carry Forward Text
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Carry Forward",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = WhiteText
+                )
+                Text(
+                    text = "Include previous months balance in current month",
+                    fontSize = 14.sp,
+                    color = GrayText,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            
+            // Toggle Switch
+            Switch(
+                checked = appSettings.value.carryForwardEnabled,
+                onCheckedChange = { enabled ->
+                    println("Toggle clicked: $enabled")
+                    scope.launch {
+                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
+                        println("Updated carry forward to: $enabled")
+                    }
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = WhiteText,
+                    checkedTrackColor = GreenSuccess,
+                    uncheckedThumbColor = GrayText,
+                    uncheckedTrackColor = DarkSurfaceVariant
+                )
+            )
         }
     }
 }
@@ -1760,7 +1800,7 @@ fun CustomizeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(24.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -1774,7 +1814,7 @@ fun CustomizeScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .background(
-                            DarkSurface,
+                            Color(0xFF2C2C2E),
                             CircleShape
                         )
                 ) {
@@ -1803,30 +1843,194 @@ fun CustomizeScreen(
         }
         
         item {
-            // Future customization options can be added here
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                shape = RoundedCornerShape(20.dp)
+            // Dark Mode Setting
+            DarkModeSetting()
+        }
+        
+        item {
+            // Currency Setting
+            CurrencySetting()
+        }
+    }
+}
+
+@Composable
+fun DarkModeSetting() {
+    var isDarkModeEnabled by remember { mutableStateOf(true) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Dark Mode Icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
+                Icon(
+                    imageVector = Icons.Default.LightMode,
+                    contentDescription = "Dark Mode",
+                    tint = WhiteText,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Dark Mode Text
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Dark Mode",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = WhiteText
+                )
+                Text(
+                    text = "Toggle dark/light theme",
+                    fontSize = 14.sp,
+                    color = GrayText,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            
+            // Toggle Switch
+            Switch(
+                checked = isDarkModeEnabled,
+                onCheckedChange = { isDarkModeEnabled = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = WhiteText,
+                    checkedTrackColor = GreenSuccess,
+                    uncheckedThumbColor = GrayText,
+                    uncheckedTrackColor = DarkSurfaceVariant
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun CurrencySetting() {
+    var selectedCurrency by remember { mutableStateOf("USD") }
+    var showCurrencyDropdown by remember { mutableStateOf(false) }
+    
+    val currencies = listOf("USD", "EUR", "GBP", "INR", "JPY", "CAD", "AUD")
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.Black),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Currency Icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "$",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = WhiteText
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // Currency Text
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Currency",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = WhiteText
+                )
+                Text(
+                    text = "Default currency for transactions",
+                    fontSize = 14.sp,
+                    color = GrayText,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            
+            // Currency Dropdown
+            Box {
+                Card(
+                    modifier = Modifier
+                        .clickable { showCurrencyDropdown = true }
+                        .border(
+                            width = 1.dp,
+                            color = DarkSurfaceVariant,
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    colors = CardDefaults.cardColors(containerColor = DarkSurfaceVariant),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = "More Options",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = WhiteText
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Additional customization options will be added here in future updates.",
-                        fontSize = 14.sp,
-                        color = GrayText,
-                        lineHeight = 20.sp
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = selectedCurrency,
+                            fontSize = 14.sp,
+                            color = WhiteText
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Dropdown",
+                            tint = WhiteText,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                
+                DropdownMenu(
+                    expanded = showCurrencyDropdown,
+                    onDismissRequest = { showCurrencyDropdown = false },
+                    modifier = Modifier.background(DarkSurface)
+                ) {
+                    currencies.forEach { currency ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = currency,
+                                    color = WhiteText
+                                )
+                            },
+                            onClick = {
+                                selectedCurrency = currency
+                                showCurrencyDropdown = false
+                            }
+                        )
+                    }
                 }
             }
         }

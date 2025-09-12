@@ -1205,7 +1205,8 @@ private fun EditTransactionContent(
                 selectedCategory = category
                 showCategorySheet = false
             },
-            categoryDatabaseManager = categoryDatabaseManager
+            categoryDatabaseManager = categoryDatabaseManager,
+            transactionType = transaction.type
         )
     }
 

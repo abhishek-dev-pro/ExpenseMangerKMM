@@ -1059,7 +1059,12 @@ fun AddTransactionBottomSheet(
                 formData = formData.copy(category = category)
                 showCategorySheet = false
             },
-            categoryDatabaseManager = categoryDatabaseManager
+            categoryDatabaseManager = categoryDatabaseManager,
+            transactionType = when (formData.type) {
+                TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
+                TransactionType.INCOME -> com.example.androidkmm.models.TransactionType.INCOME
+                TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.TRANSFER
+            }
         )
     }
 
@@ -2026,11 +2031,22 @@ private fun AccountCard(
 fun CategorySelectionBottomSheet(
     onDismiss: () -> Unit,
     onCategorySelected: (TransactionCategory) -> Unit,
-    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase
+    categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
+    transactionType: com.example.androidkmm.models.TransactionType
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<com.example.androidkmm.models.Category>())
-    val categories = categoriesState.value.map { category ->
+    
+    // Filter categories based on transaction type
+    val filteredCategories = categoriesState.value.filter { category ->
+        when (transactionType) {
+            com.example.androidkmm.models.TransactionType.EXPENSE -> category.type == com.example.androidkmm.models.CategoryType.EXPENSE
+            com.example.androidkmm.models.TransactionType.INCOME -> category.type == com.example.androidkmm.models.CategoryType.INCOME
+            com.example.androidkmm.models.TransactionType.TRANSFER -> false // No categories for transfers
+        }
+    }
+    
+    val categories = filteredCategories.map { category ->
         TransactionCategory(
             id = category.id,
             name = category.name,
@@ -2073,7 +2089,11 @@ fun CategorySelectionBottomSheet(
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "Select Expense Category",
+                            text = when (transactionType) {
+                                com.example.androidkmm.models.TransactionType.EXPENSE -> "Select Expense Category"
+                                com.example.androidkmm.models.TransactionType.INCOME -> "Select Income Category"
+                                com.example.androidkmm.models.TransactionType.TRANSFER -> "Select Category"
+                            },
                             color = TransactionColors.primaryText,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.SemiBold

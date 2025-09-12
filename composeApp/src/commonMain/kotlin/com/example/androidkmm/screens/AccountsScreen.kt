@@ -17,10 +17,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -36,11 +38,11 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.models.Account
 
 // Color definitions for AccountsScreen
-internal val AccountsDarkBackground = Color(0xFF1A1A1A)
-internal val AccountsDarkSurface = Color(0xFF2A2A2A)
-internal val AccountsDarkSurfaceVariant = Color(0xFF3A3A3A)
+internal val AccountsDarkBackground = Color(0xFF000000)  // True black
+internal val AccountsDarkSurface = Color(0xFF000000)     // Black for cards
+internal val AccountsDarkSurfaceVariant = Color(0xFF2C2C2E) // Light gray for variants
 internal val AccountsWhiteText = Color(0xFFFFFFFF)
-internal val AccountsGrayText = Color(0xFFB0B0B0)
+internal val AccountsGrayText = Color(0xFF8E8E93)        // Better contrast
 internal val AccountsGreenSuccess = Color(0xFF4CAF50)
 internal val AccountsRedError = Color(0xFFF44336)
 internal val AccountsBluePrimary = Color(0xFF2196F3)
@@ -52,6 +54,7 @@ fun AccountsScreen(
     var showAddAccountSheet by remember { mutableStateOf(false) }
     var showEditAccountSheet by remember { mutableStateOf(false) }
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
+    var selectedTab by remember { mutableStateOf(0) }
     
     // Database manager
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
@@ -79,85 +82,102 @@ fun AccountsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = AccountsWhiteText,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Column {
-                        Text(
-                            text = "Accounts",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = AccountsWhiteText
-                        )
-                        Text(
-                            text = "Manage your financial accounts",
-                            fontSize = 14.sp,
-                            color = AccountsGrayText
-                        )
-                    }
+                Column {
+                    Text(
+                        text = "Manage Accounts",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AccountsWhiteText
+                    )
+                    Text(
+                        text = "Add, edit, or manage your financial accounts",
+                        fontSize = 14.sp,
+                        color = AccountsGrayText
+                    )
                 }
 
                 IconButton(
-                    onClick = { showAddAccountSheet = true },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            AccountsBluePrimary,
-                            CircleShape
-                        )
+                    onClick = onBackClick,
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Account",
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
                         tint = AccountsWhiteText,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            // Accounts List
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                contentPadding = PaddingValues(bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            // Tabs
+            TabRow(
+                selectedTabIndex = selectedTab,
+                containerColor = AccountsDarkBackground,
+                contentColor = AccountsWhiteText,
+                indicator = { tabPositions ->
+                    TabRowDefaults.SecondaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                        color = AccountsBluePrimary
+                    )
+                }
             ) {
-                if (accounts.isEmpty()) {
-                    item {
-                        EmptyAccountsState(
-                            onAddAccount = { showAddAccountSheet = true }
-                        )
-                    }
-                } else {
-                    items(accounts) { account ->
-                        AccountCard(
-                            account = account,
-                            onEditClick = {
-                                selectedAccount = account
-                                showEditAccountSheet = true
-                            },
-                            onDeleteClick = {
-                                scope.launch {
-                                    accountDatabaseManager.deleteAccount(account)
-                                }
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Accounts", color = AccountsWhiteText) }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Overview", color = AccountsWhiteText) }
+                )
+            }
+
+            // Content based on selected tab
+            when (selectedTab) {
+                0 -> {
+                    // Accounts List
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (accounts.isEmpty()) {
+                            item {
+                                EmptyAccountsState(
+                                    onAddAccount = { showAddAccountSheet = true }
+                                )
                             }
-                        )
+                        } else {
+                            items(accounts) { account ->
+                                NewAccountCard(
+                                    account = account,
+                                    onEditClick = {
+                                        selectedAccount = account
+                                        showEditAccountSheet = true
+                                    },
+                                    onDeleteClick = {
+                                        scope.launch {
+                                            accountDatabaseManager.deleteAccount(account)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        
+                        // Add New Account Button
+                        item {
+                            AddNewAccountButton(
+                                onClick = { showAddAccountSheet = true }
+                            )
+                        }
                     }
+                }
+                1 -> {
+                    // Overview Tab
+                    OverviewContent(accounts = accounts)
                 }
             }
         }
@@ -223,7 +243,8 @@ private fun AccountCard(
             .fillMaxWidth()
             .clickable { onEditClick() },
         colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
     ) {
         Row(
             modifier = Modifier
@@ -889,5 +910,257 @@ private fun getAccountTypeColor(type: String): Color {
         "Cash" -> Color(0xFFFF6D01)
         "Digital Wallet" -> Color(0xFF9C27B0)
         else -> Color(0xFF4285F4)
+    }
+}
+
+@Composable
+private fun NewAccountCard(
+    account: Account,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditClick() },
+        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Account Icon
+                Icon(
+                    imageVector = Icons.Default.AttachMoney,
+                    contentDescription = account.type,
+                    tint = AccountsWhiteText,
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Account Details
+                Column {
+                    Text(
+                        text = account.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AccountsWhiteText
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.TrendingUp,
+                            contentDescription = "Trend",
+                            tint = AccountsGreenSuccess,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "+$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                            fontSize = 14.sp,
+                            color = AccountsGreenSuccess,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            // Action Buttons
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = AccountsGrayText,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = AccountsRedError,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddNewAccountButton(
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, AccountsGrayText.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+                tint = AccountsGrayText,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Add New Account",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = AccountsGrayText
+            )
+        }
+    }
+}
+
+@Composable
+private fun OverviewContent(accounts: List<Account>) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        contentPadding = PaddingValues(bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        item {
+            // Financial Overview Section
+            Column {
+                Text(
+                    text = "Financial Overview",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AccountsWhiteText,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = AccountsDarkSurface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        // Total Assets
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Total Assets",
+                                fontSize = 16.sp,
+                                color = AccountsWhiteText
+                            )
+                            Text(
+                                text = "$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AccountsGreenSuccess
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Divider
+                        HorizontalDivider(
+                            color = AccountsGrayText.copy(alpha = 0.3f),
+                            thickness = 1.dp
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Total Liabilities
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Total Liabilities",
+                                fontSize = 16.sp,
+                                color = AccountsWhiteText
+                            )
+                            Text(
+                                text = "$0",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AccountsRedError
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Divider
+                        HorizontalDivider(
+                            color = AccountsGrayText.copy(alpha = 0.3f),
+                            thickness = 1.dp
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Net Worth
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Net Worth",
+                                fontSize = 16.sp,
+                                color = AccountsWhiteText
+                            )
+                            Text(
+                                text = "+$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = AccountsGreenSuccess
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Account List in Overview
+        items(accounts) { account ->
+            NewAccountCard(
+                account = account,
+                onEditClick = { /* Handle edit */ },
+                onDeleteClick = { /* Handle delete */ }
+            )
+        }
     }
 }
