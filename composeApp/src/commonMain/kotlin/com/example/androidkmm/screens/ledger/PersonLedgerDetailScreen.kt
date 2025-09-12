@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.screens.ledger.TransactionType
 import androidx.compose.runtime.collectAsState
@@ -36,6 +37,7 @@ fun PersonLedgerDetailScreen(
     onAddTransaction: () -> Unit
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
+    val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val coroutineScope = rememberCoroutineScope()
     val transactionsState = ledgerDatabaseManager.getLedgerTransactionsByPerson(person.id).collectAsState(initial = emptyList<LedgerTransaction>())
     val transactions = transactionsState.value
@@ -296,7 +298,36 @@ fun PersonLedgerDetailScreen(
                 
                 TransactionItem(
                     transaction = transaction,
-                    balanceAtTransaction = balanceAtTransaction
+                    balanceAtTransaction = balanceAtTransaction,
+                    onDelete = {
+                        coroutineScope.launch {
+                            // Delete the ledger transaction and update person balance
+                            ledgerDatabaseManager.deleteLedgerTransactionAndUpdatePerson(
+                                transactionId = transaction.id,
+                                personId = person.id
+                            )
+                            
+                            // Also delete the corresponding main transaction
+                            val mainTransactionId = "main_${transaction.id}"
+                            transactionDatabaseManager.deleteTransaction(
+                                transaction = com.example.androidkmm.models.Transaction(
+                                    id = mainTransactionId,
+                                    title = "",
+                                    amount = 0.0,
+                                    category = "",
+                                    categoryIcon = Icons.Default.Category,
+                                    categoryColor = Color.Transparent,
+                                    account = "",
+                                    accountIcon = Icons.Default.Wallet,
+                                    accountColor = Color.Transparent,
+                                    time = "",
+                                    type = com.example.androidkmm.models.TransactionType.EXPENSE,
+                                    description = "",
+                                    date = ""
+                                )
+                            )
+                        }
+                    }
                 )
                 if (transaction != transactions.last()) {
                     Spacer(modifier = Modifier.height(12.dp))

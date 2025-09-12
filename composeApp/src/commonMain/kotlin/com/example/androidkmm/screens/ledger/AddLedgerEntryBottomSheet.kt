@@ -72,7 +72,7 @@ fun AddLedgerEntryBottomSheet(
             allPeople.filter { it.name.contains(personName, ignoreCase = true) }
         }
     }
-    var amount by remember { mutableStateOf("0") }
+    var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf("2025-09-10") }
     var selectedTime by remember { mutableStateOf("01:43 PM") }
@@ -448,7 +448,7 @@ fun AddLedgerEntryBottomSheet(
                             },
                             placeholder = {
                                 Text(
-                                    text = "0",
+                                    text = "Enter amount",
                                     color = LedgerTheme.textSecondary
                                 )
                             },

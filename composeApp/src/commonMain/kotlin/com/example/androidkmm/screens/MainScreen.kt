@@ -2,6 +2,7 @@ package com.example.androidkmm.screens
 
 import ProfileMainScreen
 import TransactionsScreen
+import com.example.androidkmm.screens.ledger.LedgerMainScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +17,7 @@ import com.example.androidkmm.database.InitializeDatabase
 @Composable
 fun MainScreen() {
     var selectedTab by remember { mutableStateOf(0) }
+    var navigateToLedgerPerson by remember { mutableStateOf<String?>(null) }
     
     // Initialize database
     InitializeDatabase()
@@ -36,9 +38,17 @@ fun MainScreen() {
         ) {
             when (selectedTab) {
                 0 -> HomeScreenContent()
-                1 -> TransactionsScreen()
+                1 -> TransactionsScreen(
+                    onNavigateToLedger = { personName ->
+                        navigateToLedgerPerson = personName
+                        selectedTab = 3 // Switch to ledger tab
+                    }
+                )
                 2 -> GroupsScreen()
-                3 -> LedgerMainScreen()
+                3 -> LedgerMainScreen(
+                    navigateToPerson = navigateToLedgerPerson,
+                    onPersonNavigated = { navigateToLedgerPerson = null }
+                )
                 4 -> ProfileMainScreen()
             }
         }

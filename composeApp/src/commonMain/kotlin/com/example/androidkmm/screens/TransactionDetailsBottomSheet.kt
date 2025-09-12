@@ -22,8 +22,10 @@ import com.example.androidkmm.models.Account
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
 
@@ -47,11 +49,13 @@ fun TransactionDetailsBottomSheet(
     onDismiss: () -> Unit,
     onEdit: (com.example.androidkmm.models.Transaction) -> Unit,
     onDelete: () -> Unit,
+    onNavigateToLedger: (String) -> Unit = {},
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
     var isEditMode by remember { mutableStateOf(false) }
     var editedTransaction by remember { mutableStateOf(transaction) }
+    var showLedgerDialog by remember { mutableStateOf(false) }
 
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -82,10 +86,134 @@ fun TransactionDetailsBottomSheet(
             } else {
                 TransactionDetailsContent(
                     transaction = transaction,
-                    onEdit = { isEditMode = true },
-                    onDelete = onDelete,
+                    onEdit = {
+                        // Check if this is a ledger transaction
+                        if (transaction.category == "Ledger" && transaction.id.startsWith("main_")) {
+                            showLedgerDialog = true
+                        } else {
+                            isEditMode = true
+                        }
+                    },
+                    onDelete = {
+                        // Check if this is a ledger transaction
+                        if (transaction.category == "Ledger" && transaction.id.startsWith("main_")) {
+                            showLedgerDialog = true
+                        } else {
+                            onDelete()
+                        }
+                    },
                     onDismiss = onDismiss
                 )
+            }
+        }
+    }
+    
+    // Ledger Navigation Dialog
+    if (showLedgerDialog) {
+        Dialog(onDismissRequest = { showLedgerDialog = false }) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                color = Color(0xFF1A1A1A),
+                shape = RoundedCornerShape(20.dp),
+                shadowElevation = 8.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Icon with background
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(
+                                Color(0xFF2A2A2A),
+                                CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SwapHoriz,
+                            contentDescription = null,
+                            tint = Color(0xFF007AFF),
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    Text(
+                        text = "Ledger Transaction",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    Text(
+                        text = "This transaction is part of your ledger. To edit or delete it, you need to go to the ledger section.",
+                        color = Color(0xFF8E8E93),
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                    
+                    Spacer(modifier = Modifier.height(28.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showLedgerDialog = false },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            border = BorderStroke(1.5.dp, Color(0xFF3A3A3A)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Cancel",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        
+                        Button(
+                            onClick = {
+                                showLedgerDialog = false
+                                onDismiss()
+                                // Extract person name from transaction title
+                                val personName = transaction.title
+                                    .replace("Sent to ", "")
+                                    .replace("Received from ", "")
+                                    .replace(" - Transfer", "")
+                                onNavigateToLedger(personName)
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF007AFF),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "Take me there",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
             }
         }
     }

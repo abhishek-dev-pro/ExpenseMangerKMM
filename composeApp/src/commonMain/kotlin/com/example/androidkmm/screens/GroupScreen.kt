@@ -20,7 +20,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -32,6 +34,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -97,67 +100,173 @@ fun GroupsScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .padding(16.dp)
+            .statusBarsPadding()
     ) {
-        // Header row: Title + plus icon
+        // Header
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Groups",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Normal
-            )
-            Box(
+            Column {
+                Text(
+                    text = "Groups",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Track group expenses & splits",
+                    fontSize = 16.sp,
+                    color = Color.Gray
+                )
+            }
+
+            IconButton(
+                onClick = { showSheet = true },
                 modifier = Modifier
-                    .size(32.dp) // circle size
-                    .background(Color.White, shape = CircleShape)
-                    .clickable { showSheet = true },
-                contentAlignment = Alignment.Center
+                    .size(40.dp)
+                    .background(
+                        Color.White,
+                        CircleShape
+                    )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add group",
-                    tint = Color.Black
+                    contentDescription = "Add",
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Summary Cards
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // You are owed Card
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        width = 0.5.dp,
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF0F2419)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowUpward,
+                            contentDescription = "You are owed",
+                            tint = Color(0xFF16A34A),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "You are owed",
+                            color = Color(0xFF16A34A),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = totalOwed,
+                            color = Color(0xFF16A34A),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "0 people",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
 
-        // Top cards row: equal width
+            // You owe Card
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        width = 0.5.dp,
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF2D1B1B)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDownward,
+                            contentDescription = "You owe",
+                            tint = Color(0xFFDC2626),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "You owe",
+                            color = Color(0xFFDC2626),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = totalOwe,
+                            color = Color(0xFFDC2626),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "0 people",
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+        }
 
-
-
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Groups list
         LazyColumn(
+            modifier = Modifier.padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    SummaryCard(
-                        amount = totalOwed,
-                        label = "You are owed",
-                        bgColor = Color(0xFFDCFCE7),
-                        textColor = Color(0xFF16A34A),
-                        modifier = Modifier.weight(1f)
-                    )
-                    SummaryCard(
-                        amount = totalOwe,
-                        label = "You owe",
-                        bgColor = Color(0xFFFEE2E2),
-                        textColor = Color(0xFFDC2626),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
 
             item {
                 Spacer(modifier = Modifier.height(20.dp))
@@ -221,36 +330,6 @@ fun GroupsScreen() {
     }
 }
 
-@Composable
-fun SummaryCard(
-    amount: String,
-    label: String,
-    bgColor: Color,
-    textColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
-            .padding(vertical = 20.dp, horizontal = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = amount,
-            color = textColor,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Normal
-        )
-        Spacer(Modifier.height(DesignSystem.Spacing.sm))
-        Text(
-            text = label,
-            color = textColor,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal
-        )
-    }
-}
 
 @Composable
 fun GroupCard(

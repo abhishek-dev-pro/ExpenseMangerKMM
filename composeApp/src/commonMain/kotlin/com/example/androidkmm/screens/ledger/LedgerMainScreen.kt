@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +37,10 @@ import kotlinx.datetime.Clock as DateTimeClock
 // LedgerMainScreen.kt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun LedgerMainScreen() {
+fun LedgerMainScreen(
+    navigateToPerson: String? = null,
+    onPersonNavigated: () -> Unit = {}
+) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val peopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
     val allPeople = peopleState.value
@@ -44,16 +48,45 @@ fun LedgerMainScreen() {
     var selectedPerson by remember { mutableStateOf<LedgerPerson?>(null) }
     var showAddBottomSheet by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("All") }
     
-    // Filter people based on search text
-    val people = remember(allPeople, searchText) {
-        if (searchText.isBlank()) {
-            allPeople
-        } else {
-            allPeople.filter { person ->
+    // Handle navigation to specific person
+    LaunchedEffect(navigateToPerson, allPeople) {
+        if (navigateToPerson != null && allPeople.isNotEmpty()) {
+            val person = allPeople.find { it.name.equals(navigateToPerson, ignoreCase = true) }
+            if (person != null) {
+                selectedPerson = person
+                onPersonNavigated() // Clear the navigation request
+            }
+        }
+    }
+    
+    // Filter options
+    val filterOptions = listOf(
+        "All" to "All contacts",
+        "Get Back" to "Money people will return to me",
+        "Give Back" to "Money I have to return"
+    )
+    
+    // Filter people based on search text and filter option
+    val people = remember(allPeople, searchText, selectedFilter) {
+        var filteredPeople = allPeople
+        
+        // Apply search filter
+        if (searchText.isNotBlank()) {
+            filteredPeople = filteredPeople.filter { person ->
                 person.name.contains(searchText, ignoreCase = true)
             }
         }
+        
+        // Apply balance filter
+        when (selectedFilter) {
+            "Get Back" -> filteredPeople = filteredPeople.filter { it.balance < 0 } // You owe them (red/negative balance)
+            "Give Back" -> filteredPeople = filteredPeople.filter { it.balance > 0 } // They owe you (green/positive balance)
+            // "All" -> no additional filtering
+        }
+        
+        filteredPeople
     }
     
     // Calculate real-time amounts
@@ -239,37 +272,120 @@ fun LedgerMainScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Search Bar
-        TextField(
-            value = searchText,
-            onValueChange = { searchText = it },
-            placeholder = {
-                Text(
-                    text = "Search",
-                    color = LedgerTheme.textSecondary
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = LedgerTheme.textSecondary,
-                    modifier = Modifier.size(20.dp)
-                )
-            },
-            colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = LedgerTheme.searchBackground,
-                focusedContainerColor = LedgerTheme.searchBackground,
-                unfocusedTextColor = LedgerTheme.textPrimary,
-                focusedTextColor = LedgerTheme.textPrimary,
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(20.dp),
+        // Search Bar and Filter
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-        )
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            // Search Field
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                placeholder = {
+                    Text(
+                        text = "Search people...",
+                        color = LedgerTheme.textSecondary,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = LedgerTheme.textSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color(0xFF2A2A2A),
+                    focusedContainerColor = Color(0xFF2A2A2A),
+                    unfocusedTextColor = LedgerTheme.textPrimary,
+                    focusedTextColor = LedgerTheme.textPrimary,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+            )
+            
+            // Filter Dropdown
+            var expanded by remember { mutableStateOf(false) }
+            Box {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier
+                        .height(44.dp)
+                        .width(100.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFF2A2A2A),
+                        contentColor = LedgerTheme.textPrimary
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    border = androidx.compose.foundation.BorderStroke(0.dp, Color.Transparent)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = selectedFilter,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowDownward,
+                            contentDescription = null,
+                            tint = LedgerTheme.textSecondary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+                
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .background(Color(0xFF1F1F1F))
+                        .border(1.dp, Color(0xFF404040), RoundedCornerShape(12.dp))
+                        .width(260.dp)
+                ) {
+                    filterOptions.forEach { (option, description) ->
+                        DropdownMenuItem(
+                            text = {
+                                Column(
+                                    modifier = Modifier.padding(vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = option,
+                                        color = if (option == selectedFilter) LedgerTheme.greenAmount else LedgerTheme.textPrimary,
+                                        fontWeight = if (option == selectedFilter) FontWeight.Bold else FontWeight.SemiBold,
+                                        fontSize = 13.sp
+                                    )
+                                    Text(
+                                        text = description,
+                                        color = LedgerTheme.textSecondary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Normal
+                                    )
+                                }
+                            },
+                            onClick = {
+                                selectedFilter = option
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -284,25 +400,6 @@ fun LedgerMainScreen() {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Filter,
-                    contentDescription = "Filter",
-                    tint = LedgerTheme.textSecondary,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "All People",
-                    color = LedgerTheme.textPrimary,
-                    fontSize = 16.sp
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.Default.ChevronLeft,
-                    contentDescription = null,
-                    tint = LedgerTheme.textSecondary,
-                    modifier = Modifier.size(16.dp)
-                )
             }
         }
 
@@ -320,7 +417,12 @@ fun LedgerMainScreen() {
                 text = "People",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = LedgerTheme.textPrimary
+                fontStyle = FontStyle.Normal,
+                color = LedgerTheme.textPrimary,
+                style = androidx.compose.ui.text.TextStyle(
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.SemiBold
+                )
             )
 
             Box(

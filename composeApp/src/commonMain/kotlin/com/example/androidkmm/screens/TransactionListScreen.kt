@@ -6,6 +6,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +50,7 @@ import kotlin.time.ExperimentalTime
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.DesignSystem
 
 // Color definitions matching the iOS design
@@ -118,12 +122,17 @@ data class TransactionCategory(
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun TransactionsScreen() {
+fun TransactionsScreen(
+    onNavigateToLedger: (String) -> Unit = {}
+) {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     
     val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
+    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
     
     // Fix any existing transfer transactions that might not have proper transferTo field
     LaunchedEffect(Unit) {
@@ -180,6 +189,30 @@ fun TransactionsScreen() {
     }
     
     val dayGroups = remember(filteredTransactions) { groupTransactionsByDay(filteredTransactions) }
+    
+    // Calculate carry forward amount from previous months
+    val carryForwardAmount = remember(allTransactions, selectedMonth, selectedYear, appSettings.value.carryForwardEnabled) {
+        println("TransactionListScreen - Carry Forward Enabled: ${appSettings.value.carryForwardEnabled}")
+        if (appSettings.value.carryForwardEnabled) {
+            val amount = calculateCarryForwardAmount(allTransactions, selectedMonth, selectedYear)
+            println("TransactionListScreen - Calculated carry forward amount: $amount")
+            amount
+        } else {
+            println("TransactionListScreen - Carry forward disabled, amount: 0.0")
+            0.0
+        }
+    }
+    
+    // Calculate sum of all account balances
+    val totalAccountBalance = remember(allAccounts.value) {
+        allAccounts.value.sumOf { account ->
+            try {
+                account.balance.toDoubleOrNull() ?: 0.0
+            } catch (e: Exception) {
+                0.0
+            }
+        }
+    }
 
     var showAddSheet by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
@@ -240,6 +273,8 @@ fun TransactionsScreen() {
         // Animated Summary Card that shrinks smoothly
         AnimatedSummaryCard(
             transactions = transactionsForSummary,
+            carryForwardAmount = carryForwardAmount,
+            totalAccountBalance = totalAccountBalance,
             isCompact = showCompactSummary
         )
 
@@ -264,13 +299,13 @@ fun TransactionsScreen() {
                 onAddClick = { showAddSheet = true }
             )
         } else {
-            LazyColumn(
+        LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(dayGroups) { dayGroup ->
+        ) {
+            items(dayGroups) { dayGroup ->
                     DayGroupSection(
                         dayGroup = dayGroup,
                         transactionDatabaseManager = transactionDatabaseManager,
@@ -350,9 +385,9 @@ private fun ImagePickerDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // Camera option
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
                             .clickable {
                                 // For now, simulate camera selection
                                 onImageSelected("camera_image_path")
@@ -522,7 +557,7 @@ private fun MonthNavigation(
 }
 
 @Composable
-private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transaction>) {
+private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
     // Calculate totals from actual transaction data
     val totalIncome = transactions
         .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
@@ -532,7 +567,9 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
         .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
         .sumOf { it.amount }
     
-    val total = totalIncome - totalExpense
+    // Total calculation: income - expenses + carry forward
+    val monthlyTotal = totalIncome - totalExpense
+    val total = monthlyTotal + carryForwardAmount
     
     Card(
         modifier = Modifier
@@ -639,33 +676,33 @@ private fun SearchAndFilter(
             modifier = Modifier
                 .weight(1f)
                 .clickable { onSearchClick() }
-        ) {
-            OutlinedTextField(
-                value = "",
-                onValueChange = { },
-                placeholder = {
-                    Text(
-                        text = "Search transactions...",
-                        color = TransactionColors.secondaryText
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = TransactionColors.secondaryText,
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
+    ) {
+        OutlinedTextField(
+            value = "",
+            onValueChange = { },
+            placeholder = {
+                Text(
+                    text = "Search transactions...",
+                    color = TransactionColors.secondaryText
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = TransactionColors.secondaryText,
+                    modifier = Modifier.size(20.dp)
+                )
+            },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = TransactionColors.searchBackground,
-                    unfocusedContainerColor = TransactionColors.searchBackground,
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = TransactionColors.primaryText,
-                    unfocusedTextColor = TransactionColors.primaryText
+            shape = RoundedCornerShape(20.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = TransactionColors.searchBackground,
+                unfocusedContainerColor = TransactionColors.searchBackground,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                focusedTextColor = TransactionColors.primaryText,
+                unfocusedTextColor = TransactionColors.primaryText
                 ),
                 readOnly = true,
                 enabled = false
@@ -710,9 +747,9 @@ private fun DayGroupSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+                Text(
                 text = "${dayGroup.displayDate} (${dayGroup.transactions.size})",
-                color = TransactionColors.primaryText,
+                    color = TransactionColors.primaryText,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
                 fontStyle = FontStyle.Normal
@@ -722,10 +759,10 @@ private fun DayGroupSection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Always show income (0 if no income)
-                Text(
+                    Text(
                     text = "${formatDouble(dayGroup.income, 2)}",
-                    color = TransactionColors.income,
-                    fontSize = 16.sp,
+                        color = TransactionColors.income,
+                        fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontStyle = FontStyle.Normal,
                     style = androidx.compose.ui.text.TextStyle(
@@ -734,17 +771,17 @@ private fun DayGroupSection(
                     )
                 )
                 // Always show expense (0 if no expense)
-                Text(
+                    Text(
                     text = "${formatDouble(dayGroup.expense, 2)}",
-                    color = TransactionColors.expense,
-                    fontSize = 16.sp,
+                        color = TransactionColors.expense,
+                        fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontStyle = FontStyle.Normal,
                     style = androidx.compose.ui.text.TextStyle(
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.SemiBold
                     )
-                )
+                    )
             }
         }
 
@@ -758,7 +795,8 @@ private fun DayGroupSection(
     }
 
     // Transaction Details Bottom Sheet
-    selectedTransaction?.let { transaction ->
+    if (selectedTransaction != null) {
+        val transaction = selectedTransaction!!
         TransactionDetailsBottomSheet(
             transaction = transaction,
             isVisible = showBottomSheet,
@@ -789,14 +827,15 @@ private fun DayGroupSection(
                     accountDatabaseManager = accountDatabaseManager,
                     onSuccess = {
                         println("Transaction deleted successfully")
-                        showBottomSheet = false
-                        selectedTransaction = null
+                showBottomSheet = false
+                selectedTransaction = null
                     },
                     onError = { error ->
                         println("Error deleting transaction: ${error.message}")
-                    }
+            }
                 )
             },
+            onNavigateToLedger = { personName -> println("Navigate to ledger for person: $personName") },
             categoryDatabaseManager = categoryDatabaseManager,
             accountDatabaseManager = accountDatabaseManager
         )
@@ -816,57 +855,57 @@ fun TransactionCard(
     }
     
     // Clean, integrated design without Card wrapper
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
             .clickable { onClick(transaction) }
             .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+            verticalAlignment = Alignment.CenterVertically
+        ) {
         // Category Icon - larger and more prominent
-        Box(
-            modifier = Modifier
-                .size(48.dp)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(transaction.categoryColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = transaction.categoryIcon,
-                contentDescription = transaction.category,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+                    .background(transaction.categoryColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = transaction.categoryIcon,
+                    contentDescription = transaction.category,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
 
-        Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-        // Transaction Details
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
+            // Transaction Details
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
             // For transfers, show clear from/to information
             if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
-                Text(
-                    text = "Transfer",
-                    color = TransactionColors.primaryText,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontStyle = FontStyle.Normal
-                )
-                
                 Text(
                     text = if (transaction.transferTo != null && transaction.transferTo.isNotEmpty()) {
                         "${transaction.account} → ${transaction.transferTo}"
                     } else {
-                        "Transfer between accounts"
+                        "Transfer"
                     },
-                    color = TransactionColors.secondaryText,
-                    fontSize = 14.sp,
+                    color = TransactionColors.primaryText,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = "${transaction.time} • Transfer",
+                    color = TransactionColors.secondaryText,
+                    fontSize = 14.sp,
+                    fontStyle = FontStyle.Normal
                 )
             } else {
                 Text(
@@ -904,29 +943,29 @@ fun TransactionCard(
                         fontStyle = FontStyle.Normal
                     )
                 }
+                }
             }
-        }
 
-        // Amount and Account
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            val amountColor = when (transaction.type) {
+            // Amount and Account
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                val amountColor = when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> TransactionColors.income
                 com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionColors.expense
                 com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionColors.transfer
-            }
+                }
 
-            val amountText = when (transaction.type) {
+                val amountText = when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> "+${formatDouble(transaction.amount, 2)}"
                 com.example.androidkmm.models.TransactionType.EXPENSE -> "-${formatDouble(transaction.amount, 2)}"
                 com.example.androidkmm.models.TransactionType.TRANSFER -> "${formatDouble(transaction.amount, 2)}"
-            }
+                }
 
-            Text(
-                text = amountText,
-                color = amountColor,
+                Text(
+                    text = amountText,
+                    color = amountColor,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontStyle = FontStyle.Normal,
@@ -936,34 +975,8 @@ fun TransactionCard(
                 )
             )
 
-            // For transfers, show time and category in the right column
-            if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = transaction.time,
-                        color = TransactionColors.secondaryText,
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Normal
-                    )
-
-                    Text(
-                        text = "•",
-                        color = TransactionColors.secondaryText,
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Normal
-                    )
-
-                    Text(
-                        text = "Transfer",
-                        color = TransactionColors.secondaryText,
-                        fontSize = 12.sp,
-                        fontStyle = FontStyle.Normal
-                    )
-                }
-            } else {
+            // For non-transfers, show time and category in the right column
+            if (transaction.type != com.example.androidkmm.models.TransactionType.TRANSFER) {
                 Text(
                     text = transaction.account,
                     color = TransactionColors.secondaryText,
@@ -1124,43 +1137,88 @@ private fun AddTransactionContent(
     fun validateForm(): Boolean {
         val errors = mutableMapOf<String, String>()
         
-        // Validate title
-        if (formData.title.isBlank()) {
-            errors["title"] = "Title is required"
-        }
-        
-        // Validate amount
-        if (formData.amount.isBlank()) {
-            errors["amount"] = "Amount is required"
-        } else {
-            val amountValue = formData.amount.toDoubleOrNull()
-            if (amountValue == null || amountValue <= 0) {
-                errors["amount"] = "Please enter a valid amount"
-            }
-        }
-        
-        // Validate category
-        if (formData.category == null) {
-            errors["category"] = "Category is required"
-        }
-        
-        // Validate account
-        if (formData.account == null) {
-            errors["account"] = "Account is required"
-        }
-        
-        // Validate transfer accounts for transfer type
+        // For transfers, amount and both accounts are mandatory
         if (formData.type == TransactionType.TRANSFER) {
-            if (formData.toAccount == null) {
-                errors["transferTo"] = "Transfer to account is required"
+            // Validate amount
+            if (formData.amount.isBlank()) {
+                errors["amount"] = "Amount is required"
+            } else {
+                val amountValue = formData.amount.toDoubleOrNull()
+                if (amountValue == null || amountValue <= 0) {
+                    errors["amount"] = "Please enter a valid amount"
+                }
             }
-            if (formData.account?.name == formData.toAccount?.name) {
+            
+            // Validate from account
+            if (formData.account == null) {
+                errors["account"] = "From account is required"
+            }
+            
+            // Validate to account
+            if (formData.toAccount == null) {
+                errors["toAccount"] = "To account is required"
+            }
+            
+            // Validate that accounts are different
+            if (formData.account != null && formData.toAccount != null && 
+                formData.account?.name == formData.toAccount?.name) {
                 errors["transferTo"] = "Transfer to account must be different from from account"
+            }
+        } else {
+            // For income/expense, validate all required fields
+            // Validate title
+            if (formData.title.isBlank()) {
+                errors["title"] = "Title is required"
+            }
+            
+            // Validate amount
+            if (formData.amount.isBlank()) {
+                errors["amount"] = "Amount is required"
+            } else {
+                val amountValue = formData.amount.toDoubleOrNull()
+                if (amountValue == null || amountValue <= 0) {
+                    errors["amount"] = "Please enter a valid amount"
+                }
+            }
+            
+            // Validate category
+            if (formData.category == null) {
+                errors["category"] = "Category is required"
+            }
+            
+            // Validate account
+            if (formData.account == null) {
+                errors["account"] = "Account is required"
             }
         }
         
         validationErrors = errors
         return errors.isEmpty()
+    }
+    
+    // Check if all mandatory fields are filled
+    fun isFormReady(): Boolean {
+        return when (formData.type) {
+            TransactionType.TRANSFER -> {
+                // For transfers, amount and both accounts are mandatory
+                formData.amount.isNotBlank() && 
+                formData.amount.toDoubleOrNull() != null && 
+                formData.amount.toDoubleOrNull()!! > 0 &&
+                formData.account != null &&
+                formData.toAccount != null &&
+                // Also check that accounts are different
+                formData.account?.name != formData.toAccount?.name
+            }
+            else -> {
+                // For income/expense, all fields are mandatory
+                formData.title.isNotBlank() &&
+                formData.amount.isNotBlank() &&
+                formData.amount.toDoubleOrNull() != null &&
+                formData.amount.toDoubleOrNull()!! > 0 &&
+                formData.category != null &&
+                formData.account != null
+            }
+        }
     }
     
     // Save function with validation
@@ -1173,8 +1231,8 @@ private fun AddTransactionContent(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding(),
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             // Header
@@ -1370,15 +1428,24 @@ private fun AddTransactionContent(
 
         item {
             // Save Button
+            val isReady = isFormReady()
             Button(
                 onClick = { handleSave() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(48.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = TransactionColors.secondaryText.copy(alpha = 0.2f),
-                    contentColor = TransactionColors.primaryText
+                    containerColor = if (isReady) {
+                        TransactionColors.primaryText.copy(alpha = 0.8f)
+                    } else {
+                        TransactionColors.secondaryText.copy(alpha = 0.2f)
+                    },
+                    contentColor = if (isReady) {
+                        TransactionColors.background
+                    } else {
+                        TransactionColors.primaryText
+                    }
                 )
             ) {
                 Icon(
@@ -1387,12 +1454,8 @@ private fun AddTransactionContent(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                val buttonText = when (formData.type) {
-                    TransactionType.TRANSFER -> "Save Transfer"
-                    else -> "Save Transaction"
-                }
                 Text(
-                    text = buttonText,
+                    text = "Save Transaction",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -1427,13 +1490,17 @@ private fun TransactionTypeSelector(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) TransactionColors.cardBackground
+                    containerColor = if (isSelected) TransactionColors.primaryText.copy(alpha = 0.15f)
                     else Color.Transparent,
                     contentColor = if (isSelected) TransactionColors.primaryText
                     else TransactionColors.secondaryText
                 ),
+                border = if (isSelected) BorderStroke(
+                    width = 1.dp,
+                    color = TransactionColors.primaryText.copy(alpha = 0.3f)
+                ) else null,
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 Icon(
                     imageVector = icon,
@@ -1460,44 +1527,40 @@ private fun AmountInputSection(
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
+        OutlinedTextField(
+            value = amount,
+            onValueChange = onAmountChange,
+            textStyle = TextStyle(
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Light,
+                textAlign = TextAlign.Center,
+                color = TransactionColors.primaryText
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            isError = errorMessage != null,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                cursorColor = TransactionColors.primaryText,
+                focusedTextColor = TransactionColors.primaryText,
+                unfocusedTextColor = TransactionColors.primaryText,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                errorBorderColor = Color.Red,
+                errorContainerColor = Color.Transparent
+            ),
+            leadingIcon = {
             Text(
                 text = "$",
-                color = TransactionColors.primaryText,
-                fontSize = 48.sp,
+                    color = TransactionColors.primaryText,
+                    fontSize = 36.sp,
                 fontWeight = FontWeight.Light
             )
-
-            OutlinedTextField(
-                value = amount,
-                onValueChange = onAmountChange,
-                textStyle = TextStyle(
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Light,
-                    textAlign = TextAlign.Center,
-                    color = TransactionColors.primaryText
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                isError = errorMessage != null,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = TransactionColors.primaryText,
-                    focusedTextColor = TransactionColors.primaryText,
-                    unfocusedTextColor = TransactionColors.primaryText,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    errorBorderColor = Color.Red,
-                    errorContainerColor = Color.Transparent
-                ),
-                modifier = Modifier.width(200.dp)
-            )
-        }
+            },
+            modifier = Modifier.width(250.dp)
+        )
 
         Text(
             text = "Enter amount",
@@ -1528,7 +1591,7 @@ private fun CategoryAccountSelector(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = title,
@@ -1549,7 +1612,7 @@ private fun CategoryAccountSelector(
                 width = 1.dp,
                 color = TransactionColors.secondaryText.copy(alpha = 0.3f)
             ),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(12.dp)
         ) {
             Row {
                 Icon(
@@ -1580,7 +1643,7 @@ private fun InputField(
     errorMessage: String? = null
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = label,
@@ -1635,7 +1698,7 @@ private fun DateTimeSelector(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
+        modifier = modifier.height(40.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) TransactionColors.primaryText
@@ -1643,7 +1706,7 @@ private fun DateTimeSelector(
             contentColor = if (isSelected) TransactionColors.background
             else TransactionColors.primaryText
         ),
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(12.dp)
     ) {
         Icon(
             imageVector = icon,
@@ -1667,7 +1730,7 @@ private fun ReceiptUploadSection(
     var selectedImagePath by remember { mutableStateOf<String?>(null) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = "Receipt (Optional)",
@@ -1762,8 +1825,8 @@ private fun ReceiptUploadSection(
                 Text(
                     text = "Upload Receipt",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    fontWeight = FontWeight.Medium
+                )
                     Text(
                         text = "Images only",
                         fontSize = 12.sp,
@@ -1993,17 +2056,16 @@ fun CategorySelectionBottomSheet(
             )
         }
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding(),
-            contentPadding = PaddingValues(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .navigationBarsPadding()
         ) {
-            item {
                 // Header
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -2033,16 +2095,25 @@ fun CategorySelectionBottomSheet(
                             tint = TransactionColors.secondaryText,
                             modifier = Modifier.size(20.dp)
                         )
-                    }
                 }
             }
 
-            items(categories) { category ->
-                CategoryCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    category = category,
-                    onClick = { onCategorySelected(category) }
-                )
+            // Grid of categories
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                contentPadding = PaddingValues(bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(categories) { category ->
+                    CategoryGridCard(
+                            category = category,
+                            onClick = { onCategorySelected(category) }
+                        )
+                }
             }
         }
     }
@@ -2098,6 +2169,64 @@ private fun CategoryCard(
                 color = TransactionColors.primaryText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryGridCard(
+    category: TransactionCategory,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .border(
+                width = 0.5.dp,
+                color = Color.White.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(16.dp)
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = TransactionColors.cardBackground
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(category.color),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = category.icon,
+                    contentDescription = category.name,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = category.name,
+                color = TransactionColors.primaryText,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -2183,6 +2312,8 @@ private fun groupTransactionsByDay(transactions: List<com.example.androidkmm.mod
 @Composable
 private fun AnimatedSummaryCard(
     transactions: List<com.example.androidkmm.models.Transaction>,
+    carryForwardAmount: Double = 0.0,
+    totalAccountBalance: Double = 0.0,
     isCompact: Boolean
 ) {
     val totalIncome = transactions
@@ -2193,7 +2324,9 @@ private fun AnimatedSummaryCard(
         .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
         .sumOf { it.amount }
     
-    val total = totalIncome - totalExpense
+    // Total calculation: income - expenses + carry forward
+    val monthlyTotal = totalIncome - totalExpense
+    val total = monthlyTotal + carryForwardAmount
     
     // Animate padding and icon size
     val animatedPadding by animateFloatAsState(
@@ -2348,7 +2481,7 @@ private fun AnimatedSummaryCard(
 }
 
 @Composable
-private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.Transaction>) {
+private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
     val totalIncome = transactions
         .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
         .sumOf { it.amount }
@@ -2357,7 +2490,9 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
         .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
         .sumOf { it.amount }
     
-    val total = totalIncome - totalExpense
+    // Total calculation: income - expenses + carry forward
+    val monthlyTotal = totalIncome - totalExpense
+    val total = monthlyTotal + carryForwardAmount
     
     Card(
         modifier = Modifier
@@ -2778,4 +2913,53 @@ private fun TimePickerDialog(
             containerColor = TransactionColors.background
         )
     }
+}
+
+// Function to calculate carry forward amount from previous months
+private fun calculateCarryForwardAmount(
+    allTransactions: List<com.example.androidkmm.models.Transaction>,
+    currentMonth: Int,
+    currentYear: Int
+): Double {
+    println("calculateCarryForwardAmount - Current month: $currentMonth, year: $currentYear")
+    println("calculateCarryForwardAmount - Total transactions: ${allTransactions.size}")
+    
+    // Get all transactions from months before the current month
+    val previousTransactions = allTransactions.filter { transaction ->
+        try {
+            val parts = transaction.date.split("-")
+            if (parts.size >= 2) {
+                val year = parts[0].toInt()
+                val month = parts[1].toInt()
+                
+                // Include transactions from previous months and years
+                val isPrevious = year < currentYear || (year == currentYear && month < currentMonth)
+                if (isPrevious) {
+                    println("calculateCarryForwardAmount - Previous transaction: ${transaction.title} - ${transaction.date} - ${transaction.amount}")
+                }
+                isPrevious
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    println("calculateCarryForwardAmount - Previous transactions count: ${previousTransactions.size}")
+    
+    // Calculate the net amount from previous transactions
+    val totalIncome = previousTransactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
+        .sumOf { it.amount }
+    
+    val totalExpense = previousTransactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
+        .sumOf { it.amount }
+    
+    val netAmount = totalIncome - totalExpense
+    println("calculateCarryForwardAmount - Total income: $totalIncome, Total expense: $totalExpense, Net: $netAmount")
+    
+    // Return the net amount (income - expense) from previous months
+    return netAmount
 }

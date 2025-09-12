@@ -70,7 +70,7 @@ CREATE TABLE app_settings (
 
 -- Insert default settings
 INSERT INTO app_settings (key, value) VALUES
-('carry_forward_enabled', '0'),
+('carry_forward_enabled', '1'),
 ('currency_symbol', '$'),
 ('date_format', 'MMM dd, yyyy');
 

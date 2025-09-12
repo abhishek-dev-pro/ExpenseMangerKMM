@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -116,8 +117,9 @@ fun ProfileMainScreen() {
     ) {
         when (currentScreen) {
             "profile" -> ProfileScreen(
-                onAccountsClick = { showAccountSheet = true },
+                onAccountsClick = { currentScreen = "accounts" },
                 onCategoriesClick = { showCategorySheet = true },
+                onCustomizeClick = { currentScreen = "customize" },
                 onClearDataClick = {
                     // Clear all data from database
                     scope.launch {
@@ -125,24 +127,15 @@ fun ProfileMainScreen() {
                     }
                 }
             )
+            "accounts" -> AccountsScreen(
+                onBackClick = { currentScreen = "profile" }
+            )
+            "customize" -> CustomizeScreen(
+                onBackClick = { currentScreen = "profile" }
+            )
         }
 
-        // Account Management Bottom Sheet
-        if (showAccountSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showAccountSheet = false },
-                containerColor = DarkSurface,
-                dragHandle = null
-            ) {
-                AccountsBottomSheet(
-                    accounts = accounts,
-                    onDismiss = { showAccountSheet = false },
-                    onAddAccount = { showAddAccountSheet = true }
-                )
-            }
-        }
-
-        // Add Account Bottom Sheet
+        // Add Account Bottom Sheet (kept for categories)
         if (showAddAccountSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAddAccountSheet = false },
@@ -225,6 +218,7 @@ fun ProfileMainScreen() {
 fun ProfileScreen(
     onAccountsClick: () -> Unit,
     onCategoriesClick: () -> Unit,
+    onCustomizeClick: () -> Unit,
     onClearDataClick: () -> Unit
 ) {
     LazyColumn(
@@ -323,10 +317,10 @@ fun ProfileScreen(
         )
 
         MenuCard(
-            icon = Icons.Default.Help,
-            title = "Help & Support",
-            subtitle = "Get help and contact support",
-            onClick = { }
+            icon = Icons.Default.Settings,
+            title = "Customize",
+            subtitle = "Customize app settings and preferences",
+            onClick = onCustomizeClick
         )
         }
 
@@ -470,10 +464,14 @@ fun MenuCard(
 }
 
 @Composable
-fun AccountsBottomSheet(
-    accounts: List<Account>,
+fun CategoriesBottomSheet(
+    expenseCategories: List<Category>,
+    incomeCategories: List<Category>,
+    customCategories: List<Category>,
+    selectedTab: CategoryTab = CategoryTab.EXPENSE,
     onDismiss: () -> Unit,
-    onAddAccount: () -> Unit
+    onTabSelected: (CategoryTab) -> Unit,
+    onAddCategory: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -487,13 +485,13 @@ fun AccountsBottomSheet(
         ) {
             Column {
                 Text(
-                    text = "Manage Accounts",
+                    text = "Manage Categories",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = WhiteText
                 )
                 Text(
-                    text = "Add, edit, or manage your financial accounts",
+                    text = "Add, edit, or manage your expense and income categories",
                     fontSize = 14.sp,
                     color = GrayText
                 )
@@ -510,17 +508,54 @@ fun AccountsBottomSheet(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Accounts List
-        accounts.forEach { account ->
-            AccountItem(account = account)
-            Spacer(modifier = Modifier.height(12.dp))
+        // Category Tabs
+        TabRow(
+            selectedTabIndex = when (selectedTab) {
+                CategoryTab.EXPENSE -> 0
+                CategoryTab.INCOME -> 1
+            },
+            containerColor = DarkSurfaceVariant,
+            contentColor = WhiteText,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[when (selectedTab) {
+                        CategoryTab.EXPENSE -> 0
+                        CategoryTab.INCOME -> 1
+                    }]),
+                    color = Color(0xFF2196F3)
+                )
+            }
+        ) {
+            Tab(
+                selected = selectedTab == CategoryTab.EXPENSE,
+                onClick = { onTabSelected(CategoryTab.EXPENSE) },
+                text = { Text("Expense", color = WhiteText) }
+            )
+            Tab(
+                selected = selectedTab == CategoryTab.INCOME,
+                onClick = { onTabSelected(CategoryTab.INCOME) },
+                text = { Text("Income", color = WhiteText) }
+            )
         }
 
-        // Add New Account Button
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Categories List
+        val categoriesToShow = when (selectedTab) {
+            CategoryTab.EXPENSE -> expenseCategories
+            CategoryTab.INCOME -> incomeCategories
+        }
+
+        categoriesToShow.forEach { category ->
+            CategoryItem(category = category)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Add New Category Button
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onAddAccount() },
+                .clickable { onAddCategory() },
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             shape = RoundedCornerShape(16.dp)
         ) {
@@ -540,7 +575,7 @@ fun AccountsBottomSheet(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Add New Account",
+                        text = "Add New Category",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = WhiteText
@@ -554,7 +589,7 @@ fun AccountsBottomSheet(
 }
 
 @Composable
-fun AccountItem(account: Account) {
+fun CategoryItem(category: Category) {
     Card(
         colors = CardDefaults.cardColors(containerColor = DarkSurface),
         shape = RoundedCornerShape(16.dp)
@@ -562,21 +597,21 @@ fun AccountItem(account: Account) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
-                    .background(account.color),
+                    .background(category.color),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = account.icon,
+                    imageVector = category.icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -584,15 +619,15 @@ fun AccountItem(account: Account) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = account.name,
+                    text = category.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = WhiteText
                 )
                 Text(
-                    text = account.balance,
-                    fontSize = 14.sp,
-                    color = GreenSuccess
+                    text = category.type.name,
+                    fontSize = 12.sp,
+                    color = GrayText
                 )
             }
 
@@ -601,14 +636,16 @@ fun AccountItem(account: Account) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = GrayText
+                        tint = GrayText,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
                 IconButton(onClick = { }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
-                        tint = Color(0xFFE57373)
+                        tint = Color(0xFFE57373),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
@@ -1639,3 +1676,159 @@ fun ColorSelector(
 }
 
 
+
+@Composable
+fun SettingsSection() {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
+    val scope = rememberCoroutineScope()
+    
+    // Debug logging
+    LaunchedEffect(appSettings.value.carryForwardEnabled) {
+        println("SettingsSection - Carry Forward Enabled: ${appSettings.value.carryForwardEnabled}")
+        println("SettingsSection - Full AppSettings: ${appSettings.value}")
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = DarkSurface),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Text(
+                text = "Preferences",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = WhiteText
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Carry Forward Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = "Carry Forward",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = WhiteText
+                    )
+                    Text(
+                        text = "Include previous months balance in current month",
+                        fontSize = 14.sp,
+                        color = GrayText,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                
+                Switch(
+                    checked = appSettings.value.carryForwardEnabled,
+                    onCheckedChange = { enabled ->
+                        println("Toggle clicked: $enabled")
+                        scope.launch {
+                            settingsDatabaseManager.updateCarryForwardEnabled(enabled)
+                            println("Updated carry forward to: $enabled")
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = WhiteText,
+                        checkedTrackColor = GreenSuccess,
+                        uncheckedThumbColor = GrayText,
+                        uncheckedTrackColor = DarkSurfaceVariant
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomizeScreen(
+    onBackClick: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackground)
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            // Header with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            DarkSurface,
+                            CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = WhiteText,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Text(
+                    text = "Customize",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = WhiteText
+                )
+            }
+        }
+        
+        item {
+            // Settings Section
+            SettingsSection()
+        }
+        
+        item {
+            // Future customization options can be added here
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = DarkSurface),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    Text(
+                        text = "More Options",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = WhiteText
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = "Additional customization options will be added here in future updates.",
+                        fontSize = 14.sp,
+                        color = GrayText,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        }
+    }
+}

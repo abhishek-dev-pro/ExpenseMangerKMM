@@ -22,7 +22,8 @@ import com.example.androidkmm.design.DesignSystem
 @Composable
 fun TransactionItem(
     transaction: LedgerTransaction,
-    balanceAtTransaction: Double
+    balanceAtTransaction: Double,
+    onDelete: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -144,16 +145,33 @@ fun TransactionItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            IconButton(
-                onClick = { },
-                modifier = Modifier.size(24.dp)
+            // Action Buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = LedgerTheme.textSecondary,
-                    modifier = Modifier.size(16.dp)
-                )
+                IconButton(
+                    onClick = { },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = LedgerTheme.textSecondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = LedgerTheme.redAmount,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
     }

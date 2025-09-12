@@ -7,7 +7,7 @@ data class AppSetting(
 )
 
 data class AppSettings(
-    val carryForwardEnabled: Boolean = false,
+    val carryForwardEnabled: Boolean = true,
     val currencySymbol: String = "$",
     val dateFormat: String = "MMM dd, yyyy"
 )

@@ -44,8 +44,16 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     fun getAppSettings(): Flow<AppSettings> {
         return getAllSettings().map { settings ->
             val settingsMap = settings.associate { it.key to it.value }
+            val carryForwardValue = settingsMap["carry_forward_enabled"]
+            val carryForwardEnabled = when (carryForwardValue) {
+                "1" -> true
+                "0" -> false
+                null -> true // Default to true if not found
+                else -> carryForwardValue.toBoolean()
+            }
+            println("Settings Debug - carry_forward_enabled: '$carryForwardValue', parsed: $carryForwardEnabled")
             AppSettings(
-                carryForwardEnabled = settingsMap["carry_forward_enabled"]?.toBoolean() ?: false,
+                carryForwardEnabled = carryForwardEnabled,
                 currencySymbol = settingsMap["currency_symbol"] ?: "$",
                 dateFormat = settingsMap["date_format"] ?: "MMM dd, yyyy"
             )
@@ -53,7 +61,9 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     }
     
     suspend fun updateCarryForwardEnabled(enabled: Boolean) {
-        updateSetting("carry_forward_enabled", if (enabled) "1" else "0")
+        val value = if (enabled) "1" else "0"
+        println("Updating carry_forward_enabled to: $value")
+        updateSetting("carry_forward_enabled", value)
     }
     
     suspend fun updateCurrencySymbol(symbol: String) {

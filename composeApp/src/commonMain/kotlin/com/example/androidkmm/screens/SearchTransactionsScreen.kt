@@ -231,6 +231,11 @@ fun SearchTransactionsScreen(
                 transactionDatabaseManager.deleteTransaction(transaction)
                 selectedTransactionForDetails = null
             },
+            onNavigateToLedger = { personName ->
+                // Navigate to ledger screen and find the person
+                // This would need to be implemented based on your navigation structure
+                println("Navigate to ledger for person: $personName")
+            },
             categoryDatabaseManager = categoryDatabaseManager,
             accountDatabaseManager = accountDatabaseManager
         )
@@ -428,7 +433,12 @@ private fun SearchTransactionItem(
             ) {
                 // Title
                 Text(
-                    text = transaction.title,
+                    text = if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER && 
+                               transaction.transferTo != null && transaction.transferTo.isNotEmpty()) {
+                        "${transaction.account} → ${transaction.transferTo}"
+                    } else {
+                        transaction.title
+                    },
                     color = SearchColors.primaryText,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
