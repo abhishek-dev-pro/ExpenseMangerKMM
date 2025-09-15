@@ -23,119 +23,124 @@ import com.example.androidkmm.design.DesignSystem
 fun TransactionItem(
     transaction: LedgerTransaction,
     balanceAtTransaction: Double,
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    isHighlighted: Boolean = false
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = 0.5.dp, // very thin border
-                color = Color.White.copy(alpha = 0.2f), // subtle white
+                width = if (isHighlighted) 2.dp else 0.5.dp, // thicker border when highlighted
+                color = if (isHighlighted) Color(0xFFE0E0E0) else Color.White.copy(alpha = 0.2f), // dark white border when highlighted
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A1A1A)
+            containerColor = if (isHighlighted) Color(0xFF000000) else Color(0xFF1A1A1A)
         ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Transaction Type Icon
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        if (transaction.type == TransactionType.SENT) Color(0xFF2A1919) else Color(0xFF0F2419),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+            // Row 1: Money sent on left, -200 on right (big size)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Icon(
-                    imageVector = if (transaction.type == TransactionType.SENT) {
-                        Icons.Default.ArrowUpward
-                    } else {
-                        Icons.Default.ArrowDownward
-                    },
-                    contentDescription = null,
-                    tint = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount,
-                    modifier = Modifier.size(16.dp)
-                )
-
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Transaction Details
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = if (transaction.type == TransactionType.SENT) "You sent" else "You received",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = LedgerTheme.textPrimary()
-                )
-
-                if (transaction.description.isNotEmpty()) {
-                    Text(
-                        text = transaction.description,
-                        fontSize = 14.sp,
-                        color = LedgerTheme.textSecondary()
-                    )
-                }
-
-                transaction.account?.let { account ->
+                Column {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Wallet,
+                            imageVector = if (transaction.type == TransactionType.SENT) {
+                                Icons.Default.ArrowUpward
+                            } else {
+                                Icons.Default.ArrowDownward
+                            },
+                            contentDescription = null,
+                            tint = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (transaction.type == TransactionType.SENT) "Money sent" else "Money received",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = LedgerTheme.textPrimary()
+                        )
+                    }
+                    
+                    // Title directly below without spacing
+                    if (transaction.description.isNotEmpty()) {
+                        Text(
+                            text = transaction.description,
+                            fontSize = 14.sp,
+                            color = LedgerTheme.textSecondary(),
+                            modifier = Modifier.padding(start = 22.dp) // Align with text, not icon
+                        )
+                    }
+                }
+                
+                Text(
+                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$${formatDouble(transaction.amount)}",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
+                )
+            }
+
+            // Row 3: Date Time on left, balance on right (with gap)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Date section
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
                             contentDescription = null,
                             tint = LedgerTheme.textSecondary(),
                             modifier = Modifier.size(12.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = account,
+                            text = transaction.date,
+                            fontSize = 12.sp,
+                            color = LedgerTheme.textSecondary()
+                        )
+                    }
+                    
+                    // Time section
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = LedgerTheme.textSecondary(),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = transaction.time,
                             fontSize = 12.sp,
                             color = LedgerTheme.textSecondary()
                         )
                     }
                 }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint = LedgerTheme.textSecondary(),
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${transaction.date}, ${transaction.time}",
-                        fontSize = 12.sp,
-                        color = LedgerTheme.textSecondary()
-                    )
-                }
-            }
-
-            // Amount and Edit Icon
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$${formatDouble(transaction.amount)}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
-                )
+                
                 Text(
                     text = "Balance: $${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
                     fontSize = 12.sp,
@@ -143,34 +148,56 @@ fun TransactionItem(
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Action Buttons
+            // Row 4: Account on left, edit and delete buttons on right
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier.size(24.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit",
+                        imageVector = Icons.Default.Wallet,
+                        contentDescription = null,
                         tint = LedgerTheme.textSecondary(),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = transaction.account ?: "Cash",
+                        fontSize = 12.sp,
+                        color = LedgerTheme.textSecondary()
                     )
                 }
-
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(24.dp)
+                
+                // Edit and Delete buttons on the right
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = LedgerTheme.redAmount,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    IconButton(
+                        onClick = { },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = LedgerTheme.textSecondary(),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = LedgerTheme.redAmount,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }

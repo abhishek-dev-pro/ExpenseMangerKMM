@@ -19,7 +19,7 @@ fun BottomNavigationBar(
     onSelect: (Int) -> Unit,
     items: List<com.example.androidkmm.data.NavigationItem> = com.example.androidkmm.data.SampleData.navigationItems
 ) {
-    NavigationBar(containerColor = Color.Black) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = selected == index,
@@ -38,10 +38,10 @@ fun BottomNavigationBar(
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    selectedTextColor = Color.White,
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray,
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     indicatorColor = Color.Transparent
                 )
             )

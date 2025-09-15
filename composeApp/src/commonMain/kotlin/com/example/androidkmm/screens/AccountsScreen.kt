@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -347,7 +348,7 @@ private fun EmptyAccountsState(
                 modifier = Modifier.size(64.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "No Accounts Yet",
@@ -400,12 +401,21 @@ private fun AddAccountBottomSheet(
     var accountName by remember { mutableStateOf("") }
     var selectedAccountType by remember { mutableStateOf("Bank Account") }
     var selectedBank by remember { mutableStateOf("HDFC Bank") }
+    var customBankName by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf("0.00") }
+
+    // Validation logic
+    val isFormValid = accountName.isNotEmpty() && 
+                     initialBalance.isNotEmpty() && 
+                     initialBalance.toDoubleOrNull() != null &&
+                     (selectedAccountType != "Bank Account" || 
+                      (selectedBank != "Other" || customBankName.isNotEmpty()))
 
     val bankOptions = listOf(
         "HDFC Bank", "State Bank of India (SBI)",
         "ICICI Bank", "Axis Bank",
-        "Bank of Baroda", "Punjab National Bank"
+        "Bank of Baroda", "Punjab National Bank",
+        "Kotak Mahindra Bank", "Yes Bank", "Other"
     )
 
     Column(
@@ -421,15 +431,16 @@ private fun AddAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         BasicTextField(
             value = accountName,
             onValueChange = { accountName = it },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .background(Color.Black, RoundedCornerShape(12.dp))
+                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -443,7 +454,7 @@ private fun AddAccountBottomSheet(
             }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Account Type Section
         Text(
@@ -453,7 +464,7 @@ private fun AddAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -498,7 +509,7 @@ private fun AddAccountBottomSheet(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Bank Name Section (only show if Bank Account is selected)
         if (selectedAccountType == "Bank Account") {
@@ -509,12 +520,13 @@ private fun AddAccountBottomSheet(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.height(120.dp) // Show only 2 rows (2 * 60dp)
             ) {
                 items(bankOptions) { bank ->
                     BankSelectionCard(
@@ -525,7 +537,42 @@ private fun AddAccountBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Custom Bank Name Input (only show if "Other" is selected)
+            if (selectedBank == "Other") {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = "Enter Bank Name",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                BasicTextField(
+                    value = customBankName,
+                    onValueChange = { customBankName = it },
+                    textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black, RoundedCornerShape(12.dp))
+                        .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    decorationBox = { innerTextField ->
+                        if (customBankName.isEmpty()) {
+                            Text(
+                                text = "e.g. My Custom Bank",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         // Initial Balance Section
@@ -536,16 +583,17 @@ private fun AddAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         BasicTextField(
             value = initialBalance,
             onValueChange = { initialBalance = it },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .background(Color.Black, RoundedCornerShape(12.dp))
+                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
@@ -559,15 +607,16 @@ private fun AddAccountBottomSheet(
             }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Add Account Button
         Button(
             onClick = {
+                val bankName = if (selectedBank == "Other") customBankName else selectedBank
                 val account = Account(
                     id = System.currentTimeMillis().toString(),
                     name = accountName.ifEmpty {
-                        if (selectedAccountType == "Bank Account") selectedBank else selectedAccountType
+                        if (selectedAccountType == "Bank Account") bankName else selectedAccountType
                     },
                     balance = initialBalance,
                     icon = when (selectedAccountType) {
@@ -582,12 +631,13 @@ private fun AddAccountBottomSheet(
                 )
                 onAccountAdded(account)
             },
+            enabled = isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6C6C6C)
+                containerColor = if (isFormValid) Color(0xFF2196F3) else Color(0xFF6C6C6C)
             )
         ) {
             Text(
@@ -611,12 +661,14 @@ private fun EditAccountBottomSheet(
     var accountName by remember { mutableStateOf(account.name) }
     var selectedAccountType by remember { mutableStateOf(account.type) }
     var selectedBank by remember { mutableStateOf("HDFC Bank") }
+    var customBankName by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf(account.balance) }
 
     val bankOptions = listOf(
         "HDFC Bank", "State Bank of India (SBI)",
         "ICICI Bank", "Axis Bank",
-        "Bank of Baroda", "Punjab National Bank"
+        "Bank of Baroda", "Punjab National Bank",
+        "Kotak Mahindra Bank", "Yes Bank", "Other"
     )
 
     Column(
@@ -632,15 +684,16 @@ private fun EditAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         BasicTextField(
             value = accountName,
             onValueChange = { accountName = it },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .background(Color.Black, RoundedCornerShape(12.dp))
+                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -654,7 +707,7 @@ private fun EditAccountBottomSheet(
             }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Account Type Section
         Text(
@@ -664,7 +717,7 @@ private fun EditAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -709,7 +762,7 @@ private fun EditAccountBottomSheet(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Bank Name Section (only show if Bank Account is selected)
         if (selectedAccountType == "Bank Account") {
@@ -720,12 +773,13 @@ private fun EditAccountBottomSheet(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.height(120.dp) // Show only 2 rows (2 * 60dp)
             ) {
                 items(bankOptions) { bank ->
                     BankSelectionCard(
@@ -736,7 +790,42 @@ private fun EditAccountBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Custom Bank Name Input (only show if "Other" is selected)
+            if (selectedBank == "Other") {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = "Enter Bank Name",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                BasicTextField(
+                    value = customBankName,
+                    onValueChange = { customBankName = it },
+                    textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black, RoundedCornerShape(12.dp))
+                        .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                        .padding(16.dp),
+                    decorationBox = { innerTextField ->
+                        if (customBankName.isEmpty()) {
+                            Text(
+                                text = "e.g. My Custom Bank",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
 
         // Initial Balance Section
@@ -747,16 +836,17 @@ private fun EditAccountBottomSheet(
             color = MaterialTheme.colorScheme.onSurface
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         BasicTextField(
             value = initialBalance,
             onValueChange = { initialBalance = it },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
+            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                .background(Color.Black, RoundedCornerShape(12.dp))
+                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
@@ -770,7 +860,7 @@ private fun EditAccountBottomSheet(
             }
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // Update Account Button
         Button(

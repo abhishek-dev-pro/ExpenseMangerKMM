@@ -39,6 +39,7 @@ import kotlinx.datetime.Clock as DateTimeClock
 @Composable
 fun LedgerMainScreen(
     navigateToPerson: String? = null,
+    navigateToTransaction: String? = null,
     onPersonNavigated: () -> Unit = {}
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
@@ -53,10 +54,26 @@ fun LedgerMainScreen(
     // Handle navigation to specific person
     LaunchedEffect(navigateToPerson, allPeople) {
         if (navigateToPerson != null && allPeople.isNotEmpty()) {
-            val person = allPeople.find { it.name.equals(navigateToPerson, ignoreCase = true) }
+            println("LedgerMainScreen - Looking for person: '$navigateToPerson'")
+            println("LedgerMainScreen - Available people: ${allPeople.map { it.name }}")
+            
+            // Try exact match first
+            var person = allPeople.find { it.name.equals(navigateToPerson, ignoreCase = true) }
+            
+            // If no exact match, try partial match
+            if (person == null) {
+                person = allPeople.find { 
+                    it.name.contains(navigateToPerson, ignoreCase = true) || 
+                    navigateToPerson.contains(it.name, ignoreCase = true)
+                }
+            }
+            
             if (person != null) {
+                println("LedgerMainScreen - Found person: '${person.name}', selecting...")
                 selectedPerson = person
                 onPersonNavigated() // Clear the navigation request
+            } else {
+                println("LedgerMainScreen - No person found matching: '$navigateToPerson'")
             }
         }
     }
@@ -463,10 +480,13 @@ fun LedgerMainScreen(
     
     // Show person detail screen when a person is selected
     selectedPerson?.let { person ->
+        println("LedgerMainScreen - Passing highlightTransactionId: '$navigateToTransaction' to PersonLedgerDetailScreen for person: '${person.name}'")
+        println("LedgerMainScreen - navigateToPerson: '$navigateToPerson', navigateToTransaction: '$navigateToTransaction'")
         PersonLedgerDetailScreen(
             person = person,
             onBack = { selectedPerson = null },
-            onAddTransaction = { showAddBottomSheet = true }
+            onAddTransaction = { showAddBottomSheet = true },
+            highlightTransactionId = navigateToTransaction
         )
     }
     

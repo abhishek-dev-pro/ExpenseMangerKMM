@@ -44,7 +44,7 @@ fun TransactionDetailsBottomSheet(
     onDismiss: () -> Unit,
     onEdit: (com.example.androidkmm.models.Transaction) -> Unit,
     onDelete: () -> Unit,
-    onNavigateToLedger: (String) -> Unit = {},
+    onNavigateToLedger: (String, String) -> Unit = { _, _ -> },
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
@@ -64,17 +64,16 @@ fun TransactionDetailsBottomSheet(
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             if (isEditMode) {
-                EditTransactionContent(
+                EditTransactionScreen(
                     transaction = editedTransaction,
+                    onDismiss = {
+                        isEditMode = false
+                        editedTransaction = transaction
+                    },
                     onSave = { updatedTransaction ->
                         onEdit(updatedTransaction)
                         isEditMode = false
                     },
-                    onCancel = {
-                        isEditMode = false
-                        editedTransaction = transaction
-                    },
-                    onTransactionChange = { editedTransaction = it },
                     categoryDatabaseManager = categoryDatabaseManager,
                     accountDatabaseManager = accountDatabaseManager
                 )
@@ -183,12 +182,38 @@ fun TransactionDetailsBottomSheet(
                             onClick = {
                                 showLedgerDialog = false
                                 onDismiss()
-                                // Extract person name from transaction title
-                                val personName = transaction.title
-                                    .replace("Sent to ", "")
-                                    .replace("Received from ", "")
-                                    .replace(" - Transfer", "")
-                                onNavigateToLedger(personName)
+                                // Extract person name from transaction title more reliably
+                                val personName = when {
+                                    transaction.title.startsWith("Sent to ") -> {
+                                        transaction.title.replace("Sent to ", "").trim()
+                                    }
+                                    transaction.title.startsWith("Received from ") -> {
+                                        transaction.title.replace("Received from ", "").trim()
+                                    }
+                                    transaction.title.contains(" - Transfer") -> {
+                                        transaction.title.replace(" - Transfer", "").trim()
+                                    }
+                                    transaction.title.contains(" to ") -> {
+                                        // Handle cases like "Money to John"
+                                        val parts = transaction.title.split(" to ")
+                                        if (parts.size > 1) parts[1].trim() else transaction.title
+                                    }
+                                    transaction.title.contains(" from ") -> {
+                                        // Handle cases like "Money from John"
+                                        val parts = transaction.title.split(" from ")
+                                        if (parts.size > 1) parts[1].trim() else transaction.title
+                                    }
+                                    else -> {
+                                        // For other cases, try to extract from description or use title as fallback
+                                        val fallback = transaction.description.ifEmpty { transaction.title }
+                                        fallback.trim()
+                                    }
+                                }
+                                println("TransactionDetailsBottomSheet - Extracted person name: '$personName' from title: '${transaction.title}'")
+                                println("TransactionDetailsBottomSheet - Transaction ID: '${transaction.id}'")
+                                println("TransactionDetailsBottomSheet - Transaction amount: '${transaction.amount}', date: '${transaction.date}', time: '${transaction.time}'")
+                                // Pass person name and transaction details for highlighting
+                                onNavigateToLedger(personName, "${transaction.amount}|${transaction.date}|${transaction.time}")
                             },
                             modifier = Modifier
                                 .weight(1f)
@@ -202,9 +227,7 @@ fun TransactionDetailsBottomSheet(
                             Text(
                                 text = "Take me there",
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
@@ -985,6 +1008,14 @@ private fun EditTransactionContent(
                     value = transaction.date.ifEmpty { "Today" },
                     onValueChange = { },
                     modifier = Modifier.weight(1f),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = "Date",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.outline,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline,

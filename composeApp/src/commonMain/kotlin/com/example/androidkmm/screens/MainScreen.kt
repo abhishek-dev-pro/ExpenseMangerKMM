@@ -19,6 +19,7 @@ import com.example.androidkmm.theme.AppTheme
 fun MainScreen() {
     var selectedTab by remember { mutableStateOf(0) }
     var navigateToLedgerPerson by remember { mutableStateOf<String?>(null) }
+    var navigateToLedgerTransaction by remember { mutableStateOf<String?>(null) }
     
     // Initialize database
     InitializeDatabase()
@@ -41,15 +42,21 @@ fun MainScreen() {
                 when (selectedTab) {
                     0 -> HomeScreenContent()
                     1 -> TransactionsScreen(
-                        onNavigateToLedger = { personName ->
+                        onNavigateToLedger = { personName, transactionId ->
+                            println("MainScreen - Received navigation: personName='$personName', transactionId='$transactionId'")
                             navigateToLedgerPerson = personName
+                            navigateToLedgerTransaction = transactionId
                             selectedTab = 3 // Switch to ledger tab
                         }
                     )
                     2 -> GroupsScreen()
                     3 -> LedgerMainScreen(
                         navigateToPerson = navigateToLedgerPerson,
-                        onPersonNavigated = { navigateToLedgerPerson = null }
+                        navigateToTransaction = navigateToLedgerTransaction,
+                        onPersonNavigated = { 
+                            navigateToLedgerPerson = null
+                            navigateToLedgerTransaction = null
+                        }
                     )
                     4 -> ProfileMainScreen()
                 }

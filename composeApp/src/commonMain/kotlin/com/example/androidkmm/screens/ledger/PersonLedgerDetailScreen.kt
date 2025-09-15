@@ -34,13 +34,34 @@ import androidx.compose.runtime.rememberCoroutineScope
 fun PersonLedgerDetailScreen(
     person: LedgerPerson,
     onBack: () -> Unit,
-    onAddTransaction: () -> Unit
+    onAddTransaction: () -> Unit,
+    highlightTransactionId: String? = null
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val coroutineScope = rememberCoroutineScope()
     val transactionsState = ledgerDatabaseManager.getLedgerTransactionsByPerson(person.id).collectAsState(initial = emptyList<LedgerTransaction>())
     val transactions = transactionsState.value
+    
+    // State for temporary highlighting
+    var tempHighlightedId by remember { mutableStateOf<String?>(null) }
+    
+    // Handle temporary highlighting when highlightTransactionId changes
+    LaunchedEffect(highlightTransactionId) {
+        if (highlightTransactionId != null) {
+            println("PersonLedgerDetailScreen - Starting 3-second highlight for: '$highlightTransactionId'")
+            // Set the highlighted transaction immediately
+            tempHighlightedId = highlightTransactionId
+            
+            // Clear highlighting after 3 seconds
+            kotlinx.coroutines.delay(3000)
+            tempHighlightedId = null
+            println("PersonLedgerDetailScreen - Highlighting cleared after 3 seconds")
+        } else {
+            // Clear highlighting immediately if highlightTransactionId is null
+            tempHighlightedId = null
+        }
+    }
     
     // Get updated person data from database - use LaunchedEffect to get the latest person data
     var updatedPerson by remember { mutableStateOf(person) }
@@ -296,9 +317,35 @@ fun PersonLedgerDetailScreen(
                 // Use the stored balance at the time of this transaction
                 val balanceAtTransaction = transaction.balanceAtTime
                 
+                // Enhanced highlighting logic - match by amount, date, and time using temporary state
+                val currentHighlightId = tempHighlightedId
+                val isHighlighted = if (currentHighlightId != null) {
+                    val parts = currentHighlightId.split("|")
+                    if (parts.size == 3) {
+                        val highlightAmount = parts[0].toDoubleOrNull()
+                        val highlightDate = parts[1]
+                        val highlightTime = parts[2]
+                        val matches = highlightAmount == transaction.amount && highlightDate == transaction.date && highlightTime == transaction.time
+                        if (matches) {
+                            println("PersonLedgerDetailScreen - MATCH FOUND! Transaction amount: '${transaction.amount}', date: '${transaction.date}', time: '${transaction.time}'")
+                        }
+                        matches
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+                
+                // Debug current state for first transaction
+                if (index == 0) {
+                    println("PersonLedgerDetailScreen - Transaction 0: isHighlighted=$isHighlighted, tempHighlightedId='$tempHighlightedId', highlightTransactionId='$highlightTransactionId'")
+                }
+                
                 TransactionItem(
                     transaction = transaction,
                     balanceAtTransaction = balanceAtTransaction,
+                    isHighlighted = isHighlighted,
                     onDelete = {
                         coroutineScope.launch {
                             // Delete the ledger transaction and update person balance
@@ -330,7 +377,7 @@ fun PersonLedgerDetailScreen(
                     }
                 )
                 if (transaction != transactions.last()) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
             }
         }

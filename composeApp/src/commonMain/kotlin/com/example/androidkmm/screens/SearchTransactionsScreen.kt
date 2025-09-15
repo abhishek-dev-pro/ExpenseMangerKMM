@@ -43,7 +43,8 @@ object SearchColors {
 fun SearchTransactionsScreen(
     onBackClick: () -> Unit,
     onCloseClick: () -> Unit,
-    onTransactionClick: (Transaction) -> Unit
+    onTransactionClick: (Transaction) -> Unit,
+    onNavigateToLedger: (String, String) -> Unit = { _, _ -> }
 ) {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
@@ -225,11 +226,7 @@ fun SearchTransactionsScreen(
                 transactionDatabaseManager.deleteTransaction(transaction)
                 selectedTransactionForDetails = null
             },
-            onNavigateToLedger = { personName ->
-                // Navigate to ledger screen and find the person
-                // This would need to be implemented based on your navigation structure
-                println("Navigate to ledger for person: $personName")
-            },
+            onNavigateToLedger = { personName, transactionId -> onNavigateToLedger(personName, transactionId) },
             categoryDatabaseManager = categoryDatabaseManager,
             accountDatabaseManager = accountDatabaseManager
         )
