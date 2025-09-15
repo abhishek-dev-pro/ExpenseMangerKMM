@@ -51,25 +51,74 @@ class SQLiteCategoryDatabase(
     
     fun getAllCategories(): Flow<List<Category>> {
         return database.categoryDatabaseQueries.selectAll().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toCategory() }
+            try {
+                list.mapNotNull { dbCategory ->
+                    try {
+                        dbCategory.toCategory()
+                    } catch (e: Exception) {
+                        println("Error converting category ${dbCategory.id}: ${e.message}")
+                        null // Skip invalid categories
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing category list: ${e.message}")
+                e.printStackTrace()
+                emptyList()
+            }
         }
     }
     
     fun getCategoriesByType(type: CategoryType): Flow<List<Category>> {
         return database.categoryDatabaseQueries.selectByType(type.name).asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toCategory() }
+            try {
+                list.mapNotNull { dbCategory ->
+                    try {
+                        dbCategory.toCategory()
+                    } catch (e: Exception) {
+                        println("Error converting category ${dbCategory.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing categories by type: ${e.message}")
+                emptyList()
+            }
         }
     }
     
     fun getCustomCategories(): Flow<List<Category>> {
         return database.categoryDatabaseQueries.selectCustomCategories().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toCategory() }
+            try {
+                list.mapNotNull { dbCategory ->
+                    try {
+                        dbCategory.toCategory()
+                    } catch (e: Exception) {
+                        println("Error converting custom category ${dbCategory.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing custom categories: ${e.message}")
+                emptyList()
+            }
         }
     }
     
     fun getDefaultCategories(): Flow<List<Category>> {
         return database.categoryDatabaseQueries.selectDefaultCategories().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toCategory() }
+            try {
+                list.mapNotNull { dbCategory ->
+                    try {
+                        dbCategory.toCategory()
+                    } catch (e: Exception) {
+                        println("Error converting default category ${dbCategory.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing default categories: ${e.message}")
+                emptyList()
+            }
         }
     }
     
@@ -174,7 +223,7 @@ private fun Color.toHexString(): String {
     val red = (this.red * 255).toInt()
     val green = (this.green * 255).toInt()
     val blue = (this.blue * 255).toInt()
-    return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
+    return "#${alpha.toString(16).padStart(2, '0')}${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}"
 }
 
 // Platform-specific color parsing
@@ -182,14 +231,28 @@ expect fun parseColorHex(hexString: String): Color
 
 // Extension function to convert database row to Category
 private fun com.example.androidkmm.database.Category.toCategory(): com.example.androidkmm.models.Category {
-    return com.example.androidkmm.models.Category(
-        id = this.id,
-        name = this.name,
-        icon = getIconByName(this.icon_name),
-        color = parseColorHex(this.color_hex),
-        type = CategoryType.valueOf(this.type),
-        isCustom = this.is_custom == 1L
-    )
+    return try {
+        com.example.androidkmm.models.Category(
+            id = this.id ?: "unknown",
+            name = this.name ?: "Unknown Category",
+            icon = try { getIconByName(this.icon_name ?: "Category") } catch (e: Exception) { Icons.Default.Category },
+            color = try { parseColorHex(this.color_hex ?: "#FF607D8B") } catch (e: Exception) { Color(0xFF607D8B) },
+            type = try { CategoryType.valueOf(this.type ?: "EXPENSE") } catch (e: Exception) { CategoryType.EXPENSE },
+            isCustom = this.is_custom == 1L
+        )
+    } catch (e: Exception) {
+        println("Error converting category: ${e.message}")
+        e.printStackTrace()
+        // Return a safe default category
+        com.example.androidkmm.models.Category(
+            id = this.id ?: "error_category",
+            name = "Error Loading Category",
+            icon = Icons.Default.Error,
+            color = Color(0xFF607D8B),
+            type = CategoryType.EXPENSE,
+            isCustom = false
+        )
+    }
 }
 
 @Composable

@@ -14,7 +14,7 @@ actual class DatabaseDriverFactory {
             databasePath.mkdirs()
         }
         
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}/app_database_v10.db")
+        val driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}/app_database_v13.db")
         CategoryDatabase.Schema.create(driver)
         return driver
     }
@@ -26,21 +26,26 @@ actual fun rememberDatabaseDriverFactory(): DatabaseDriverFactory {
 }
 
 actual fun parseColorHex(hexString: String): Color {
-    // Simple hex color parser for JVM
-    val cleanHex = hexString.removePrefix("#")
-    val color = when (cleanHex.length) {
-        6 -> java.awt.Color.decode("#$cleanHex")
-        8 -> {
-            val alpha = cleanHex.substring(0, 2).toInt(16)
-            val rgb = cleanHex.substring(2).toInt(16)
-            java.awt.Color(rgb, alpha != 0)
+    return try {
+        // Simple hex color parser for JVM
+        val cleanHex = hexString.removePrefix("#")
+        val color = when (cleanHex.length) {
+            6 -> java.awt.Color.decode("#$cleanHex")
+            8 -> {
+                val alpha = cleanHex.substring(0, 2).toInt(16)
+                val rgb = cleanHex.substring(2).toInt(16)
+                java.awt.Color(rgb, alpha != 0)
+            }
+            else -> java.awt.Color.BLACK
         }
-        else -> java.awt.Color.BLACK
+        Color(
+            red = color.red / 255f,
+            green = color.green / 255f,
+            blue = color.blue / 255f,
+            alpha = color.alpha / 255f
+        )
+    } catch (e: Exception) {
+        println("Error parsing color hex '$hexString': ${e.message}")
+        Color(0xFF607D8B) // Default gray color
     }
-    return Color(
-        red = color.red / 255f,
-        green = color.green / 255f,
-        blue = color.blue / 255f,
-        alpha = color.alpha / 255f
-    )
 }

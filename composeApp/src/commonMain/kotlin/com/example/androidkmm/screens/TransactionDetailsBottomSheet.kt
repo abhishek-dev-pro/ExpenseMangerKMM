@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.androidkmm.models.Account
+import com.example.androidkmm.models.TransactionCategory
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -70,7 +71,7 @@ fun TransactionDetailsBottomSheet(
                         isEditMode = false
                         editedTransaction = transaction
                     },
-                    onSave = { updatedTransaction ->
+                    onSave = { updatedTransaction: com.example.androidkmm.models.Transaction ->
                         onEdit(updatedTransaction)
                         isEditMode = false
                     },
@@ -679,7 +680,7 @@ private fun EditTransactionContent(
     var amount by remember { mutableStateOf(transaction.amount.toString()) }
     var title by remember { mutableStateOf(transaction.title) }
     var description by remember { mutableStateOf(transaction.description) }
-    var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
+    var validationErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var selectedCategory by remember { mutableStateOf<TransactionCategory?>(
         TransactionCategory(
             id = "current",
@@ -1227,7 +1228,7 @@ private fun EditTransactionContent(
     if (showCategorySheet) {
         CategorySelectionBottomSheet(
             onDismiss = { showCategorySheet = false },
-            onCategorySelected = { category ->
+            onCategorySelected = { category: TransactionCategory ->
                 selectedCategory = category
                 showCategorySheet = false
             },
@@ -1242,7 +1243,7 @@ private fun EditTransactionContent(
             onDismiss = { showFromAccountSheet = false },
             title = "Select Account",
             subtitle = "Choose an account for your transaction",
-            onAccountSelected = { account ->
+            onAccountSelected = { account: Account ->
                 selectedAccount = account
                 showFromAccountSheet = false
             },
@@ -1256,7 +1257,7 @@ private fun EditTransactionContent(
             onDismiss = { showToAccountSheet = false },
             title = "Select Account",
             subtitle = "Choose destination account",
-            onAccountSelected = { account ->
+            onAccountSelected = { account: Account ->
                 selectedToAccount = account
                 showToAccountSheet = false
             },
@@ -1320,3 +1321,4 @@ private fun SelectionCard(
         }
     }
 }
+

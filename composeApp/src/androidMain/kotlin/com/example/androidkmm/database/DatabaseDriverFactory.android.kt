@@ -21,5 +21,10 @@ actual fun rememberDatabaseDriverFactory(): DatabaseDriverFactory {
 }
 
 actual fun parseColorHex(hexString: String): Color {
-    return Color(android.graphics.Color.parseColor(hexString))
+    return try {
+        Color(android.graphics.Color.parseColor(hexString))
+    } catch (e: Exception) {
+        println("Error parsing color hex '$hexString': ${e.message}")
+        Color(0xFF607D8B) // Default gray color
+    }
 }

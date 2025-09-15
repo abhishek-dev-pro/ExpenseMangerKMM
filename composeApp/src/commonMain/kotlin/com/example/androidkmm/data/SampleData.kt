@@ -28,16 +28,15 @@ object SampleData {
     )
 
     val quickActions = listOf(
-        QuickActionData("Expense", Color.Red, Icons.Default.Remove),
-        QuickActionData("Income", Color.Green, Icons.Default.Add),
-        QuickActionData("Group", Color(0xFF9F3DFF), Icons.Outlined.Group),
+        QuickActionData("+ Ledger", Color(0xFF3B82F6), Icons.Default.ShowChart),
+        QuickActionData("+ Transaction", Color(0xFF10B981), Icons.Default.Add),
     )
 
     val navigationItems = listOf(
         NavigationItem("Pal", Icons.Default.Home),
         NavigationItem("Transactions", Icons.Default.AttachMoney),
-        NavigationItem("Groups", Icons.Default.Group),
-        NavigationItem("Ledger", Icons.Default.ShowChart),
+        NavigationItem("Ledger", Icons.Default.AccountBalance),
+        NavigationItem("Insights", Icons.Default.Analytics),
         NavigationItem("Profile", Icons.Default.Person)
     )
 }

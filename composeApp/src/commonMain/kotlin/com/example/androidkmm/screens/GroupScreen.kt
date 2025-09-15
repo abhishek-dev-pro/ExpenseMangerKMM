@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -36,11 +37,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -63,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
+import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.SQLiteGroupDatabase
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
@@ -77,8 +79,11 @@ import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupsScreen() {
+fun GroupsScreen(
+    onNavigateToCreateGroup: () -> Unit = {}
+) {
     val groupDatabaseManager = rememberSQLiteGroupDatabase()
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val allGroups by groupDatabaseManager.getAllGroups().collectAsState(initial = emptyList())
     val allMembers by groupDatabaseManager.getAllGroupMembers().collectAsState(initial = emptyList())
     
@@ -93,10 +98,9 @@ fun GroupsScreen() {
         "-$${formatDouble(total)}"
     }
     
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showSheet by remember { mutableStateOf(false) }
     var selectedGroup by remember { mutableStateOf<Group?>(null) }
     var showGroupDetails by remember { mutableStateOf(false) }
+    var showAddGroupExpense by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -126,7 +130,7 @@ fun GroupsScreen() {
             }
 
             IconButton(
-                onClick = { showSheet = true },
+                onClick = { onNavigateToCreateGroup() },
                 modifier = Modifier
                     .size(40.dp)
                     .background(
@@ -301,19 +305,6 @@ fun GroupsScreen() {
             }
         }
 
-        if (showSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showSheet = false },
-                sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-            ) {
-                CreateGroupBottomSheetContent(
-                    onClose = { showSheet = false },
-                    groupDatabaseManager = groupDatabaseManager
-                )
-            }
-        }
     }
     
     // Show Group Details Screen
@@ -325,8 +316,26 @@ fun GroupsScreen() {
                 selectedGroup = null
             },
             onAddExpense = {
-                // TODO: Navigate to AddGroupExpenseScreen
+                showAddGroupExpense = true
             }
+        )
+    }
+    
+    // Show Add Group Expense Screen
+    if (showAddGroupExpense && selectedGroup != null) {
+        val groupMembers by groupDatabaseManager.getGroupMembersByGroup(selectedGroup!!.id).collectAsState(initial = emptyList())
+        AddGroupExpenseScreen(
+            group = selectedGroup!!,
+            members = groupMembers,
+            onBack = {
+                showAddGroupExpense = false
+            },
+            onExpenseAdded = {
+                showAddGroupExpense = false
+                // Refresh the group details if needed
+            },
+            groupDatabaseManager = groupDatabaseManager,
+            categoryDatabaseManager = categoryDatabaseManager
         )
     }
 }
@@ -496,208 +505,9 @@ fun formatDateForGroup(timestamp: Long): String {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateGroupBottomSheetContent(
-    onClose: () -> Unit,
-    groupDatabaseManager: SQLiteGroupDatabase
-) {
-    var groupName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-
-    // Members list: "You" is always present
-    val members = remember { mutableStateListOf("You") }
-
-    val isButtonEnabled = groupName.isNotBlank() && members.size > 1
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState()) // ✅ make sheet scrollable
-            .padding(16.dp)
-    ) {
-        // Header
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Create Group", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close",
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.clickable { onClose() }
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Group Name
-        Text("Group Name", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
-        Spacer(Modifier.height(4.dp))
-        BasicTextField(
-            value = groupName,
-            onValueChange = { groupName = it },
-            singleLine = true,
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(18.dp))
-                .border(
-                    width = 0.5.dp, // 👈 thin border
-                    color = if (groupName.isNotEmpty()) Color.Gray else Color.LightGray.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                .padding(horizontal = 8.dp, vertical = 4.dp) // 👈 custom padding
-        ) { innerTextField ->
-            if (groupName.isEmpty()) {
-                Text(
-                    text = "Enter group name...",
-                    color = Color.Gray
-                )
-            }
-            innerTextField()
-        }
-
-
-
-
-
-
-        Spacer(Modifier.height(16.dp))
-
-        // Members List
-        Text("Members (${members.size})", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-        Spacer(Modifier.height(8.dp))
-
-        members.forEach { member ->
-            MemberItem(
-                name = member,
-                isAdmin = member == "You",
-                onRemove = { members.remove(member) }
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // Add by Email
-        Text("Add by Email", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
-        Spacer(Modifier.height(4.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicTextField(
-                value = email,
-                onValueChange = { email = it },
-                singleLine = true,
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp),
-                modifier = Modifier
-                    .weight(1f)
-                    .background(Color.Black, RoundedCornerShape(12.dp))
-                    .border(
-                        width = 0.5.dp, // 👈 thin border
-                        color = if (email.isNotEmpty()) Color.Gray else Color.LightGray.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp) // 👈 compact padding
-            ) { innerTextField ->
-                if (email.isEmpty()) {
-                    Text(
-                        text = "Enter email address...",
-                        color = Color.Gray
-                    )
-                }
-                innerTextField()
-            }
-
-            Spacer(Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .background(Color(0xFF262626), CircleShape)
-                    .clickable {
-                        if (email.isNotBlank()) {
-                            members.add(email)
-                            email = ""
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(12.dp))
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Suggested Contacts
-        Text("Suggested Contacts", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Normal, fontSize = 14.sp)
-        Spacer(Modifier.height(4.dp))
-        val contacts = listOf("Sarah Miller", "Mike Johnson", "Lisa Wilson", "Alex Chen")
-        contacts.forEach { name ->
-            if (!members.contains(name)) {
-                SuggestedContactItem(
-                    name = name,
-                    onAdd = { members.add(name) }
-                )
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Create Group Button
-        Button(
-            onClick = {
-                // Create the group with members
-                val groupId = "group_${System.currentTimeMillis()}"
-                val group = Group(
-                    id = groupId,
-                    name = groupName,
-                    description = "",
-                    color = Color(0xFF9333EA), // Default purple color
-                    createdAt = System.currentTimeMillis() / 1000L,
-                    totalSpent = 0.0,
-                    memberCount = members.size
-                )
-                
-                val groupMembers = members.mapIndexed { index, memberName ->
-                    GroupMember(
-                        id = "member_${groupId}_${index}",
-                        groupId = groupId,
-                        name = memberName,
-                        email = if (memberName == "You") "" else email,
-                        phone = "",
-                        avatarColor = Color(0xFF2196F3), // Default blue color
-                        balance = 0.0,
-                        totalPaid = 0.0,
-                        totalOwed = 0.0
-                    )
-                }
-                
-                // Save to database
-                kotlinx.coroutines.GlobalScope.launch {
-                    groupDatabaseManager.addGroupWithMembers(group, groupMembers)
-                }
-                
-                onClose()
-            },
-            enabled = isButtonEnabled,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,   // background
-                contentColor = MaterialTheme.colorScheme.onPrimary      // text/icon color
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Icon(Icons.Default.Check, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Create Group")
-        }
-    }
-}
 
 @Composable
-fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
+fun MemberItem(name: String, email: String = "", isAdmin: Boolean, onRemove: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -739,17 +549,18 @@ fun MemberItem(name: String, isAdmin: Boolean, onRemove: () -> Unit) {
                     Text(
                         if (isAdmin) "You" else name,
                         color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Normal,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
                         style = TextStyle(
-                            lineHeight = 18.sp // 👈 reduced line height
+                            lineHeight = 18.sp
                         )
                     )
                     Text(
-                        if (isAdmin) "Group admin" else "${name.lowercase().replace(" ", ".")}@example.com",
-                        color = Color.Gray,
-                        fontSize = 12.sp,
+                        if (isAdmin) "Group admin" else (if (email.isNotEmpty()) email else "${name.lowercase().replace(" ", ".")}@example.com"),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        fontSize = 14.sp,
                         style = TextStyle(
-                            lineHeight = 18.sp // 👈 match line height for tighter spacing
+                            lineHeight = 16.sp
                         )
                     )
                 }
@@ -774,11 +585,11 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 2.dp)
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = 0.5.dp, // very thin border
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
         shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
@@ -841,3 +652,367 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
 }
 
 
+
+
+/**
+ * Full-screen Create Group page
+ */
+@OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
+@Composable
+fun CreateGroupScreen(
+    onBack: () -> Unit,
+    groupDatabaseManager: SQLiteGroupDatabase
+) {
+    var groupName by remember { mutableStateOf("") }
+    var memberName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+
+    // Members list: "You" is always present
+    val members = remember { mutableStateListOf("You") }
+    val memberEmails = remember { mutableStateOf(mutableMapOf<String, String>()) }
+
+    val isButtonEnabled = groupName.isNotBlank() && members.size > 1
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Top App Bar
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Create Group",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        )
+
+        // Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Group Name Section
+            Text(
+                text = "Group Name",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            BasicTextField(
+                value = groupName,
+                onValueChange = { groupName = it },
+                singleLine = true,
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (groupName.isNotEmpty()) 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        else 
+                            Color.White.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) { innerTextField ->
+                if (groupName.isEmpty()) {
+                    Text(
+                        text = "Enter group name...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 16.sp
+                    )
+                }
+                innerTextField()
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Members Section
+            Text(
+                text = "Members (${members.size})",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Current Members
+            members.forEach { member ->
+                MemberItem(
+                    name = member,
+                    email = memberEmails.value[member] ?: "",
+                    isAdmin = member == "You",
+                    onRemove = { 
+                        if (member != "You") {
+                            members.remove(member)
+                            memberEmails.value.remove(member)
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Added Members Section (show in suggested contacts style)
+            if (members.size > 1) {
+                Text(
+                    text = "Added Members",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                members.filter { it != "You" }.forEach { member ->
+                    SuggestedContactItem(
+                        name = member,
+                        onAdd = { 
+                            // This is just for display, no action needed
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Add Member Section
+            Text(
+                text = "Add Member",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Name Field
+            BasicTextField(
+                value = memberName,
+                onValueChange = { memberName = it },
+                singleLine = true,
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (memberName.isNotEmpty()) 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        else 
+                            Color.White.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) { innerTextField ->
+                if (memberName.isEmpty()) {
+                    Text(
+                        text = "Enter member name...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 16.sp
+                    )
+                }
+                innerTextField()
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Email Field
+            BasicTextField(
+                value = email,
+                onValueChange = { email = it },
+                singleLine = true,
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 16.sp
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (email.isNotEmpty()) 
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        else 
+                            Color.White.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) { innerTextField ->
+                if (email.isEmpty()) {
+                    Text(
+                        text = "Enter email address...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 16.sp
+                    )
+                }
+                innerTextField()
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Add Button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary,
+                            CircleShape
+                        )
+                        .clickable {
+                            if (memberName.isNotBlank() && email.isNotBlank()) {
+                                val memberDisplayName = memberName.trim()
+                                if (!members.contains(memberDisplayName)) {
+                                    members.add(memberDisplayName)
+                                    memberEmails.value[memberDisplayName] = email.trim()
+                                    memberName = ""
+                                    email = ""
+                                }
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Member",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Suggested Contacts Section
+            Text(
+                text = "Suggested Contacts",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            val contacts = listOf(
+                "Sarah Miller" to "sarah.miller@example.com",
+                "Mike Johnson" to "mike.johnson@example.com",
+                "Lisa Wilson" to "lisa.wilson@example.com",
+                "Alex Chen" to "alex.chen@example.com"
+            )
+            
+            contacts.forEach { (name, email) ->
+                if (!members.contains(name)) {
+                    SuggestedContactItem(
+                        name = name,
+                        onAdd = { 
+                            if (!members.contains(name)) {
+                                members.add(name)
+                                memberEmails.value[name] = email
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // Create Group Button
+            Button(
+                onClick = {
+                    // Create the group with members
+                    val groupId = "group_${kotlin.time.Clock.System.now().toEpochMilliseconds()}"
+                    val group = Group(
+                        id = groupId,
+                        name = groupName,
+                        description = "",
+                        color = Color(0xFF9333EA), // Default purple color
+                        createdAt = kotlin.time.Clock.System.now().epochSeconds,
+                        totalSpent = 0.0,
+                        memberCount = members.size
+                    )
+                    
+                    val groupMembers = members.mapIndexed { index, memberName ->
+                        GroupMember(
+                            id = "member_${groupId}_${index}",
+                            groupId = groupId,
+                            name = memberName,
+                            email = if (memberName == "You") "" else (memberEmails.value[memberName] ?: ""),
+                            phone = "",
+                            avatarColor = Color(0xFF2196F3), // Default blue color
+                            balance = 0.0,
+                            totalPaid = 0.0,
+                            totalOwed = 0.0
+                        )
+                    }
+                    
+                    // Save to database
+                    kotlinx.coroutines.GlobalScope.launch {
+                        groupDatabaseManager.addGroupWithMembers(group, groupMembers)
+                    }
+                    
+                    onBack()
+                },
+                enabled = isButtonEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Create Group",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}

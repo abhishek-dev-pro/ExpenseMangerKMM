@@ -36,6 +36,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import com.example.androidkmm.models.Account
+import com.example.androidkmm.models.Transaction
+import com.example.androidkmm.models.TransactionType
+import com.example.androidkmm.models.TransactionFormData
+import com.example.androidkmm.models.TransactionCategory
+import com.example.androidkmm.models.DayGroup
 import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,56 +68,7 @@ object TransactionColors {
     val transfer = Color(0xFF3B82F6)
 }
 
-// Data classes
-data class Transaction(
-    val id: String,
-    val title: String,
-    val amount: Double,
-    val category: String,
-    val categoryIcon: ImageVector,
-    val categoryColor: Color,
-    val account: String,
-    val transferTo: String? = null,
-    val time: String,
-    val type: TransactionType,
-    val description: String = "",
-    val date: String = "",
-    // Added missing properties referenced in TransactionDetails
-    val accountIcon: ImageVector = Icons.Default.CreditCard,
-    val accountColor: Color = Color.Blue
-)
-
-enum class TransactionType {
-    INCOME, EXPENSE, TRANSFER
-}
-
-data class DayGroup(
-    val date: String,
-    val displayDate: String,
-    val transactions: List<com.example.androidkmm.models.Transaction>,
-    val income: Double,
-    val expense: Double
-)
-
-// Data classes for the form
-data class TransactionFormData(
-    val amount: String = "",
-    val title: String = "",
-    val category: TransactionCategory? = null,
-    val account: Account? = null,
-    val toAccount: Account? = null,
-    val date: String = "",
-    val time: String = "",
-    val description: String = "",
-    val type: TransactionType = TransactionType.EXPENSE
-)
-
-data class TransactionCategory(
-    val id: String,
-    val name: String,
-    val icon: ImageVector,
-    val color: Color
-)
+// Data classes for the form (using models from TransactionModels.kt)
 
 
 
@@ -903,7 +859,7 @@ private fun DayGroupSection(
                 showEditScreen = false
                 selectedTransaction = null
             },
-            onSave = { editedTransaction ->
+            onSave = { editedTransaction: com.example.androidkmm.models.Transaction ->
                 // Update transaction in database with balance updates
                 transactionDatabaseManager.updateTransactionWithBalanceUpdate(
                     oldTransaction = selectedTransaction!!,
@@ -1041,9 +997,9 @@ fun TransactionCard(
                 }
 
                 val amountText = when (transaction.type) {
-                com.example.androidkmm.models.TransactionType.INCOME -> "+${formatDouble(transaction.amount, 2)}"
-                com.example.androidkmm.models.TransactionType.EXPENSE -> "-${formatDouble(transaction.amount, 2)}"
-                com.example.androidkmm.models.TransactionType.TRANSFER -> "${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.INCOME -> "$${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.EXPENSE -> "$${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.TRANSFER -> "$${formatDouble(transaction.amount, 2)}"
                 }
 
                 Text(
@@ -1080,7 +1036,8 @@ fun AddTransactionBottomSheet(
     onDismiss: () -> Unit,
     onSave: (TransactionFormData) -> Unit,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
-    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
+    defaultTransactionType: com.example.androidkmm.models.TransactionType? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -1100,7 +1057,14 @@ fun AddTransactionBottomSheet(
         
         formData = formData.copy(
             date = "${currentDate.year}-${currentDate.monthNumber.toString().padStart(2, '0')}-${currentDate.dayOfMonth.toString().padStart(2, '0')}",
-            time = "${currentTime.hour.toString().padStart(2, '0')}:${currentTime.minute.toString().padStart(2, '0')}"
+            time = "${currentTime.hour.toString().padStart(2, '0')}:${currentTime.minute.toString().padStart(2, '0')}",
+            type = defaultTransactionType?.let { 
+                when (it) {
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionType.EXPENSE
+                    com.example.androidkmm.models.TransactionType.INCOME -> TransactionType.INCOME
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.TRANSFER
+                }
+            } ?: TransactionType.EXPENSE
         )
     }
 
@@ -1138,7 +1102,7 @@ fun AddTransactionBottomSheet(
     if (showCategorySheet) {
         CategorySelectionBottomSheet(
             onDismiss = { showCategorySheet = false },
-            onCategorySelected = { category ->
+            onCategorySelected = { category: com.example.androidkmm.models.TransactionCategory ->
                 formData = formData.copy(category = category)
                 showCategorySheet = false
             },
@@ -1157,7 +1121,7 @@ fun AddTransactionBottomSheet(
             onDismiss = { showFromAccountSheet = false },
             title = "Select Account",
             subtitle = "Choose an account for your transaction",
-            onAccountSelected = { account ->
+            onAccountSelected = { account: com.example.androidkmm.models.Account ->
                 formData = formData.copy(account = account)
                 showFromAccountSheet = false
             },
@@ -1171,7 +1135,7 @@ fun AddTransactionBottomSheet(
             onDismiss = { showToAccountSheet = false },
             title = "Select Account",
             subtitle = "Choose destination account",
-            onAccountSelected = { account ->
+            onAccountSelected = { account: com.example.androidkmm.models.Account ->
                 formData = formData.copy(toAccount = account)
                 showToAccountSheet = false
             },
@@ -3500,7 +3464,7 @@ fun EditTransactionScreen(
     if (showCategorySheet) {
         CategorySelectionBottomSheet(
             onDismiss = { showCategorySheet = false },
-            onCategorySelected = { category ->
+            onCategorySelected = { category: com.example.androidkmm.models.TransactionCategory ->
                 selectedCategoryName = category.name
                 showCategorySheet = false
             },
@@ -3518,7 +3482,7 @@ fun EditTransactionScreen(
             onDismiss = { showFromAccountSheet = false },
             title = "Select Account",
             subtitle = "Choose an account",
-            onAccountSelected = { account ->
+            onAccountSelected = { account: com.example.androidkmm.models.Account ->
                 selectedAccountName = account.name
                 showFromAccountSheet = false
             },

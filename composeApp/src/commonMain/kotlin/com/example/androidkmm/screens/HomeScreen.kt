@@ -18,6 +18,7 @@ import com.example.androidkmm.components.GreetingSection
 import com.example.androidkmm.components.GroupItem
 import com.example.androidkmm.components.ProgressCard
 import com.example.androidkmm.components.QuickActions
+import com.example.androidkmm.components.RecentTransactionsSection
 import com.example.androidkmm.components.SectionHeader
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.data.SampleData
@@ -27,7 +28,14 @@ import kotlinx.coroutines.delay
  * Home screen content component
  */
 @Composable
-fun HomeScreenContent() {
+fun HomeScreenContent(
+    onNavigateToTransactions: () -> Unit = {},
+    onNavigateToAddExpense: () -> Unit = {},
+    onNavigateToAddIncome: () -> Unit = {},
+    onNavigateToGroups: () -> Unit = {},
+    onNavigateToLedger: () -> Unit = {},
+    onNavigateToAddTransaction: () -> Unit = {}
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -38,7 +46,17 @@ fun HomeScreenContent() {
 
         item { GreetingSection() }
         item { BalanceCard() }
-        item { QuickActions() }
+        item { 
+            QuickActions(
+                onActionClick = { action ->
+                    when (action) {
+                        "+ Ledger" -> onNavigateToLedger()
+                        "+ Transaction" -> onNavigateToAddTransaction()
+                    }
+                }
+            )
+        }
+        item { RecentTransactionsSection(onViewAllClick = onNavigateToTransactions) }
         item { ProgressCard() }
         item { UpcomingBills() }
         item { GroupHighlights() }

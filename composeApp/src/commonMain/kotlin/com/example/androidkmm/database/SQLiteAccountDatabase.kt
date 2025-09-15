@@ -54,25 +54,74 @@ class SQLiteAccountDatabase(
     
     fun getAllAccounts(): Flow<List<Account>> {
         return database.categoryDatabaseQueries.selectAllAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toAccount() }
+            try {
+                list.mapNotNull { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting account ${dbAccount.id}: ${e.message}")
+                        null // Skip invalid accounts
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing account list: ${e.message}")
+                e.printStackTrace()
+                emptyList()
+            }
         }
     }
     
     fun getAccountById(id: String): Flow<Account?> {
         return database.categoryDatabaseQueries.selectAccountById(id).asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.firstOrNull()?.toAccount()
+            try {
+                list.firstOrNull()?.let { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting account ${dbAccount.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing account by id: ${e.message}")
+                null
+            }
         }
     }
     
     fun getCustomAccounts(): Flow<List<Account>> {
         return database.categoryDatabaseQueries.selectCustomAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toAccount() }
+            try {
+                list.mapNotNull { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting custom account ${dbAccount.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing custom accounts: ${e.message}")
+                emptyList()
+            }
         }
     }
     
     fun getDefaultAccounts(): Flow<List<Account>> {
         return database.categoryDatabaseQueries.selectDefaultAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toAccount() }
+            try {
+                list.mapNotNull { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting default account ${dbAccount.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing default accounts: ${e.message}")
+                emptyList()
+            }
         }
     }
     

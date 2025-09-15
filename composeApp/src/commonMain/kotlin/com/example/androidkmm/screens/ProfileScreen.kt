@@ -40,6 +40,7 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab
@@ -84,12 +85,14 @@ fun ProfileMainScreen() {
     var showAddAccountSheet by remember { mutableStateOf(false) }
     var showAddCategorySheet by remember { mutableStateOf(false) }
     var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
+    var showCreateGroupScreen by remember { mutableStateOf(false) }
 
     // Database managers
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val groupDatabaseManager = rememberSQLiteGroupDatabase()
     val scope = rememberCoroutineScope()
     
     // Flow for categories from database
@@ -114,6 +117,7 @@ fun ProfileMainScreen() {
                 onAccountsClick = { currentScreen = "accounts" },
                 onCategoriesClick = { showCategorySheet = true },
                 onCustomizeClick = { currentScreen = "customize" },
+                onGroupsClick = { currentScreen = "groups" },
                 onClearDataClick = {
                     // Clear all data from database
                     scope.launch {
@@ -126,6 +130,21 @@ fun ProfileMainScreen() {
             )
             "customize" -> CustomizeScreen(
                 onBackClick = { currentScreen = "profile" }
+            )
+            "groups" -> com.example.androidkmm.screens.GroupsScreen(
+                onNavigateToCreateGroup = {
+                    showCreateGroupScreen = true
+                }
+            )
+        }
+        
+        // Show Create Group Screen
+        if (showCreateGroupScreen) {
+            com.example.androidkmm.screens.CreateGroupScreen(
+                onBack = {
+                    showCreateGroupScreen = false
+                },
+                groupDatabaseManager = groupDatabaseManager
             )
         }
 
@@ -213,6 +232,7 @@ fun ProfileScreen(
     onAccountsClick: () -> Unit,
     onCategoriesClick: () -> Unit,
     onCustomizeClick: () -> Unit,
+    onGroupsClick: () -> Unit,
     onClearDataClick: () -> Unit
 ) {
     LazyColumn(
@@ -324,6 +344,15 @@ fun ProfileScreen(
                 title = "Categories",
                 subtitle = "Manage expense and income categories",
                 onClick = onCategoriesClick
+            )
+        }
+
+        item {
+            MenuCard(
+                icon = Icons.Default.Group,
+                title = "Groups",
+                subtitle = "Manage expense groups and shared expenses",
+                onClick = onGroupsClick
             )
         }
 

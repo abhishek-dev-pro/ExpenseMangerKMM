@@ -38,17 +38,33 @@ class SQLiteTransactionDatabase(
         // Initialize database
         scope.launch {
             try {
+                // Add a small delay to ensure database is ready
+                kotlinx.coroutines.delay(100)
                 val count = database.categoryDatabaseQueries.getTransactionCount().executeAsOne()
                 println("DEBUG: Database loaded with $count transactions")
             } catch (e: Exception) {
-                println("DEBUG: Transaction table not found, will be created on next app restart")
+                println("DEBUG: Transaction table not found or error accessing it: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
     
     fun getAllTransactions(): Flow<List<Transaction>> {
         return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.Default).map { list ->
-            list.map { it.toTransaction() }
+            try {
+                list.mapNotNull { dbTransaction ->
+                    try {
+                        dbTransaction.toTransaction()
+                    } catch (e: Exception) {
+                        println("Error converting transaction ${dbTransaction.id}: ${e.message}")
+                        null // Skip invalid transactions
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing transaction list: ${e.message}")
+                e.printStackTrace()
+                emptyList()
+            }
         }
     }
     
@@ -498,38 +514,76 @@ private fun Color.toHexString(): String {
     val red = (this.red * 255).toInt()
     val green = (this.green * 255).toInt()
     val blue = (this.blue * 255).toInt()
-    return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
+    return "#${alpha.toString(16).padStart(2, '0')}${red.toString(16).padStart(2, '0')}${green.toString(16).padStart(2, '0')}${blue.toString(16).padStart(2, '0')}"
 }
 
 // Extension function to convert database row to Transaction
+@OptIn(kotlin.time.ExperimentalTime::class)
 private fun com.example.androidkmm.database.Transactions.toTransaction(): com.example.androidkmm.models.Transaction {
-    return com.example.androidkmm.models.Transaction(
-        id = this.id,
-        title = this.title,
-        amount = this.amount,
-        category = this.category_name,
-        categoryIcon = getIconByName(this.category_icon_name),
-        categoryColor = parseColorHex(this.category_color_hex),
-        account = this.account_name,
-        transferTo = this.transfer_to?.takeIf { it.isNotEmpty() },
-        time = this.time,
-        type = TransactionType.valueOf(this.type),
-        description = this.description ?: "",
-        date = this.date,
-        accountIcon = getIconByName(this.account_icon_name),
-        accountColor = parseColorHex(this.account_color_hex)
-    )
+    return try {
+        com.example.androidkmm.models.Transaction(
+            id = this.id ?: "",
+            title = this.title ?: "Unknown Transaction",
+            amount = this.amount ?: 0.0,
+            category = this.category_name ?: "Other",
+            categoryIcon = try { getIconByName(this.category_icon_name ?: "Category") } catch (e: Exception) { Icons.Default.Category },
+            categoryColor = try { parseColorHex(this.category_color_hex ?: "#FF607D8B") } catch (e: Exception) { Color(0xFF607D8B) },
+            account = this.account_name ?: "Unknown Account",
+            transferTo = this.transfer_to?.takeIf { it.isNotEmpty() },
+            time = this.time ?: "00:00",
+            type = try { TransactionType.valueOf(this.type ?: "EXPENSE") } catch (e: Exception) { TransactionType.EXPENSE },
+            description = this.description ?: "",
+            date = this.date ?: "2024-01-01",
+            accountIcon = try { getIconByName(this.account_icon_name ?: "AccountBalance") } catch (e: Exception) { Icons.Default.AccountBalance },
+            accountColor = try { parseColorHex(this.account_color_hex ?: "#FF2196F3") } catch (e: Exception) { Color(0xFF2196F3) }
+        )
+    } catch (e: Exception) {
+        println("Error converting transaction: ${e.message}")
+        e.printStackTrace()
+        // Return a safe default transaction
+        com.example.androidkmm.models.Transaction(
+            id = this.id ?: "error_${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
+            title = "Error Loading Transaction",
+            amount = 0.0,
+            category = "Other",
+            categoryIcon = Icons.Default.Error,
+            categoryColor = Color(0xFF607D8B),
+            account = "Unknown",
+            transferTo = null,
+            time = "00:00",
+            type = TransactionType.EXPENSE,
+            description = "Failed to load transaction data",
+            date = "2024-01-01",
+            accountIcon = Icons.Default.AccountBalance,
+            accountColor = Color(0xFF2196F3)
+        )
+    }
 }
 
 // Extension function to convert database row to Account
 private fun com.example.androidkmm.database.Account.toAccount(): com.example.androidkmm.models.Account {
-    return com.example.androidkmm.models.Account(
-        id = this.id,
-        name = this.name,
-        balance = this.balance,
-        icon = getIconByName(this.icon_name),
-        color = parseColorHex(this.color_hex),
-        type = this.type,
-        isCustom = this.is_custom == 1L
-    )
+    return try {
+        com.example.androidkmm.models.Account(
+            id = this.id ?: "unknown",
+            name = this.name ?: "Unknown Account",
+            balance = this.balance ?: "0.00",
+            icon = try { getIconByName(this.icon_name ?: "AccountBalance") } catch (e: Exception) { Icons.Default.AccountBalance },
+            color = try { parseColorHex(this.color_hex ?: "#FF2196F3") } catch (e: Exception) { Color(0xFF2196F3) },
+            type = this.type ?: "Bank",
+            isCustom = this.is_custom == 1L
+        )
+    } catch (e: Exception) {
+        println("Error converting account: ${e.message}")
+        e.printStackTrace()
+        // Return a safe default account
+        com.example.androidkmm.models.Account(
+            id = this.id ?: "error_account",
+            name = "Error Loading Account",
+            balance = "0.00",
+            icon = Icons.Default.Error,
+            color = Color(0xFF607D8B),
+            type = "Bank",
+            isCustom = false
+        )
+    }
 }
