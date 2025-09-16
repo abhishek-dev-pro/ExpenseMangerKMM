@@ -28,7 +28,6 @@ import com.example.androidkmm.components.QuickActions
 import com.example.androidkmm.components.RecentTransactionsSection
 import com.example.androidkmm.components.SectionHeader
 import com.example.androidkmm.design.DesignSystem
-import com.example.androidkmm.data.SampleData
 import com.example.androidkmm.data.GroupData
 import com.example.androidkmm.utils.CardUtils
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase

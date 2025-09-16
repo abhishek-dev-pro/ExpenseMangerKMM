@@ -337,20 +337,6 @@ CREATE TABLE group_expense_splits (
     FOREIGN KEY (member_id) REFERENCES group_members (id) ON DELETE CASCADE
 );
 
--- Insert sample groups
-INSERT INTO groups (id, name, description, color_hex, total_spent, member_count) VALUES
-('sample_group_1', 'Vacation Trip', 'Summer vacation with friends', '#FF9333EA', 1247.50, 4),
-('sample_group_2', 'Office Lunch', 'Weekly office lunch group', '#FFF97316', 234.80, 6);
-
--- Insert sample group members
-INSERT INTO group_members (id, group_id, name, avatar_color_hex, balance, total_paid, total_owed) VALUES
-('sample_member_1', 'sample_group_1', 'Abhishek', '#FF2196F3', 156.40, 400.00, 243.60),
-('sample_member_2', 'sample_group_1', 'Sarah', '#FF4CAF50', -78.20, 300.00, 378.20),
-('sample_member_3', 'sample_group_1', 'Mike', '#FFE91E63', -39.10, 250.00, 289.10),
-('sample_member_4', 'sample_group_1', 'Lisa', '#FFFF9800', -39.10, 297.50, 336.60),
-('sample_member_5', 'sample_group_2', 'Abhishek', '#FF2196F3', -23.50, 50.00, 73.50),
-('sample_member_6', 'sample_group_2', 'John', '#FF4CAF50', 15.30, 60.00, 44.70),
-('sample_member_7', 'sample_group_2', 'Emma', '#FFE91E63', 8.20, 45.00, 36.80);
 
 -- Group Queries
 selectAllGroups:

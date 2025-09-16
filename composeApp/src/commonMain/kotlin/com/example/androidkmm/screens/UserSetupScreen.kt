@@ -18,11 +18,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.database.InitializeDatabase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun UserSetupScreen(
+    settingsDatabase: com.example.androidkmm.database.SQLiteSettingsDatabase,
     onSetupComplete: () -> Unit
 ) {
     var userName by remember { mutableStateOf("") }
@@ -31,8 +33,15 @@ fun UserSetupScreen(
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     
-    val settingsDatabase = rememberSQLiteSettingsDatabase()
     val coroutineScope = rememberCoroutineScope()
+    
+    // Initialize database
+    InitializeDatabase()
+    
+    // Debug database state on startup
+    LaunchedEffect(Unit) {
+        settingsDatabase.debugDatabaseState()
+    }
     
     Box(
         modifier = Modifier
@@ -171,24 +180,41 @@ fun UserSetupScreen(
             // Continue Button
             Button(
                 onClick = {
+                    println("DEBUG: Get Started button clicked!")
+                    println("DEBUG: userName = '$userName'")
+                    
                     if (userName.isBlank()) {
+                        println("DEBUG: Name is blank, showing error")
                         showError = true
                         errorMessage = "Please enter your name"
                         return@Button
                     }
                     
+                    println("DEBUG: Starting setup process...")
                     isLoading = true
+                    showError = false
+                    
                     coroutineScope.launch {
                         try {
-                            println("Debug: Starting setup process...")
+                            println("DEBUG: Starting coroutine scope")
                             val trimmedName = userName.trim()
                             val trimmedEmail = userEmail.trim()
                             
-                            println("Debug: Name: '$trimmedName', Email: '$trimmedEmail'")
+                            println("DEBUG: Trimmed name: '$trimmedName', trimmed email: '$trimmedEmail'")
                             
+                            // Check if name is still valid after trimming
+                            if (trimmedName.isBlank()) {
+                                println("DEBUG: Name is blank after trimming")
+                                showError = true
+                                errorMessage = "Please enter your name"
+                                isLoading = false
+                                return@launch
+                            }
+                            
+                            println("DEBUG: Saving name: '$trimmedName'")
                             // Save user name to settings
                             settingsDatabase.updateUserName(trimmedName)
-                            println("Debug: Saved user name to database")
+                            println("DEBUG: Name saved successfully")
                             
                             // Save email if provided, otherwise auto-generate
                             val finalEmail = if (trimmedEmail.isNotBlank()) {
@@ -199,28 +225,34 @@ fun UserSetupScreen(
                                 "${firstName}@moneymate.com"
                             }
                             
-                            println("Debug: Final email: '$finalEmail'")
-                            
+                            println("DEBUG: Final email: '$finalEmail'")
+                            println("DEBUG: Saving email: '$finalEmail'")
                             // Save email
                             settingsDatabase.updateSetting("user_email", finalEmail)
-                            println("Debug: Saved email to database")
+                            println("DEBUG: Email saved successfully")
                             
                             // Add a small delay to ensure database operations complete
-                            delay(100)
+                            println("DEBUG: Waiting for database operations to complete...")
+                            delay(1000)
                             
-                            println("Debug: Calling onSetupComplete()")
+                            // Verify the data was saved
+                            println("DEBUG: Verifying saved data...")
+                            settingsDatabase.debugDatabaseState()
+                            
+                            println("DEBUG: Calling onSetupComplete()")
+                            // Call the completion callback
                             onSetupComplete()
-                            println("Debug: Setup complete callback called")
-                            
-                            // Reset loading state
-                            isLoading = false
+                            println("DEBUG: onSetupComplete() called")
                             
                         } catch (e: Exception) {
-                            println("Debug: Error during setup: ${e.message}")
+                            println("DEBUG: Error during setup: ${e.message}")
+                            println("DEBUG: Error type: ${e.javaClass.simpleName}")
                             e.printStackTrace()
                             showError = true
-                            errorMessage = "Failed to save your information. Please try again."
+                            errorMessage = "Failed to save your information: ${e.message}"
+                        } finally {
                             isLoading = false
+                            println("DEBUG: Setup process completed")
                         }
                     }
                 },
@@ -260,64 +292,6 @@ fun UserSetupScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Debug buttons (temporary for testing)
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            try {
-                                // Reset user setup for testing
-                                settingsDatabase.updateSetting("user_name", "")
-                                settingsDatabase.updateSetting("user_email", "")
-                                println("Debug: Cleared user setup data")
-                            } catch (e: Exception) {
-                                println("Debug: Failed to reset user setup: ${e.message}")
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red.copy(alpha = 0.7f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Clear User Data (Debug)",
-                        fontSize = 14.sp
-                    )
-                }
-                
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            try {
-                                // Force complete setup for testing
-                                settingsDatabase.updateUserName("TestUser")
-                                settingsDatabase.updateSetting("user_email", "test@moneymate.com")
-                                println("Debug: Set test user data")
-                            } catch (e: Exception) {
-                                println("Debug: Failed to set test data: ${e.message}")
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Blue.copy(alpha = 0.7f),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Set Test Data (Debug)",
-                        fontSize = 14.sp
-                    )
-                }
-            }
         }
     }
 }

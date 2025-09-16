@@ -253,7 +253,11 @@ private fun OverviewTab(
         
         // Smart Insights
         item {
-            SmartInsightsSection()
+            SmartInsightsSection(
+                transactionDatabaseManager = transactionDatabaseManager,
+                currentMonth = currentMonth,
+                currentYear = currentYear
+            )
         }
         
         item { Spacer(Modifier.height(DesignSystem.Spacing.lg)) }
@@ -282,7 +286,7 @@ private fun MonthSelectorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -667,8 +671,33 @@ private fun FinancialSummaryRow(
     }
 }
 
+// Data class for insights
+data class SmartInsight(
+    val title: String,
+    val description: String,
+    val icon: ImageVector,
+    val iconColor: Color,
+    val backgroundColor: Color
+)
+
 @Composable
-private fun SmartInsightsSection() {
+private fun SmartInsightsSection(
+    transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
+    currentMonth: Int,
+    currentYear: Int
+) {
+    // Get transaction data
+    val allTransactions = if (transactionDatabaseManager != null) {
+        transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList()).value
+    } else {
+        emptyList()
+    }
+    
+    // Generate insights based on current month data
+    val insights = remember(allTransactions, currentMonth, currentYear) {
+        generateSmartInsights(allTransactions, currentMonth, currentYear)
+    }
+    
     Column {
         Text(
             text = "Smart Insights",
@@ -679,26 +708,266 @@ private fun SmartInsightsSection() {
         
         Spacer(Modifier.height(12.dp))
         
-        // Excellent savings card
-        InsightCard(
-            icon = Icons.Default.CheckCircle,
-            title = "Excellent savings!",
-            description = "You saved 65.0% of your income this month",
-            iconColor = Color(0xFF4CAF50),
-            backgroundColor = Color(0xFFE8F5E8)
-        )
-        
-        Spacer(Modifier.height(8.dp))
-        
-        // Budget alert card
-        InsightCard(
-            icon = Icons.Default.Warning,
-            title = "Transportation budget alert",
-            description = "You've used 93% of your Transportation budget",
-            iconColor = Color(0xFFFF9800),
-            backgroundColor = Color(0xFFFFF3E0)
-        )
+        // Display generated insights
+        insights.forEachIndexed { index, insight ->
+            InsightCard(
+                icon = insight.icon,
+                title = insight.title,
+                description = insight.description,
+                iconColor = insight.iconColor,
+                backgroundColor = insight.backgroundColor
+            )
+            
+            if (index < insights.size - 1) {
+                Spacer(Modifier.height(8.dp))
+            }
+        }
     }
+}
+
+// Function to generate smart insights based on transaction data
+private fun generateSmartInsights(
+    allTransactions: List<com.example.androidkmm.models.Transaction>,
+    currentMonth: Int,
+    currentYear: Int
+): List<SmartInsight> {
+    val insights = mutableListOf<SmartInsight>()
+    
+    // Filter transactions for current month
+    val monthTransactions = allTransactions.filter { transaction ->
+        val transactionDate = kotlinx.datetime.LocalDate.parse(transaction.date)
+        transactionDate.monthNumber == currentMonth && 
+        transactionDate.year == currentYear
+    }
+    
+    if (monthTransactions.isEmpty()) {
+        return insights
+    }
+    
+    // Calculate basic metrics
+    val income = monthTransactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
+        .sumOf { it.amount }
+    
+    val expenses = monthTransactions
+        .filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
+        .sumOf { it.amount }
+    
+    val savings = income - expenses
+    val savingsRate = if (income > 0) (savings / income) * 100 else 0.0
+    
+    // Insight 1: Savings Performance
+    when {
+        savingsRate >= 50 -> {
+            insights.add(
+                SmartInsight(
+                    title = "Savings Champion! 🏆",
+                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nYour future self is doing a happy dance!",
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = Color(0xFF4CAF50),
+                    backgroundColor = Color(0xFFE8F5E8)
+                )
+            )
+        }
+        savingsRate >= 20 -> {
+            insights.add(
+                SmartInsight(
+                    title = "Financial Rockstar! 💪",
+                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nThe savings account is feeling the love!",
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = Color(0xFF4CAF50),
+                    backgroundColor = Color(0xFFE8F5E8)
+                )
+            )
+        }
+        savingsRate >= 0 -> {
+            insights.add(
+                SmartInsight(
+                    title = "Positive Progress! 📈",
+                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nEvery penny saved is a penny earned!",
+                    icon = Icons.Default.Info,
+                    iconColor = Color(0xFF2196F3),
+                    backgroundColor = Color(0xFFE3F2FD)
+                )
+            )
+        }
+        else -> {
+            insights.add(
+                SmartInsight(
+                    title = "Spending Spree Alert! 💸",
+                    description = "You've spent ${String.format("%.1f", kotlin.math.abs(savingsRate))}% more than your income this month.\nYour wallet is having trust issues!",
+                    icon = Icons.Default.Warning,
+                    iconColor = Color(0xFFFF9800),
+                    backgroundColor = Color(0xFFFFF3E0)
+                )
+            )
+        }
+    }
+    
+    // Insight 2: Category Analysis
+    val expenseTransactions = monthTransactions.filter { it.type == com.example.androidkmm.models.TransactionType.EXPENSE }
+    val categorySpending = expenseTransactions.groupBy { it.category }
+        .mapValues { (_, transactions) -> transactions.sumOf { it.amount } }
+        .toList()
+        .sortedByDescending { it.second }
+    
+    if (categorySpending.isNotEmpty()) {
+        val topCategory = categorySpending.first()
+        val topCategoryPercentage = if (expenses > 0) (topCategory.second / expenses) * 100 else 0.0
+        
+        when {
+            topCategoryPercentage >= 50 -> {
+                insights.add(
+                    SmartInsight(
+                        title = "Category Spotlight: ${topCategory.first} 🌟",
+                        description = "${String.format("%.1f", topCategoryPercentage)}% of your expenses went to ${topCategory.first}.\n${topCategory.first} is clearly your favorite!",
+                        icon = Icons.Default.PieChart,
+                        iconColor = Color(0xFF9C27B0),
+                        backgroundColor = Color(0xFFF3E5F5)
+                    )
+                )
+            }
+            topCategoryPercentage >= 30 -> {
+                insights.add(
+                    SmartInsight(
+                        title = "Top Spending Category 📊",
+                        description = "${topCategory.first} leads your expenses at ${String.format("%.1f", topCategoryPercentage)}%.\nThe ${topCategory.first} category is living its best life!",
+                        icon = Icons.Default.TrendingUp,
+                        iconColor = Color(0xFF607D8B),
+                        backgroundColor = Color(0xFFECEFF1)
+                    )
+                )
+            }
+        }
+    }
+    
+    // Insight 3: Income vs Expenses Analysis
+    if (income > 0 && expenses > 0) {
+        val expenseToIncomeRatio = (expenses / income) * 100
+        when {
+            expenseToIncomeRatio >= 90 -> {
+                insights.add(
+                    SmartInsight(
+                        title = "High Spending Mode! 💸",
+                        description = "You've spent ${String.format("%.1f", expenseToIncomeRatio)}% of your income this month.\nYour bank account is working overtime!",
+                        icon = Icons.Default.Warning,
+                        iconColor = Color(0xFFFF5722),
+                        backgroundColor = Color(0xFFFFEBEE)
+                    )
+                )
+            }
+            expenseToIncomeRatio <= 30 -> {
+                insights.add(
+                    SmartInsight(
+                        title = "Financial Efficiency Master! 🎯",
+                        description = "You only spent ${String.format("%.1f", expenseToIncomeRatio)}% of your income this month.\nYour wallet is practically untouched!",
+                        icon = Icons.Default.Star,
+                        iconColor = Color(0xFFFFC107),
+                        backgroundColor = Color(0xFFFFFDE7)
+                    )
+                )
+            }
+        }
+    }
+    
+    // Insight 4: Transaction Frequency
+    val transactionCount = monthTransactions.size
+    when {
+        transactionCount >= 50 -> {
+            insights.add(
+                SmartInsight(
+                    title = "Transaction Marathon! 🏃‍♂️",
+                    description = "You've made $transactionCount transactions this month!\nYour card is getting a serious workout!",
+                    icon = Icons.Default.Receipt,
+                    iconColor = Color(0xFF795548),
+                    backgroundColor = Color(0xFFEFEBE9)
+                )
+            )
+        }
+        transactionCount <= 5 -> {
+            insights.add(
+                SmartInsight(
+                    title = "Minimalist Master! ✨",
+                    description = "Only $transactionCount transactions this month!\nYou're the zen master of spending!",
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = Color(0xFF4CAF50),
+                    backgroundColor = Color(0xFFE8F5E8)
+                )
+            )
+        }
+    }
+    
+    // Additional quirky insights for special scenarios
+    if (insights.size < 3) {
+        // Insight 5: Zero Income Scenario
+        if (income == 0.0 && expenses > 0) {
+            insights.add(
+                SmartInsight(
+                    title = "Mystery Income! 🕵️",
+                    description = "No income recorded this month, but you have expenses.\nYour money has a secret source!",
+                    icon = Icons.Default.Info,
+                    iconColor = Color(0xFF2196F3),
+                    backgroundColor = Color(0xFFE3F2FD)
+                )
+            )
+        }
+        
+        // Insight 6: Perfect Balance
+        if (income > 0 && expenses > 0 && kotlin.math.abs(income - expenses) < 10) {
+            insights.add(
+                SmartInsight(
+                    title = "Perfect Balance! ⚖️",
+                    description = "Your income and expenses are nearly perfectly balanced.\nYou've achieved financial zen!",
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = Color(0xFF4CAF50),
+                    backgroundColor = Color(0xFFE8F5E8)
+                )
+            )
+        }
+        
+        // Insight 7: High Income, Low Expenses
+        if (income > 0 && expenses > 0 && (income / expenses) >= 3) {
+            insights.add(
+                SmartInsight(
+                    title = "Income Powerhouse! 💰",
+                    description = "Your income is ${String.format("%.1f", (income / expenses))}x your expenses.\nYou're basically a money-making machine!",
+                    icon = Icons.Default.Star,
+                    iconColor = Color(0xFFFFC107),
+                    backgroundColor = Color(0xFFFFFDE7)
+                )
+            )
+        }
+        
+        // Insight 8: Single Category Dominance
+        if (categorySpending.size == 1 && categorySpending.isNotEmpty()) {
+            val singleCategory = categorySpending.first()
+            insights.add(
+                SmartInsight(
+                    title = "One-Category Wonder! 🎯",
+                    description = "All your expenses went to ${singleCategory.first} this month.\nYou're a ${singleCategory.first} specialist!",
+                    icon = Icons.Default.PieChart,
+                    iconColor = Color(0xFF9C27B0),
+                    backgroundColor = Color(0xFFF3E5F5)
+                )
+            )
+        }
+        
+        // Insight 9: New Month with No Data
+        if (monthTransactions.isEmpty()) {
+            insights.add(
+                SmartInsight(
+                    title = "Clean Slate! 🌱",
+                    description = "No transactions recorded this month yet.\nYour financial canvas is ready for a masterpiece!",
+                    icon = Icons.Default.Info,
+                    iconColor = Color(0xFF2196F3),
+                    backgroundColor = Color(0xFFE3F2FD)
+                )
+            )
+        }
+    }
+    
+    // Return up to 3 insights
+    return insights.take(3)
 }
 
 @Composable
@@ -740,11 +1009,26 @@ private fun InsightCard(
                     fontWeight = FontWeight.SemiBold,
                     color = iconColor
                 )
-                Text(
-                    text = description,
-                    fontSize = 12.sp,
-                    color = iconColor.copy(alpha = 0.8f)
-                )
+                // Split description into exactly 2 lines
+                val descriptionLines = description.split("\n")
+                if (descriptionLines.size >= 2) {
+                    Text(
+                        text = descriptionLines[0],
+                        fontSize = 12.sp,
+                        color = iconColor.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        text = descriptionLines[1],
+                        fontSize = 12.sp,
+                        color = iconColor.copy(alpha = 0.8f)
+                    )
+                } else {
+                    Text(
+                        text = description,
+                        fontSize = 12.sp,
+                        color = iconColor.copy(alpha = 0.8f)
+                    )
+                }
             }
             
             Icon(

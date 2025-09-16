@@ -122,6 +122,10 @@ private fun FilterContent(
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<Category>())
     val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
     
+    // Date picker states
+    var showFromDatePicker by remember { mutableStateOf(false) }
+    var showToDatePicker by remember { mutableStateOf(false) }
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -183,7 +187,9 @@ private fun FilterContent(
                     dateRange = filterOptions.dateRange ?: DateRange(),
                     onDateRangeChange = { newDateRange ->
                         onFilterOptionsChange(filterOptions.copy(dateRange = newDateRange))
-                    }
+                    },
+                    onShowFromDatePicker = { showFromDatePicker = true },
+                    onShowToDatePicker = { showToDatePicker = true }
                 )
             }
             
@@ -205,6 +211,43 @@ private fun FilterContent(
                 )
             }
         }
+    }
+    
+    // Date Picker Dialogs
+    if (showFromDatePicker) {
+        FilterDatePickerDialog(
+            onDismiss = { showFromDatePicker = false },
+            onDateSelected = { selectedDate ->
+                onFilterOptionsChange(
+                    filterOptions.copy(
+                        dateRange = filterOptions.dateRange?.copy(
+                            from = selectedDate,
+                            predefined = null
+                        ) ?: DateRange(from = selectedDate)
+                    )
+                )
+                showFromDatePicker = false
+            },
+            initialDate = filterOptions.dateRange?.from ?: ""
+        )
+    }
+    
+    if (showToDatePicker) {
+        FilterDatePickerDialog(
+            onDismiss = { showToDatePicker = false },
+            onDateSelected = { selectedDate ->
+                onFilterOptionsChange(
+                    filterOptions.copy(
+                        dateRange = filterOptions.dateRange?.copy(
+                            to = selectedDate,
+                            predefined = null
+                        ) ?: DateRange(to = selectedDate)
+                    )
+                )
+                showToDatePicker = false
+            },
+            initialDate = filterOptions.dateRange?.to ?: ""
+        )
     }
 }
 
@@ -790,7 +833,9 @@ private fun AccountChip(
 @Composable
 private fun DateRangeSection(
     dateRange: DateRange,
-    onDateRangeChange: (DateRange) -> Unit
+    onDateRangeChange: (DateRange) -> Unit,
+    onShowFromDatePicker: () -> Unit,
+    onShowToDatePicker: () -> Unit
 ) {
     Column {
         Text(
@@ -829,71 +874,109 @@ private fun DateRangeSection(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // From Date
-            OutlinedTextField(
-                value = dateRange.from,
-                onValueChange = { newFrom ->
-                    onDateRangeChange(dateRange.copy(from = newFrom, predefined = null))
-                },
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(
-                        text = "From",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            // From Date - Clickable field
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onShowFromDatePicker() }
+                    .background(
+                        color = FilterColors.unselectedBackground,
+                        shape = RoundedCornerShape(12.dp)
                     )
-                },
-                leadingIcon = {
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "From Date",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = FilterColors.unselectedBackground,
-                    unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = MaterialTheme.colorScheme.outline,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                ),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-            
-            // To Date
-            OutlinedTextField(
-                value = dateRange.to,
-                onValueChange = { newTo ->
-                    onDateRangeChange(dateRange.copy(to = newTo, predefined = null))
-                },
-                modifier = Modifier.weight(1f),
-                placeholder = {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "To",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = if (dateRange.from.isNotEmpty()) {
+                            // Format date for display (assuming YYYY-MM-DD format)
+                            try {
+                                val parts = dateRange.from.split("-")
+                                if (parts.size == 3) {
+                                    "${parts[2]}/${parts[1]}/${parts[0]}"
+                                } else {
+                                    dateRange.from
+                                }
+                            } catch (e: Exception) {
+                                dateRange.from
+                            }
+                        } else {
+                            "From"
+                        },
+                        color = if (dateRange.from.isNotEmpty()) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        fontSize = 14.sp
                     )
-                },
-                leadingIcon = {
+                }
+            }
+            
+            // To Date - Clickable field
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { onShowToDatePicker() }
+                    .background(
+                        color = FilterColors.unselectedBackground,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = "To Date",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = FilterColors.unselectedBackground,
-                    unfocusedContainerColor = FilterColors.unselectedBackground,
-                    focusedBorderColor = MaterialTheme.colorScheme.outline,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                ),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (dateRange.to.isNotEmpty()) {
+                            // Format date for display (assuming YYYY-MM-DD format)
+                            try {
+                                val parts = dateRange.to.split("-")
+                                if (parts.size == 3) {
+                                    "${parts[2]}/${parts[1]}/${parts[0]}"
+                                } else {
+                                    dateRange.to
+                                }
+                            } catch (e: Exception) {
+                                dateRange.to
+                            }
+                        } else {
+                            "To"
+                        },
+                        color = if (dateRange.to.isNotEmpty()) {
+                            MaterialTheme.colorScheme.onSurface
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        fontSize = 14.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -1132,4 +1215,127 @@ private fun ActionButtons(
             )
         }
     }
+}
+
+// Date Picker Dialog for Filter
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterDatePickerDialog(
+    onDismiss: () -> Unit,
+    onDateSelected: (String) -> Unit,
+    initialDate: String = ""
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
+            try {
+                val parts = initialDate.split("-")
+                if (parts.size == 3) {
+                    val year = parts[0].toInt()
+                    val month = parts[1].toInt()
+                    val day = parts[2].toInt()
+                    java.time.LocalDate.of(year, month, day)
+                        .atStartOfDay(java.time.ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+                } else null
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    )
+
+    // Track selected date for display
+    var selectedDateDisplay by remember { mutableStateOf("") }
+    
+    // Update display when date changes
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        datePickerState.selectedDateMillis?.let { millis ->
+            val localDate = java.time.Instant.ofEpochMilli(millis)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+            selectedDateDisplay = "${localDate.dayOfMonth} ${localDate.month.name.lowercase().replaceFirstChar { it.uppercase() }}, ${localDate.year}"
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+            Column {
+                Text(
+                    text = "Select Date",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                if (selectedDateDisplay.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = selectedDateDisplay,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        },
+        text = {
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 0.5.dp),
+                colors = DatePickerDefaults.colors(
+                    selectedYearContainerColor = Color(0xFF2196F3),
+                    selectedDayContainerColor = Color(0xFF2196F3),
+                    todayContentColor = Color(0xFF2196F3),
+                    todayDateBorderColor = Color(0xFF2196F3),
+                    dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
+                )
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val localDate = java.time.Instant.ofEpochMilli(millis)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate()
+                        val formattedDate = "${localDate.year}-${localDate.monthValue.toString().padStart(2, '0')}-${localDate.dayOfMonth.toString().padStart(2, '0')}"
+                        onDateSelected(formattedDate)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2196F3)
+                )
+            ) {
+                Text(
+                    text = "Select",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = onDismiss,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline
+                )
+            ) {
+                Text(
+                    text = "Cancel",
+                    fontSize = 14.sp
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurface
+    )
 }

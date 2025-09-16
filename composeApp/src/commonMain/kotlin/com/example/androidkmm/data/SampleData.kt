@@ -19,13 +19,6 @@ object SampleData {
         BillData("Amazon Prime", "Sep 15", "-$12.99", Color.Green),
     )
 
-    val groups = listOf(
-        GroupData("Vacation Trip", "+$156.40", "You get", Color(0xFF9F3DFF), true, "4 members"),
-        GroupData("Office Lunch", "$23.50", "You owe", Color(0xFFFF6A00), false, "6 members"),
-        GroupData("Birthday Party", "+$75.20", "You get", Color(0xFF00BCD4), true, "5 members"),
-        GroupData("Movie Night", "$12.00", "You owe", Color(0xFF4CAF50), false, "3 members"),
-        GroupData("Road Trip", "+$220.00", "You get", Color(0xFF673AB7), true, "7 members"),
-    )
 
     val quickActions = listOf(
         QuickActionData("+ Ledger", Color(0xFF3B82F6), Icons.Default.ShowChart),

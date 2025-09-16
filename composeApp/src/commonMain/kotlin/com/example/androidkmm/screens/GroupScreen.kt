@@ -933,25 +933,30 @@ fun CreateGroupScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             
-            val contacts = listOf(
-                "Sarah Miller" to "sarah.miller@example.com",
-                "Mike Johnson" to "mike.johnson@example.com",
-                "Lisa Wilson" to "lisa.wilson@example.com",
-                "Alex Chen" to "alex.chen@example.com"
-            )
-            
-            contacts.forEach { (name, email) ->
-                if (!members.contains(name)) {
-                    SuggestedContactItem(
-                        name = name,
-                        onAdd = { 
-                            if (!members.contains(name)) {
-                                members.add(name)
-                                memberEmails.value[name] = email
-                            }
-                        }
+            // No hardcoded contacts - users can add their own contacts
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No suggested contacts",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Add members manually using the form above",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -962,14 +967,41 @@ fun CreateGroupScreen(
                 onClick = {
                     // Create the group with members
                     val groupId = "group_${kotlin.time.Clock.System.now().toEpochMilliseconds()}"
+                    // Generate a random color from a predefined palette
+                    val groupColors = listOf(
+                        Color(0xFF9333EA), // Purple
+                        Color(0xFF2196F3), // Blue
+                        Color(0xFF4CAF50), // Green
+                        Color(0xFFFF9800), // Orange
+                        Color(0xFFE91E63), // Pink
+                        Color(0xFF9C27B0), // Deep Purple
+                        Color(0xFF00BCD4), // Cyan
+                        Color(0xFFFF5722)  // Deep Orange
+                    )
+                    val randomColor = groupColors.random()
+                    
                     val group = Group(
                         id = groupId,
                         name = groupName,
                         description = "",
-                        color = Color(0xFF9333EA), // Default purple color
+                        color = randomColor,
                         createdAt = kotlin.time.Clock.System.now().epochSeconds,
                         totalSpent = 0.0,
                         memberCount = members.size
+                    )
+                    
+                    // Generate avatar colors for members
+                    val avatarColors = listOf(
+                        Color(0xFF2196F3), // Blue
+                        Color(0xFF4CAF50), // Green
+                        Color(0xFFFF9800), // Orange
+                        Color(0xFFE91E63), // Pink
+                        Color(0xFF9C27B0), // Deep Purple
+                        Color(0xFF00BCD4), // Cyan
+                        Color(0xFFFF5722), // Deep Orange
+                        Color(0xFF795548), // Brown
+                        Color(0xFF607D8B), // Blue Grey
+                        Color(0xFF3F51B5)  // Indigo
                     )
                     
                     val groupMembers = members.mapIndexed { index, memberName ->
@@ -979,7 +1011,7 @@ fun CreateGroupScreen(
                             name = memberName,
                             email = if (memberName == "You") "" else (memberEmails.value[memberName] ?: ""),
                             phone = "",
-                            avatarColor = Color(0xFF2196F3), // Default blue color
+                            avatarColor = avatarColors[index % avatarColors.size], // Cycle through colors
                             balance = 0.0,
                             totalPaid = 0.0,
                             totalOwed = 0.0

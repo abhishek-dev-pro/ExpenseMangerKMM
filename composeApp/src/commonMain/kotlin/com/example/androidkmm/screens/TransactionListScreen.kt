@@ -2908,15 +2908,12 @@ private fun DatePickerDialog(
                 )
             },
             text = {
-                Box(
+                DatePicker(
+                    state = datePickerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                ) {
-                    DatePicker(
-                        state = datePickerState,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = DatePickerDefaults.colors(
+                        .padding(horizontal = 0.5.dp),
+                    colors = DatePickerDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.surface,
                             titleContentColor = MaterialTheme.colorScheme.onBackground,
                             headlineContentColor = MaterialTheme.colorScheme.onBackground,
@@ -2938,7 +2935,6 @@ private fun DatePickerDialog(
                             dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
                         )
                     )
-                }
             },
             confirmButton = {
                 TextButton(

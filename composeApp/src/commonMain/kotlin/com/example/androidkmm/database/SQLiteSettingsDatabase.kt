@@ -15,6 +15,10 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     
     fun getAllSettings(): Flow<List<AppSetting>> {
         return database.categoryDatabaseQueries.selectAllSettings().asFlow().mapToList(Dispatchers.Default).map { rows ->
+            println("Database Debug - Retrieved ${rows.size} settings from database")
+            rows.forEach { row ->
+                println("Database Debug - Setting: key='${row.key}', value='${row.value_}'")
+            }
             rows.map { row ->
                 AppSetting(
                     key = row.key,
@@ -38,7 +42,9 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     }
     
     suspend fun updateSetting(key: String, value: String) {
+        println("Database Debug - Updating setting: key='$key', value='$value'")
         database.categoryDatabaseQueries.upsertSetting(key, value)
+        println("Database Debug - Setting updated successfully")
     }
     
     fun getAppSettings(): Flow<AppSettings> {
@@ -52,13 +58,20 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
                 else -> carryForwardValue.toBoolean()
             }
             println("Settings Debug - carry_forward_enabled: '$carryForwardValue', parsed: $carryForwardEnabled")
-            AppSettings(
+            println("Settings Debug - settingsMap: $settingsMap")
+            println("Settings Debug - user_name from map: '${settingsMap["user_name"]}'")
+            println("Settings Debug - user_email from map: '${settingsMap["user_email"]}'")
+            
+            val appSettings = AppSettings(
                 carryForwardEnabled = carryForwardEnabled,
                 currencySymbol = settingsMap["currency_symbol"] ?: "$",
                 dateFormat = settingsMap["date_format"] ?: "MMM dd, yyyy",
                 userName = settingsMap["user_name"] ?: "",
                 userEmail = settingsMap["user_email"] ?: ""
             )
+            
+            println("Settings Debug - Final AppSettings: userName='${appSettings.userName}', userEmail='${appSettings.userEmail}'")
+            appSettings
         }
     }
     
@@ -79,11 +92,38 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     suspend fun updateUserName(name: String) {
         updateSetting("user_name", name)
     }
+    
+    suspend fun updateUserEmail(email: String) {
+        updateSetting("user_email", email)
+    }
+    
+    // Debug function to check database state
+    suspend fun debugDatabaseState() {
+        try {
+            val settings = database.categoryDatabaseQueries.selectAllSettings().executeAsList()
+            println("Database Debug - Total settings in database: ${settings.size}")
+            settings.forEach { setting ->
+                println("Database Debug - Setting: ${setting.key} = '${setting.value_}'")
+            }
+        } catch (e: Exception) {
+            println("Database Debug - Error reading database: ${e.message}")
+            e.printStackTrace()
+        }
+    }
 }
 
 @Composable
 fun rememberSQLiteSettingsDatabase(): SQLiteSettingsDatabase {
+    println("Database Debug - Creating SQLiteSettingsDatabase")
     val driverFactory = rememberDatabaseDriverFactory()
-    val database = remember { CategoryDatabase(driverFactory.createDriver()) }
-    return remember { SQLiteSettingsDatabase(database) }
+    println("Database Debug - Driver factory created")
+    val database = remember { 
+        println("Database Debug - Creating CategoryDatabase")
+        CategoryDatabase(driverFactory.createDriver())
+    }
+    println("Database Debug - CategoryDatabase created")
+    return remember { 
+        println("Database Debug - Creating SQLiteSettingsDatabase instance")
+        SQLiteSettingsDatabase(database)
+    }
 }
