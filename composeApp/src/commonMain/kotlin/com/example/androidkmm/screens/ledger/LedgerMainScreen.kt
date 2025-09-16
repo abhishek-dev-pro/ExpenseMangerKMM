@@ -188,7 +188,7 @@ fun LedgerMainScreen(
                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF0F2419) // Keep green for "To Send"
+                    containerColor = Color(0xFF0F2419) // Keep green background
                 ),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
@@ -220,7 +220,7 @@ fun LedgerMainScreen(
                             text = formatDouble(toReceiveAmount),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = LedgerTheme.greenAmount
+                            color = LedgerTheme.redAmount
                         )
                         Text(
                             text = if (toReceiveCount == 1) "1 person" else "$toReceiveCount people",
@@ -243,7 +243,7 @@ fun LedgerMainScreen(
                         shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
                     ),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF2A1919) // Keep red for "To Receive"
+                    containerColor = Color(0xFF2A1919) // Keep red background
                 ),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ) {
@@ -275,7 +275,7 @@ fun LedgerMainScreen(
                             text = formatDouble(toSendAmount),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = LedgerTheme.redAmount
+                            color = LedgerTheme.greenAmount
                         )
                         Text(
                             text = if (toSendCount == 1) "1 person" else "$toSendCount people",

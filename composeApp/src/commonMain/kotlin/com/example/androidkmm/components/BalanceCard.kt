@@ -55,17 +55,25 @@ fun BalanceCard(
         }
     }
     
-    // Calculate net ledger amount (received - sent)
+    // Calculate net ledger amount (|to receive| - |to send|) - EXACT SAME AS LEDGER SCREEN
     val netLedgerAmount = remember(ledgerPersons) {
-        val total = ledgerPersons.sumOf { person ->
-            person.balance // This should be the net amount (received - sent)
-        }
-        if (total != 0.0) {
-            val sign = if (total > 0) "+" else ""
-            "${sign}$${String.format("%.1f", total)}"
-        } else {
-            "$0.0"
-        }
+        // Use EXACT same calculation as LedgerMainScreen
+        val toReceiveAmount = ledgerPersons.filter { it.balance > 0 }.sumOf { it.balance }
+        val toSendAmount = ledgerPersons.filter { it.balance < 0 }.sumOf { kotlin.math.abs(it.balance) }
+        
+        // Apply your formula: |to receive| - |to send|
+        val netAmount = toReceiveAmount - toSendAmount
+        
+        // Debug - print the values to see what's happening
+        println("HOME DEBUG:")
+        println("  toReceiveAmount (balance > 0): $toReceiveAmount")
+        println("  toSendAmount (balance < 0): $toSendAmount")
+        println("  netAmount (toReceive - toSend): $netAmount")
+        println("  Expected: 0 - 1900 = -1900")
+        
+        // Show the actual calculated result
+        val sign = if (netAmount >= 0) "+" else ""
+        "${sign}$${String.format("%.1f", netAmount)}"
     }
     
     val displayBalance = totalBalance ?: calculatedTotalBalance
