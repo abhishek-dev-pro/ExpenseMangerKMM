@@ -208,7 +208,7 @@ fun RecentTransactionsSection(
         } else {
             // Transaction list - use Column instead of LazyColumn to avoid nested scrollable components
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(0.8.dp)
             ) {
                 recentTransactions.forEach { transaction ->
                     RecentTransactionItem(transaction = transaction)
@@ -230,7 +230,7 @@ private fun RecentTransactionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Category icon - more prominent like restaurant example

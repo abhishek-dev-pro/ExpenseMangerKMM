@@ -14,6 +14,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -81,11 +83,11 @@ val categoryColors = listOf(
 fun ProfileMainScreen() {
     var currentScreen by remember { mutableStateOf("profile") }
     var showAccountSheet by remember { mutableStateOf(false) }
-    var showCategorySheet by remember { mutableStateOf(false) }
     var showAddAccountSheet by remember { mutableStateOf(false) }
     var showAddCategorySheet by remember { mutableStateOf(false) }
     var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
     var showCreateGroupScreen by remember { mutableStateOf(false) }
+    var showClearDataDialog by remember { mutableStateOf(false) }
 
     // Database managers
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
@@ -106,6 +108,10 @@ fun ProfileMainScreen() {
     
     // Flow for settings from database
     val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
+    
+    // Flow for transactions and groups count
+    val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList())
+    val groupsState = groupDatabaseManager.getAllGroups().collectAsState(initial = emptyList())
 
     Box(
         modifier = Modifier
@@ -114,19 +120,22 @@ fun ProfileMainScreen() {
     ) {
         when (currentScreen) {
             "profile" -> ProfileScreen(
+                transactionCount = transactionsState.value.size,
+                groupCount = groupsState.value.size,
                 onAccountsClick = { currentScreen = "accounts" },
-                onCategoriesClick = { showCategorySheet = true },
+                onCategoriesClick = { currentScreen = "categories" },
                 onCustomizeClick = { currentScreen = "customize" },
                 onGroupsClick = { currentScreen = "groups" },
                 onClearDataClick = {
-                    // Clear all data from database
-                    scope.launch {
-                        transactionDatabaseManager.clearAllData()
-                    }
+                    showClearDataDialog = true
                 }
             )
             "accounts" -> AccountsScreen(
                 onBackClick = { currentScreen = "profile" }
+            )
+            "categories" -> CategoriesScreen(
+                onBackClick = { currentScreen = "profile" },
+                onAddCategory = { showAddCategorySheet = true }
             )
             "customize" -> CustomizeScreen(
                 onBackClick = { currentScreen = "profile" }
@@ -172,30 +181,6 @@ fun ProfileMainScreen() {
             }
         }
 
-        // Category Management Bottom Sheet
-        if (showCategorySheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showCategorySheet = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                dragHandle = null
-            ) {
-                CategoriesBottomSheet(
-                    expenseCategories = expenseCategories.value,
-                    incomeCategories = incomeCategories.value,
-                    customCategories = customCategories.value,
-                    selectedTab = selectedCategoryTab,
-                    onDismiss = { showCategorySheet = false },
-                    onTabSelected = { tab -> selectedCategoryTab = tab },
-                    onAddCustomCategory = { showAddCategorySheet = true },
-                    onEditCategory = { category ->
-                        // Handle edit category
-                    },
-                    onDeleteCategory = { category ->
-                        categoryDatabaseManager.deleteCategory(category)
-                    }
-                )
-            }
-        }
 
         // Add Category Bottom Sheet
         if (showAddCategorySheet) {
@@ -224,17 +209,140 @@ fun ProfileMainScreen() {
                 )
             }
         }
+
+        // Clear Data Confirmation Dialog
+        if (showClearDataDialog) {
+            AlertDialog(
+                onDismissRequest = { showClearDataDialog = false },
+                title = {
+                    Text(
+                        text = "Clear All Data",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "This action will permanently delete:",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        
+                        Text(
+                            text = "• All transactions",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "• All accounts",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "• All categories",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "• All ledger entries",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "• All groups and group expenses",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "• All app settings",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        
+                        Text(
+                            text = "This action cannot be undone!",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFE57373)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showClearDataDialog = false
+                            scope.launch {
+                                // Clear all data from all databases
+                                transactionDatabaseManager.clearAllData()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE57373)
+                        )
+                    ) {
+                        Text(
+                            text = "Clear All Data",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showClearDataDialog = false }
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                textContentColor = MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
 
 @Composable
 fun ProfileScreen(
+    transactionCount: Int,
+    groupCount: Int,
     onAccountsClick: () -> Unit,
     onCategoriesClick: () -> Unit,
     onCustomizeClick: () -> Unit,
     onGroupsClick: () -> Unit,
     onClearDataClick: () -> Unit
 ) {
+    // Fetch user data from settings
+    val settingsDatabase = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabase.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
+    
+    val userName = appSettings.userName
+    val userEmail = appSettings.userEmail ?: ""
+    
+    // Generate initials from name
+    val initials = userName.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("").uppercase()
+    
+    // Edit dialog state
+    var showEditDialog by remember { mutableStateOf(false) }
+    var editName by remember { mutableStateOf(userName) }
+    var editEmail by remember { mutableStateOf(userEmail) }
+    var isLoading by remember { mutableStateOf(false) }
+    var showError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    
+    val coroutineScope = rememberCoroutineScope()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -256,18 +364,18 @@ fun ProfileScreen(
                     // User Info Section
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.Top
                     ) {
                         // Profile Picture
                         Box(
                             modifier = Modifier
                                 .size(60.dp)
                                 .clip(CircleShape)
-                                .background(Color.White),
+                                .background(Color(0xFFF0F8FF)), // Light blue tint like in the image
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "AK",
+                                text = initials,
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black
@@ -276,26 +384,35 @@ fun ProfileScreen(
 
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        // User Details
-                        Column {
-                                    Text(
-                                        text = "Abhishek Kumar",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                        // User Details - Properly aligned with profile picture
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            // Name and email section - centered with the profile picture
+                            Column(
+                                modifier = Modifier.height(60.dp), // Match profile picture height
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = userName,
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
 
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
 
-                                    Text(
-                                        text = "abhishek@example.com",
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                Text(
+                                    text = userEmail,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
-                            // Member since tag
+                            // Member since tag - below the name/email section
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                 shape = RoundedCornerShape(8.dp),
@@ -309,21 +426,44 @@ fun ProfileScreen(
                                 )
                             }
                         }
+                        
+                        // Edit Button
+                        IconButton(
+                            onClick = { 
+                                editName = userName
+                                editEmail = userEmail
+                                showEditDialog = true 
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Profile",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Stats Row
+                    // Stats Row - Centered
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            StatCard("234", "Transactions")
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            StatCard("5", "Groups")
-                        }
+                        StatCard(
+                            value = transactionCount.toString(),
+                            label = "Transactions"
+                        )
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        StatCard(
+                            value = groupCount.toString(),
+                            label = "Groups"
+                        )
                     }
                 }
             }
@@ -410,7 +550,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "abhishek@example.com",
+                        text = userEmail,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -429,19 +569,186 @@ fun ProfileScreen(
             )
         }
     }
+    
+    // Edit Profile Dialog
+    if (showEditDialog) {
+        AlertDialog(
+            onDismissRequest = { 
+                showEditDialog = false
+                showError = false
+            },
+            title = {
+                Text(
+                    text = "Edit Profile",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Name Input
+                    OutlinedTextField(
+                        value = editName,
+                        onValueChange = { 
+                            editName = it
+                            showError = false
+                        },
+                        label = { Text("Name", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        singleLine = true
+                    )
+
+                    // Email Input
+                    OutlinedTextField(
+                        value = editEmail,
+                        onValueChange = { 
+                            editEmail = it
+                            showError = false
+                        },
+                        label = { Text("Email", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true
+                    )
+
+                    // Error message
+                    if (showError) {
+                        Text(
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (editName.isBlank()) {
+                            showError = true
+                            errorMessage = "Please enter your name"
+                            return@Button
+                        }
+
+                        isLoading = true
+                        coroutineScope.launch {
+                            try {
+                                val trimmedName = editName.trim()
+                                val trimmedEmail = editEmail.trim()
+
+                                // Save user name to settings
+                                settingsDatabase.updateUserName(trimmedName)
+
+                                // Save email if provided, otherwise auto-generate
+                                val finalEmail = if (trimmedEmail.isNotBlank()) {
+                                    trimmedEmail
+                                } else {
+                                    // Auto-generate email from name: "firstname"@moneymate.com
+                                    val firstName = trimmedName.split(" ").firstOrNull()?.lowercase() ?: "user"
+                                    "${firstName}@moneymate.com"
+                                }
+
+                                // Save email
+                                settingsDatabase.updateSetting("user_email", finalEmail)
+
+                                // Close dialog
+                                showEditDialog = false
+                                isLoading = false
+                                showError = false
+
+                            } catch (e: Exception) {
+                                showError = true
+                                errorMessage = "Failed to save your information. Please try again."
+                                isLoading = false
+                            }
+                        }
+                    },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    } else {
+                        Text("Save")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { 
+                        showEditDialog = false
+                        showError = false
+                    }
+                ) {
+                    Text(
+                        "Cancel",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
+        )
+    }
 }
 
 @Composable
 fun StatCard(value: String, label: String) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .width(120.dp)
+            .height(80.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = value,
@@ -833,19 +1140,28 @@ private fun IncomeCategoriesContent(
         )
 
         // Default Categories Grid
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.height(200.dp)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(categories) { category ->
-                CategoryCard(
-                    category = category,
-                    isCustom = false,
-                    onEdit = { onEditCategory(category) },
-                    onDelete = { onDeleteCategory(category) }
-                )
+            categories.chunked(2).forEach { rowCategories ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    rowCategories.forEach { category ->
+                        CategoryCard(
+                            category = category,
+                            isCustom = false,
+                            onEdit = { onEditCategory(category) },
+                            onDelete = { onDeleteCategory(category) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    // Fill remaining space if odd number of items
+                    if (rowCategories.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
 
@@ -899,19 +1215,28 @@ private fun ExpenseCategoriesContent(
         )
 
         // Default Categories Grid
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.height(200.dp)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(categories) { category ->
-                CategoryCard(
-                    category = category,
-                    isCustom = false,
-                    onEdit = { onEditCategory(category) },
-                    onDelete = { onDeleteCategory(category) }
-                )
+            categories.chunked(2).forEach { rowCategories ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    rowCategories.forEach { category ->
+                        CategoryCard(
+                            category = category,
+                            isCustom = false,
+                            onEdit = { onEditCategory(category) },
+                            onDelete = { onDeleteCategory(category) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    // Fill remaining space if odd number of items
+                    if (rowCategories.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
 
@@ -958,7 +1283,7 @@ private fun CategoryCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = modifier
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -2067,6 +2392,123 @@ fun CurrencySetting() {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoriesScreen(
+    onBackClick: () -> Unit,
+    onAddCategory: () -> Unit
+) {
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
+    val scope = rememberCoroutineScope()
+    
+    // Flow for categories from database
+    val expenseCategories = categoryDatabaseManager.getCategoriesByType(CategoryType.EXPENSE).collectAsState(initial = emptyList<Category>())
+    val incomeCategories = categoryDatabaseManager.getCategoriesByType(CategoryType.INCOME).collectAsState(initial = emptyList<Category>())
+    val customCategories = categoryDatabaseManager.getCustomCategories().collectAsState(initial = emptyList<Category>())
+    
+    var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header with back button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Text(
+                text = "Categories",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        
+        // Tab Row
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        ) {
+            Row(modifier = Modifier.padding(4.dp)) {
+                TabButton(
+                    text = "Expense Categories",
+                    isSelected = selectedCategoryTab == CategoryTab.EXPENSE,
+                    onClick = { selectedCategoryTab = CategoryTab.EXPENSE },
+                    modifier = Modifier.weight(1f)
+                )
+                TabButton(
+                    text = "Income Categories",
+                    isSelected = selectedCategoryTab == CategoryTab.INCOME,
+                    onClick = { selectedCategoryTab = CategoryTab.INCOME },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        // Content based on selected tab
+        when (selectedCategoryTab) {
+            CategoryTab.EXPENSE -> {
+                ExpenseCategoriesContent(
+                    categories = expenseCategories.value,
+                    customCategories = customCategories.value.filter { it.type == CategoryType.EXPENSE },
+                    onAddCustomCategory = onAddCategory,
+                    onEditCategory = { category ->
+                        // Handle edit category
+                    },
+                    onDeleteCategory = { category ->
+                        try {
+                            categoryDatabaseManager.deleteCategory(category)
+                        } catch (e: Exception) {
+                            println("Error deleting category: ${e.message}")
+                        }
+                    }
+                )
+            }
+            CategoryTab.INCOME -> {
+                IncomeCategoriesContent(
+                    categories = incomeCategories.value,
+                    customCategories = customCategories.value.filter { it.type == CategoryType.INCOME },
+                    onAddCustomCategory = onAddCategory,
+                    onEditCategory = { category ->
+                        // Handle edit category
+                    },
+                    onDeleteCategory = { category ->
+                        try {
+                            categoryDatabaseManager.deleteCategory(category)
+                        } catch (e: Exception) {
+                            println("Error deleting category: ${e.message}")
+                        }
+                    }
+                )
             }
         }
     }

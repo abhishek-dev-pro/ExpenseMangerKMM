@@ -105,7 +105,7 @@ fun MainScreen() {
                             navigateToLedgerTransaction = null
                         }
                     )
-                    3 -> InsightsScreen()
+                    3 -> InsightsScreen(transactionDatabaseManager = transactionDatabaseManager)
                     4 -> ProfileMainScreen()
                 }
                 

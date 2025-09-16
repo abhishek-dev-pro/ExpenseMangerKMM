@@ -55,7 +55,9 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
             AppSettings(
                 carryForwardEnabled = carryForwardEnabled,
                 currencySymbol = settingsMap["currency_symbol"] ?: "$",
-                dateFormat = settingsMap["date_format"] ?: "MMM dd, yyyy"
+                dateFormat = settingsMap["date_format"] ?: "MMM dd, yyyy",
+                userName = settingsMap["user_name"] ?: "",
+                userEmail = settingsMap["user_email"] ?: ""
             )
         }
     }
@@ -72,6 +74,10 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     
     suspend fun updateDateFormat(format: String) {
         updateSetting("date_format", format)
+    }
+    
+    suspend fun updateUserName(name: String) {
+        updateSetting("user_name", name)
     }
 }
 

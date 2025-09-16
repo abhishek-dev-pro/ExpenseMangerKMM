@@ -335,7 +335,8 @@ fun TransactionsScreen(
         SearchTransactionsScreen(
             onBackClick = { showSearchScreen = false },
             onCloseClick = { showSearchScreen = false },
-            onTransactionClick = { /* Handled directly in SearchTransactionsScreen */ }
+            onTransactionClick = { /* Handled directly in SearchTransactionsScreen */ },
+            initialFilters = FilterOptions()
         )
     }
 }

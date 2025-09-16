@@ -452,8 +452,8 @@ private fun PaymentSplitSection(
         // Paid by Section
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
             Text(
                 text = "Paid by",
                 color = Color(0xFF6B7280),
@@ -483,13 +483,13 @@ private fun PaymentSplitSection(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+                    Text(
                 text = "Split between",
                 color = Color(0xFF6B7280),
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-            
+                        fontWeight = FontWeight.Medium
+                    )
+                    
             Spacer(Modifier.width(8.dp))
             
             // Split Tag
@@ -516,7 +516,7 @@ private fun PayerTag(
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
+                    modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(Color(0xFFF3F4F6))
             .clickable { onClick() }
@@ -600,7 +600,7 @@ private fun CategorySelectionBottomSheet(
         containerColor = MaterialTheme.colorScheme.surface
     ) {
         Column(
-                        modifier = Modifier
+                modifier = Modifier
                             .fillMaxWidth()
                 .padding(24.dp)
             ) {

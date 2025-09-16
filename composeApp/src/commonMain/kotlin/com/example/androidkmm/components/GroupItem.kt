@@ -2,22 +2,18 @@ package com.example.androidkmm.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.androidkmm.design.DesignSystem
-import com.example.androidkmm.utils.CardUtils
+import androidx.compose.ui.unit.sp
 
 /**
  * Group item component for displaying group highlights
@@ -31,91 +27,69 @@ fun GroupItem(
     positive: Boolean,
     members: String
 ) {
-    CardUtils.ItemCardSurface {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    horizontal = DesignSystem.Spacing.md,
-                    vertical = DesignSystem.Spacing.md
-                ),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left side (icon + text)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f).padding(vertical = 4.dp)
+            // Group icon - same style as transaction category icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(color),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(DesignSystem.IconSize.avatar)
-                        .background(color, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Group,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(DesignSystem.IconSize.md)
-                    )
-                }
-                Spacer(Modifier.width(DesignSystem.Spacing.md))
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = title,
-                        color = Color.White,
-                        fontWeight = FontWeight.Normal,
-                        fontStyle = FontStyle.Normal,
-                        fontSize = DesignSystem.Typography.balanceLabel,
-                        lineHeight = DesignSystem.Typography.cardTitle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = members,
-                        color = Color.Gray,
-                        fontStyle = FontStyle.Normal,
-                        fontSize = DesignSystem.Typography.caption1,
-                        lineHeight = DesignSystem.Typography.caption1, // tight spacing
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Group,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
-
-            // Right side (amount + chip)
-            Column(horizontalAlignment = Alignment.End) {
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Group details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = members,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Amount and chip
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
                 Text(
                     text = amount,
-                    color = if (positive) Color.Green else Color.Red,
-                    fontSize = DesignSystem.Typography.balanceLabel,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    lineHeight = DesignSystem.Typography.cardTitle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    color = if (positive) Color(0xFF00A63E) else Color(0xFFEF4444)
                 )
-                Spacer(Modifier.height(DesignSystem.Spacing.xs))
-                Box(
-                    modifier = Modifier
-                        .background(
-                            if (positive) Color.Gray else Color.White,
-                            shape = RoundedCornerShape(DesignSystem.CornerRadius.sm)
-                        )
-                        .padding(
-                            horizontal = DesignSystem.Spacing.xs,
-                        )
-                ) {
-                    Text(
-                        text = chip,
-                        color = if (positive) Color.White else Color.Black,
-                        fontSize = DesignSystem.Typography.caption1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = chip,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

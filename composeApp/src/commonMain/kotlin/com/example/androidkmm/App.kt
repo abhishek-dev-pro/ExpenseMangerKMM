@@ -1,7 +1,9 @@
 package com.example.androidkmm
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.screens.MainScreen
+import com.example.androidkmm.screens.UserSetupScreen
 import com.example.androidkmm.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -10,28 +12,24 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Preview
 fun App() {
     AppTheme {
-        MainScreen()
-//        var showContent by remember { mutableStateOf(false) }
-//        Column(
-//            modifier = Modifier
-//                .background(MaterialTheme.colorScheme.primaryContainer)
-//                .safeContentPadding()
-//                .fillMaxSize(),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//        ) {
-//            Button(onClick = { showContent = !showContent }) {
-//                Text("Click me!")
-//            }
-//            AnimatedVisibility(showContent) {
-//                val greeting = remember { Greeting().greet() }
-//                Column(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                ) {
-//                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-//                    Text("Compose: $greeting")
-//                }
-//            }
-//        }
+        val settingsDatabase = rememberSQLiteSettingsDatabase()
+        val appSettings by settingsDatabase.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
+        
+        // Check if user has completed setup (name is not empty and not default "User")
+        val isUserSetupComplete = appSettings.userName.isNotBlank() && appSettings.userName != "User"
+        
+        // Debug logging
+        println("App Debug - userName: '${appSettings.userName}', isSetupComplete: $isUserSetupComplete")
+        
+        if (isUserSetupComplete) {
+            MainScreen()
+        } else {
+            UserSetupScreen(
+                onSetupComplete = {
+                    // The state will automatically update when the database changes
+                    println("App Debug - Setup completed, transitioning to MainScreen")
+                }
+            )
+        }
     }
 }

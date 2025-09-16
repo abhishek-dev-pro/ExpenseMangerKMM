@@ -32,6 +32,11 @@ import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.utils.formatDouble
 
+// Import FilterOptions from FilterTransactionsBottomSheet
+import FilterOptions
+import DateRange
+import PredefinedDateRange
+
 // Color definitions matching the search screen design
 object SearchColors {
     val income = Color(0xFF10B981)
@@ -44,7 +49,8 @@ fun SearchTransactionsScreen(
     onBackClick: () -> Unit,
     onCloseClick: () -> Unit,
     onTransactionClick: (Transaction) -> Unit,
-    onNavigateToLedger: (String, String) -> Unit = { _, _ -> }
+    onNavigateToLedger: (String, String) -> Unit = { _, _ -> },
+    initialFilters: FilterOptions = FilterOptions()
 ) {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
@@ -54,7 +60,7 @@ fun SearchTransactionsScreen(
     val allTransactions = allTransactionsState.value
     
     var searchQuery by remember { mutableStateOf("") }
-    var filterOptions by remember { mutableStateOf(FilterOptions()) }
+    var filterOptions by remember { mutableStateOf(initialFilters) }
     var showFilterBottomSheet by remember { mutableStateOf(false) }
     var filteredTransactions by remember { mutableStateOf(allTransactions) }
     var selectedTransactionForDetails by remember { mutableStateOf<Transaction?>(null) }
