@@ -2422,33 +2422,35 @@ fun CategoriesScreen(
         // Header with back button
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Color(0xFF2C2C2E),
-                        CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
+
+
             Text(
                 text = "Categories",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
+
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    )
+                    .size(40.dp)
+
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         
         // Tab Row
