@@ -75,8 +75,24 @@ fun AddLedgerEntryBottomSheet(
     }
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf("2025-09-10") }
-    var selectedTime by remember { mutableStateOf("01:43 PM") }
+    
+    // Get current date and time
+    val currentDate = remember {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        "${now.date.year}-${now.date.monthNumber.toString().padStart(2, '0')}-${now.date.dayOfMonth.toString().padStart(2, '0')}"
+    }
+    val currentTime = remember {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val time = now.time
+        val hour = time.hour
+        val minute = time.minute
+        val amPm = if (hour < 12) "AM" else "PM"
+        val displayHour = if (hour == 0) 12 else if (hour > 12) hour - 12 else hour
+        "${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} $amPm"
+    }
+    
+    var selectedDate by remember { mutableStateOf(currentDate) }
+    var selectedTime by remember { mutableStateOf(currentTime) }
     var selectedAccount by remember { mutableStateOf<com.example.androidkmm.models.Account?>(null) }
     var showAccountSelection by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }

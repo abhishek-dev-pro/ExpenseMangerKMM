@@ -1,4 +1,4 @@
-package com.example.androidkmm.screens
+package com.example.androidkmm.screens.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,10 +34,25 @@ import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
 import com.example.androidkmm.models.GroupExpense
+import com.example.androidkmm.utils.Logger
 import kotlinx.coroutines.delay
 
 /**
  * Home screen content component
+ * 
+ * Main dashboard displaying key financial information including:
+ * - User greeting and balance overview
+ * - Quick action buttons for common tasks
+ * - Recent transactions summary
+ * - Group highlights and balances
+ * - Progress tracking and achievements
+ * 
+ * @param onNavigateToTransactions Callback for navigating to transactions screen
+ * @param onNavigateToAddExpense Callback for adding new expense
+ * @param onNavigateToAddIncome Callback for adding new income
+ * @param onNavigateToGroups Callback for navigating to groups
+ * @param onNavigateToLedger Callback for navigating to ledger
+ * @param onNavigateToAddTransaction Callback for adding new transaction
  */
 @Composable
 fun HomeScreenContent(
@@ -48,6 +63,8 @@ fun HomeScreenContent(
     onNavigateToLedger: () -> Unit = {},
     onNavigateToAddTransaction: () -> Unit = {}
 ) {
+    Logger.debug("HomeScreenContent initialized", "HomeScreen")
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -61,28 +78,30 @@ fun HomeScreenContent(
         item { 
             QuickActions(
                 onActionClick = { action ->
+                    Logger.debug("Quick action clicked: $action", "HomeScreen")
                     when (action) {
-                        "Ledger" -> onNavigateToLedger()
-                        "Transaction" -> onNavigateToAddTransaction()
+                        "+ Ledger" -> onNavigateToLedger()
+                        "+ Transaction" -> onNavigateToAddTransaction()
                     }
                 }
             )
         }
         item { RecentTransactionsSection(onViewAllClick = onNavigateToTransactions) }
-//        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
-//        item { ProgressCard() }
+        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
+        item { ProgressCard() }
 
         item { Spacer(Modifier.height(DesignSystem.Spacing.bottomNavHeight)) }
     }
 }
 
-
-
-
-
-
 /**
  * Group highlights section
+ * 
+ * Displays a summary of user's group memberships and balances.
+ * Shows the most relevant groups with current balance information
+ * and provides quick navigation to group details.
+ * 
+ * @param onViewAllClick Callback when "View all" is clicked
  */
 @Composable
 private fun GroupHighlights(
@@ -139,6 +158,7 @@ private fun GroupHighlights(
         
         Row(
             modifier = Modifier.clickable { 
+                Logger.debug("View all groups clicked", "HomeScreen")
                 onViewAllClick() 
             },
             verticalAlignment = Alignment.CenterVertically

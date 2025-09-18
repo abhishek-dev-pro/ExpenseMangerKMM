@@ -1,14 +1,15 @@
 package com.example.androidkmm.screens
 
+import DateRange
+import FilterOptions
+import SearchTransactionsScreen
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,10 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -30,13 +29,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.DesignSystem
-import com.example.androidkmm.utils.TextUtils
-import FilterOptions
-import DateRange
-import PredefinedDateRange
-import SearchTransactionsScreen
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,19 +70,15 @@ fun InsightsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top App Bar
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Financial Insights",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
-            )
+        // Title
+        Text(
+            text = "Financial Insights",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
         
         // Tab Row
@@ -134,6 +125,7 @@ fun InsightsScreen(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun OverviewTab(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
@@ -164,9 +156,8 @@ private fun OverviewTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(DesignSystem.Spacing.safeAreaPadding)
+            .padding(horizontal = DesignSystem.Spacing.safeAreaPadding, vertical = 0.dp)
     ) {
-        item { Spacer(Modifier.height(DesignSystem.Spacing.sm)) }
         
         // Month Selector
         item {
@@ -182,11 +173,20 @@ private fun OverviewTab(
                     }
                 },
                 onNextMonth = {
-                    if (currentMonth < 12) {
-                        currentMonth++
-                    } else {
-                        currentMonth = 1
-                        currentYear++
+                    // Get current date to check if we can go to next month
+                    val now = Clock.System.now()
+                    val currentDate = now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+                    val currentMonthNumber = currentDate.monthNumber
+                    val currentYearNumber = currentDate.year
+                    
+                    // Only allow navigation to next month if we're not at the current month
+                    if (!(currentMonth == currentMonthNumber && currentYear == currentYearNumber)) {
+                        if (currentMonth < 12) {
+                            currentMonth++
+                        } else {
+                            currentMonth = 1
+                            currentYear++
+                        }
                     }
                 }
             )
@@ -264,6 +264,7 @@ private fun OverviewTab(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun MonthSelectorCard(
     currentMonth: Int,
@@ -275,6 +276,15 @@ private fun MonthSelectorCard(
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     )
+    
+    // Get current date to determine if we're at the current month
+    val now = Clock.System.now()
+    val currentDate = now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+    val currentMonthNumber = currentDate.monthNumber
+    val currentYearNumber = currentDate.year
+    
+    // Check if we're at the current month (can't go to future)
+    val isAtCurrentMonth = currentMonth == currentMonthNumber && currentYear == currentYearNumber
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -308,17 +318,23 @@ private fun MonthSelectorCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = if (currentMonth == 9) "Current Month" else "Historic Month",
+                    text = if (isAtCurrentMonth) "Current Month" else "Historic Month",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
-            IconButton(onClick = onNextMonth) {
+            IconButton(
+                onClick = onNextMonth,
+                enabled = !isAtCurrentMonth
+            ) {
                 Icon(
                     Icons.Default.KeyboardArrowRight,
                     contentDescription = "Next month",
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = if (isAtCurrentMonth) 
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) 
+                    else 
+                        MaterialTheme.colorScheme.onSurface
                 )
             }
         }
