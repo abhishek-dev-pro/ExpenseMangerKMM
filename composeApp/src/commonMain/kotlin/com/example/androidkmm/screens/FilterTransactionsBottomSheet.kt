@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.design.DesignSystem
@@ -1259,7 +1260,10 @@ private fun FilterDatePickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        modifier = Modifier.fillMaxWidth(),
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.8f),
         title = {
             Column {
                 Text(
@@ -1284,7 +1288,8 @@ private fun FilterDatePickerDialog(
                 state = datePickerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 0.5.dp),
+                    .fillMaxHeight()
+                    .padding(horizontal = 0.dp),
                 colors = DatePickerDefaults.colors(
                     selectedYearContainerColor = Color(0xFF2196F3),
                     selectedDayContainerColor = Color(0xFF2196F3),

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import java.time.Instant
 import java.time.ZoneId
 import androidx.compose.ui.Alignment
@@ -879,6 +880,10 @@ fun SimpleDatePickerDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f),
             title = {
                 Text(
                     text = "Select Date",
@@ -888,15 +893,13 @@ fun SimpleDatePickerDialog(
                 )
             },
             text = {
-                Box(
+                DatePicker(
+                    state = datePickerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                ) {
-                    DatePicker(
-                        state = datePickerState,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = DatePickerDefaults.colors(
+                        .fillMaxHeight()
+                        .padding(horizontal = 0.dp),
+                    colors = DatePickerDefaults.colors(
                             containerColor = Color(0xFF1F1F1F),
                             titleContentColor = LedgerTheme.textPrimary(),
                             headlineContentColor = LedgerTheme.textPrimary(),
@@ -918,7 +921,6 @@ fun SimpleDatePickerDialog(
                             dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
                         )
                     )
-                }
             },
             confirmButton = {
                 TextButton(
@@ -970,6 +972,10 @@ fun SimpleTimePickerDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f),
             title = {
                 Text(
                     text = "Select Time",

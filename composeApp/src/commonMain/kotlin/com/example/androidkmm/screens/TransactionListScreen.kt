@@ -45,6 +45,7 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.utils.formatDouble
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -2899,6 +2900,10 @@ private fun DatePickerDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f),
             title = {
                 Text(
                     text = "Select Date",
@@ -2912,7 +2917,8 @@ private fun DatePickerDialog(
                     state = datePickerState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 0.5.dp),
+                        .fillMaxHeight()
+                        .padding(horizontal = 0.dp),
                     colors = DatePickerDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.surface,
                             titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -3005,6 +3011,10 @@ private fun TimePickerDialog(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f),
             title = {
                 Text(
                     text = "Select Time",

@@ -302,11 +302,11 @@ fun LedgerMainScreen(
                 onValueChange = { searchText = it },
                 placeholder = {
                     Text(
-                        text = "Search people...",
+                        text = "Search people",
                         color = LedgerTheme.textSecondary(),
                         fontSize = 13.sp,
                         maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        modifier = Modifier.padding(vertical = 2.dp)
                     )
                 },
                 leadingIcon = {
@@ -317,6 +317,9 @@ fun LedgerMainScreen(
                         modifier = Modifier.size(16.dp)
                     )
                 },
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 13.sp
+                ),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -328,7 +331,7 @@ fun LedgerMainScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(44.dp)
+                    .wrapContentHeight()
             )
             
             // Filter Dropdown
@@ -337,7 +340,7 @@ fun LedgerMainScreen(
                 OutlinedButton(
                     onClick = { expanded = true },
                     modifier = Modifier
-                        .height(44.dp)
+                        .height(48.dp)
                         .width(100.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
