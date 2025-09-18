@@ -410,21 +410,21 @@ fun ProfileScreen(
                                 )
                             }
                             
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            // Member since tag - below the name/email section
-                            Card(
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                            ) {
-                                Text(
-                                    text = "Member since March 2024",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                                )
-                            }
+//                            Spacer(modifier = Modifier.height(8.dp))
+//
+//                            // Member since tag - below the name/email section
+//                            Card(
+//                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//                                shape = RoundedCornerShape(8.dp),
+//                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+//                            ) {
+//                                Text(
+//                                    text = "Member since March 2024",
+//                                    fontSize = 12.sp,
+//                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+//                                )
+//                            }
                         }
                         
                         // Edit Button
@@ -738,7 +738,7 @@ fun StatCard(value: String, label: String) {
     Card(
         modifier = Modifier
             .width(120.dp)
-            .height(80.dp),
+            .wrapContentHeight(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
@@ -756,7 +756,6 @@ fun StatCard(value: String, label: String) {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 14.sp,
