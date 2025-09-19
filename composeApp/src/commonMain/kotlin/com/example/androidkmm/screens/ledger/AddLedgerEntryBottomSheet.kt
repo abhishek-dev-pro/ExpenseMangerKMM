@@ -154,12 +154,13 @@ fun AddLedgerEntryBottomSheet(
         content = {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .heightIn(max = 600.dp)
                     .background(LedgerTheme.backgroundColor())
 //                    .statusBarsPadding()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
                     // Header
@@ -222,7 +223,7 @@ fun AddLedgerEntryBottomSheet(
                             color = LedgerTheme.textPrimary()
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Column {
                             TextField(
@@ -327,7 +328,7 @@ fun AddLedgerEntryBottomSheet(
                             color = LedgerTheme.textPrimary()
                         )
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -720,7 +721,7 @@ fun AddLedgerEntryBottomSheet(
 //                            color = LedgerTheme.textPrimary()
 //                        )
 //
-//                        Spacer(modifier = Modifier.height(12.dp))
+//                        Spacer(modifier = Modifier.height(8.dp))
 
 //                        LazyVerticalGrid(
 //                            columns = GridCells.Fixed(2),

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -472,18 +473,90 @@ fun LedgerMainScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // People List
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp)
-        ) {
-            items(people) { person ->
-                PersonLedgerItem(
-                    person = person,
-                    onClick = { selectedPerson = person }
+        // People List or Empty State
+        if (people.isEmpty()) {
+            // Empty State
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Receipt Icon
+                Icon(
+                    imageVector = Icons.Default.Receipt,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(80.dp)
                 )
-                if (person != people.last()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // "No ledger entries yet" text
+                Text(
+                    text = "No ledger entries yet",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // "No ledger entries found for this month" text
+                Text(
+                    text = "No ledger entries found for this month",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Add Ledger Entry Button
+                Button(
+                    onClick = { showAddBottomSheet = true },
+                    modifier = Modifier
+                        .width(240.dp)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add Ledger Entry",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+        } else {
+            // People List
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            ) {
+                items(people) { person ->
+                    PersonLedgerItem(
+                        person = person,
+                        onClick = { selectedPerson = person }
+                    )
+                    if (person != people.last()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
