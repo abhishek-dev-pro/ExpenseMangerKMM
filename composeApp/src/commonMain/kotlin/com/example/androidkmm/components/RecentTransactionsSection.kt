@@ -267,7 +267,9 @@ currencySymbol: String
                     text = transaction.title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(

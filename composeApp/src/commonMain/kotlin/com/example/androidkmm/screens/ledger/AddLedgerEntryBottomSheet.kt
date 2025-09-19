@@ -227,9 +227,12 @@ fun AddLedgerEntryBottomSheet(
                         Column {
                             TextField(
                                 value = personName,
-                                onValueChange = { 
-                                    personName = it
-                                    showSuggestions = it.isNotBlank() && suggestions.isNotEmpty()
+                                onValueChange = { newValue ->
+                                    // Limit to 20 characters
+                                    if (newValue.length <= 20) {
+                                        personName = newValue
+                                        showSuggestions = newValue.isNotBlank() && suggestions.isNotEmpty()
+                                    }
                                 },
                                 placeholder = {
                                     Text(
@@ -480,13 +483,6 @@ fun AddLedgerEntryBottomSheet(
                                     color = LedgerTheme.textSecondary()
                                 )
                             },
-                            prefix = {
-                                Text(
-                                    text = currencySymbol,
-                                    color = LedgerTheme.textPrimary(),
-                                    fontSize = 18.sp
-                                )
-                            },
                             colors = TextFieldDefaults.colors(
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedContainerColor = Color(0xFF1F1F1F),
@@ -496,7 +492,13 @@ fun AddLedgerEntryBottomSheet(
                                 focusedIndicatorColor = Color.Transparent
                             ),
                             shape = RoundedCornerShape(20.dp),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(20.dp)
+                                ),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                         )
                         
@@ -544,7 +546,12 @@ fun AddLedgerEntryBottomSheet(
                             shape = RoundedCornerShape(20.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(100.dp),
+                                .height(100.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = Color.White.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(20.dp)
+                                ),
                             maxLines = 3
                         )
                         
@@ -766,8 +773,17 @@ fun AddLedgerEntryBottomSheet(
                             if (validateForm()) {
                                 coroutineScope.launch {
                                     try {
+                                        // Format the person name (capitalize first letter of each word)
+                                        val formattedName = personName.trim().split(" ").joinToString(" ") { word ->
+                                            if (word.isNotEmpty()) {
+                                                word.first().uppercaseChar() + word.drop(1).lowercase()
+                                            } else {
+                                                word
+                                            }
+                                        }
+                                        
                                         // Check if a person with this name already exists
-                                        val existingPerson = ledgerDatabaseManager.getLedgerPersonByName(personName.trim())
+                                        val existingPerson = ledgerDatabaseManager.getLedgerPersonByName(formattedName)
                                         
                                         if (existingPerson != null) {
                                             // Add transaction to existing person
@@ -788,7 +804,7 @@ fun AddLedgerEntryBottomSheet(
                                             // Create new person and add transaction
                                             val newPerson = LedgerPerson(
                                                 id = "person_${Clock.System.now().toEpochMilliseconds()}_${++personCounter}",
-                                                name = personName.trim(),
+                                                name = formattedName,
                                                 avatarColor = LedgerTheme.avatarBlue,
                                                 balance = 0.0,
                                                 transactionCount = 0,

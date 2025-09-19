@@ -1374,7 +1374,11 @@ private fun AddTransactionContent(
             TransactionTypeSelector(
                 selectedType = formData.type,
                 onTypeSelected = { type ->
-                    onFormDataChange(formData.copy(type = type))
+                    // Clear category when transaction type changes to ensure proper filtering
+                    onFormDataChange(formData.copy(
+                        type = type,
+                        category = null
+                    ))
                 }
             )
         }
@@ -1587,15 +1591,13 @@ private fun TransactionTypeSelector(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f)
-                    else Color.Transparent,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onBackground
-                    else MaterialTheme.colorScheme.onSurfaceVariant
+                    containerColor = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
+                    contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-                border = if (isSelected) BorderStroke(
+                border = BorderStroke(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                ) else null,
+                    color = if (isSelected) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
+                ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
@@ -1753,7 +1755,7 @@ private fun InputField(
     ) {
         Text(
             text = label,
-                            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )

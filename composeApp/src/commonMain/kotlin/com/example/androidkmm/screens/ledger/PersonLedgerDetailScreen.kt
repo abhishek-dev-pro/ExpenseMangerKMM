@@ -83,6 +83,7 @@ fun PersonLedgerDetailScreen(
     
     var showSentBottomSheet by remember { mutableStateOf(false) }
     var showReceivedBottomSheet by remember { mutableStateOf(false) }
+    var selectedTransactionType by remember { mutableStateOf("sent") } // "sent" or "received"
 
     Column(
         modifier = Modifier
@@ -230,50 +231,74 @@ fun PersonLedgerDetailScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
-                onClick = { showSentBottomSheet = true },
+                onClick = { 
+                    selectedTransactionType = "sent"
+                    showSentBottomSheet = true 
+                },
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2A1919)
+                    containerColor = if (selectedTransactionType == "sent") 
+                        Color(0xFF2196F3).copy(alpha = 0.2f) 
+                    else 
+                        Color(0xFF2A1919)
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowUpward,
                     contentDescription = null,
-                    tint = LedgerTheme.redAmount,
+                    tint = if (selectedTransactionType == "sent") 
+                        Color(0xFF2196F3) 
+                    else 
+                        LedgerTheme.redAmount,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "You Sent",
-                    color = LedgerTheme.redAmount,
+                    color = if (selectedTransactionType == "sent") 
+                        Color(0xFF2196F3) 
+                    else 
+                        LedgerTheme.redAmount,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
 
             Button(
-                onClick = { showReceivedBottomSheet = true },
+                onClick = { 
+                    selectedTransactionType = "received"
+                    showReceivedBottomSheet = true 
+                },
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0F2419)
+                    containerColor = if (selectedTransactionType == "received") 
+                        Color(0xFF2196F3).copy(alpha = 0.2f) 
+                    else 
+                        Color(0xFF0F2419)
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowDownward,
                     contentDescription = null,
-                    tint = LedgerTheme.greenAmount,
+                    tint = if (selectedTransactionType == "received") 
+                        Color(0xFF2196F3) 
+                    else 
+                        LedgerTheme.greenAmount,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "You Received",
-                    color = LedgerTheme.greenAmount,
+                    color = if (selectedTransactionType == "received") 
+                        Color(0xFF2196F3) 
+                    else 
+                        LedgerTheme.greenAmount,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )

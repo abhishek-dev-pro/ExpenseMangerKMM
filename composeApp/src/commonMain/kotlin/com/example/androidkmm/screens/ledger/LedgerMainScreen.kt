@@ -286,7 +286,7 @@ fun LedgerMainScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         // Search Bar and Filter
         Row(
@@ -303,9 +303,9 @@ fun LedgerMainScreen(
                     Text(
                         text = "Search people",
                         color = LedgerTheme.textSecondary(),
-                        fontSize = 13.sp,
+                        fontSize = 14.sp,
                         maxLines = 1,
-                        modifier = Modifier.padding(vertical = 2.dp)
+                        modifier = Modifier.padding(vertical = 1.dp)
                     )
                 },
                 leadingIcon = {
@@ -313,11 +313,11 @@ fun LedgerMainScreen(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
                         tint = LedgerTheme.textSecondary(),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 },
                 textStyle = androidx.compose.ui.text.TextStyle(
-                    fontSize = 13.sp
+                    fontSize = 14.sp
                 ),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -330,7 +330,12 @@ fun LedgerMainScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .wrapContentHeight()
+                    .height(48.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
             )
             
             // Filter Dropdown
@@ -340,7 +345,12 @@ fun LedgerMainScreen(
                     onClick = { expanded = true },
                     modifier = Modifier
                         .height(48.dp)
-                        .width(100.dp),
+                        .width(100.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = LedgerTheme.textPrimary()
@@ -350,11 +360,11 @@ fun LedgerMainScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
                             text = selectedFilter,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -363,7 +373,7 @@ fun LedgerMainScreen(
                             imageVector = Icons.Default.ArrowDownward,
                             contentDescription = null,
                             tint = LedgerTheme.textSecondary(),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -406,7 +416,7 @@ fun LedgerMainScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Filter and People Section
         Row(
