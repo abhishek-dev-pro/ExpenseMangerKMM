@@ -163,7 +163,7 @@ fun LedgerMainScreen(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
                     tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

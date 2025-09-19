@@ -457,28 +457,31 @@ private fun TransactionHeader(
         Column {
             Text(
                 text = "Transactions",
-                            color = MaterialTheme.colorScheme.onBackground,
-                fontSize =20.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "$transactionCount transactions",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
         }
 
-        FloatingActionButton(
+        IconButton(
             onClick = onAddClick,
-            modifier = Modifier.size(36.dp),
-            containerColor = MaterialTheme.colorScheme.onBackground,
-            contentColor = MaterialTheme.colorScheme.surface,
-            shape = CircleShape
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    Color.White,
+                    CircleShape
+                )
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Transaction",
+                tint = Color.Black,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -510,7 +513,7 @@ private fun MonthNavigation(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -586,7 +589,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 4.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
@@ -2720,16 +2723,16 @@ private fun EmptyTransactionState(
                 modifier = Modifier
                     .background(
                         color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(32.dp)
                     )
-                    .size(24.dp),
+                    .size(120.dp),
 
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Receipt,
                     contentDescription = "No transactions",
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -2739,8 +2742,8 @@ private fun EmptyTransactionState(
             Text(
                 text = "No transactions yet",
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
             )
 
 
@@ -2748,7 +2751,7 @@ private fun EmptyTransactionState(
             Text(
                 text = "No transactions found for $monthName $selectedYear",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp,
+                fontSize = 14.sp,
                 textAlign = TextAlign.Center
             )
 
@@ -2763,18 +2766,19 @@ private fun EmptyTransactionState(
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
-                    .height(32.dp)
-                    .padding(horizontal = 8.dp)
+                    .height(40.dp)
+                    .padding(horizontal = 12.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add transaction",
-                    modifier = Modifier.size(12.dp)
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "Add Transaction",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
