@@ -156,7 +156,7 @@ fun AddLedgerEntryBottomSheet(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(LedgerTheme.backgroundColor())
-                    .statusBarsPadding()
+//                    .statusBarsPadding()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
