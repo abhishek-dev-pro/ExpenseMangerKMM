@@ -2706,80 +2706,81 @@ private fun EmptyTransactionState(
         "July", "August", "September", "October", "November", "December"
     )
     val monthName = monthNames.getOrNull(selectedMonth - 1) ?: "Unknown"
-    
-    Column(
+
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Large icon
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(24.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Receipt,
-                contentDescription = "No transactions",
-                modifier = Modifier.size(60.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Title
-        Text(
-            text = "No transactions yet",
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        // Subtitle
-        Text(
-            text = "No transactions found for $monthName $selectedYear",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        // Add transaction button
-        Button(
-            onClick = onAddClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black
-            ),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .height(56.dp)
-                .padding(horizontal = 16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add transaction",
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+        item {
+            // Large icon
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(24.dp)
+                    )
+                    .size(24.dp),
+
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Receipt,
+                    contentDescription = "No transactions",
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+
+            // Title
             Text(
-                text = "Add Transaction",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                text = "No transactions yet",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal
             )
+
+
+            // Subtitle
+            Text(
+                text = "No transactions found for $monthName $selectedYear",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 10.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Add transaction button
+            Button(
+                onClick = onAddClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .height(32.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add transaction",
+                    modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Add Transaction",
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }
+
 
 @OptIn(kotlin.time.ExperimentalTime::class)
 private fun formatDateForDisplay(dateString: String): String {
