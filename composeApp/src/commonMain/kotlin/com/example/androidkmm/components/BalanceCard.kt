@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.utils.TextUtils
 import androidx.compose.runtime.collectAsState
@@ -29,6 +31,10 @@ fun BalanceCard(
     monthlyChange: String? = null,
     isVisible: Boolean = true
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList())
@@ -40,23 +46,24 @@ fun BalanceCard(
     var isBalanceVisible by remember { mutableStateOf(isVisible) }
     
     // Calculate total balance from all accounts
-    val calculatedTotalBalance = remember(accounts) {
+    val calculatedTotalBalance = remember(accounts, currencySymbol) {
         if (accounts.isNotEmpty()) {
             val total = accounts.sumOf { account ->
                 try {
-                    account.balance.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    // Remove any currency symbol and commas, then parse
+                    account.balance.replace(Regex("[^0-9.-]"), "").toDoubleOrNull() ?: 0.0
                 } catch (e: Exception) {
                     0.0
                 }
             }
-            "$${String.format("%.2f", total)}"
+            "$currencySymbol${String.format("%.2f", total)}"
         } else {
-            "$0.00"
+            "$currencySymbol" + "0.00"
         }
     }
     
     // Calculate net ledger amount (|to receive| - |to send|) - EXACT SAME AS LEDGER SCREEN
-    val netLedgerAmount = remember(ledgerPersons) {
+    val netLedgerAmount = remember(ledgerPersons, currencySymbol) {
         // Use EXACT same calculation as LedgerMainScreen
         val toReceiveAmount = ledgerPersons.filter { it.balance > 0 }.sumOf { it.balance }
         val toSendAmount = ledgerPersons.filter { it.balance < 0 }.sumOf { kotlin.math.abs(it.balance) }
@@ -73,11 +80,11 @@ fun BalanceCard(
         
         // Show the actual calculated result
         val sign = if (netAmount >= 0) "+" else ""
-        "${sign}$${String.format("%.1f", netAmount)}"
+        "${sign}$currencySymbol${String.format("%.1f", netAmount)}"
     }
     
     val displayBalance = totalBalance ?: calculatedTotalBalance
-    val displayMonthlyChange = monthlyChange ?: if (netLedgerAmount != "$0.0") "$netLedgerAmount in ledger" else "+$0.0 this month"
+    val displayMonthlyChange = monthlyChange ?: if (netLedgerAmount != "${currencySymbol}0.0") "$netLedgerAmount in ledger" else "+${currencySymbol}0.0 this month"
     Box(
         modifier = Modifier
             .fillMaxWidth()

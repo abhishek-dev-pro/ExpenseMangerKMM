@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.Account
@@ -119,6 +121,11 @@ private fun FilterContent(
 ) {
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    
+    // Get currency symbol from settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<Category>())
     val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
@@ -200,7 +207,8 @@ private fun FilterContent(
                     amountRange = filterOptions.amountRange ?: AmountRange(),
                     onAmountRangeChange = { newAmountRange ->
                         onFilterOptionsChange(filterOptions.copy(amountRange = newAmountRange))
-                    }
+                    },
+                    currencySymbol = currencySymbol
                 )
             }
             
@@ -1015,7 +1023,8 @@ private fun DateRangeChip(
 @Composable
 private fun AmountRangeSection(
     amountRange: AmountRange,
-    onAmountRangeChange: (AmountRange) -> Unit
+    onAmountRangeChange: (AmountRange) -> Unit,
+    currencySymbol: String
 ) {
     Column {
         Text(
@@ -1034,10 +1043,10 @@ private fun AmountRangeSection(
             items(PredefinedAmountRange.values().toList()) { predefinedRange ->
                 AmountRangeChip(
                     label = when (predefinedRange) {
-                        PredefinedAmountRange.UNDER_25 -> "Under $25"
-                        PredefinedAmountRange.BETWEEN_25_100 -> "$25 - $100"
-                        PredefinedAmountRange.BETWEEN_100_500 -> "$100 - $500"
-                        PredefinedAmountRange.OVER_500 -> "Over $500"
+                        PredefinedAmountRange.UNDER_25 -> "Under $currencySymbol${25}"
+                        PredefinedAmountRange.BETWEEN_25_100 -> "$currencySymbol${25} - $currencySymbol${100}"
+                        PredefinedAmountRange.BETWEEN_100_500 -> "$currencySymbol${100} - $currencySymbol${500}"
+                        PredefinedAmountRange.OVER_500 -> "Over $currencySymbol${500}"
                     },
                     isSelected = amountRange.predefined == predefinedRange,
                     onClick = {
@@ -1069,7 +1078,7 @@ private fun AmountRangeSection(
                 },
                 leadingIcon = {
                     Text(
-                        text = "$",
+                        text = currencySymbol,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
@@ -1107,7 +1116,7 @@ private fun AmountRangeSection(
                 },
                 leadingIcon = {
                     Text(
-                        text = "$",
+                        text = currencySymbol,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium

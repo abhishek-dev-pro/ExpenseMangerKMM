@@ -33,6 +33,8 @@ import androidx.compose.runtime.collectAsState
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -52,7 +54,12 @@ fun AddLedgerEntryBottomSheet(
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val coroutineScope = rememberCoroutineScope()
+    
+    // Get currency symbol from settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     var transactionCounter by remember { mutableStateOf(0) }
     var personCounter by remember { mutableStateOf(0) }
     
@@ -471,7 +478,7 @@ fun AddLedgerEntryBottomSheet(
                             },
                             prefix = {
                                 Text(
-                                    text = "$",
+                                    text = currencySymbol,
                                     color = LedgerTheme.textPrimary(),
                                     fontSize = 18.sp
                                 )

@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.screens.ledger.TransactionType
 import androidx.compose.runtime.collectAsState
@@ -39,7 +41,12 @@ fun PersonLedgerDetailScreen(
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val coroutineScope = rememberCoroutineScope()
+    
+    // Get currency symbol from settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     val transactionsState = ledgerDatabaseManager.getLedgerTransactionsByPerson(person.id).collectAsState(initial = emptyList<LedgerTransaction>())
     val transactions = transactionsState.value
     
@@ -191,7 +198,7 @@ fun PersonLedgerDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "$${formatDouble(abs(updatedPerson.balance))}",
+                    text = "$currencySymbol${formatDouble(abs(updatedPerson.balance))}",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = when {

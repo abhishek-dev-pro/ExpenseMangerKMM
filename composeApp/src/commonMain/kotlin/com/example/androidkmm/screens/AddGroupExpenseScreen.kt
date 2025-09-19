@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteGroupDatabase
 import com.example.androidkmm.database.SQLiteCategoryDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
 import com.example.androidkmm.models.Category
@@ -381,6 +383,10 @@ private fun AmountSection(
     amount: String,
     onAmountChange: (String) -> Unit
                     ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
                         Row(
         modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -394,7 +400,7 @@ private fun AmountSection(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "$",
+                text = currencySymbol,
                 color = Color(0xFF6B7280),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold

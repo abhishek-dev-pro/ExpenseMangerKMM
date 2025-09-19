@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.utils.formatDouble
@@ -55,6 +57,11 @@ fun SearchTransactionsScreen(
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    
+    // Get currency symbol from settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     
     val allTransactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<Transaction>())
     val allTransactions = allTransactionsState.value
@@ -199,6 +206,7 @@ fun SearchTransactionsScreen(
             items(filteredTransactions) { transaction ->
                 SearchTransactionItem(
                     transaction = transaction,
+                    currencySymbol = currencySymbol,
                     onClick = { selectedTransactionForDetails = transaction }
                 )
             }
@@ -375,6 +383,7 @@ private fun SearchAndFilterBar(
 @Composable
 private fun SearchTransactionItem(
     transaction: Transaction,
+    currencySymbol: String,
     onClick: () -> Unit
 ) {
     Card(
@@ -494,9 +503,9 @@ private fun SearchTransactionItem(
                 }
                 
                 val amountText = when (transaction.type) {
-                    com.example.androidkmm.models.TransactionType.INCOME -> "+$${formatDouble(transaction.amount, 2)}"
-                    com.example.androidkmm.models.TransactionType.EXPENSE -> "-$${formatDouble(transaction.amount, 2)}"
-                    com.example.androidkmm.models.TransactionType.TRANSFER -> "$${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.INCOME -> "+$currencySymbol${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.EXPENSE -> "-$currencySymbol${formatDouble(transaction.amount, 2)}"
+                    com.example.androidkmm.models.TransactionType.TRANSFER -> "$currencySymbol${formatDouble(transaction.amount, 2)}"
                 }
                 
                 Text(

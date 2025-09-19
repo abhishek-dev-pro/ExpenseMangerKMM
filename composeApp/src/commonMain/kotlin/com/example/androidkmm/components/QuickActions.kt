@@ -67,13 +67,13 @@ private fun QuickActionCard(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(DesignSystem.IconSize.sm)
-            )
-            Spacer(Modifier.width(DesignSystem.Spacing.xs))
+//            Icon(
+//                imageVector = icon,
+//                contentDescription = null,
+//                tint = color,
+//                modifier = Modifier.size(DesignSystem.IconSize.sm)
+//            )
+//            Spacer(Modifier.width(DesignSystem.Spacing.xs))
             TextUtils.StandardText(
                 text = text,
                 fontSize = DesignSystem.Typography.buttonText,

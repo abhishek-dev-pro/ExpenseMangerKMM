@@ -31,6 +31,8 @@ import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.data.GroupData
 import com.example.androidkmm.utils.CardUtils
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
 import com.example.androidkmm.models.GroupExpense
@@ -88,13 +90,17 @@ fun HomeScreenContent(
 private fun GroupHighlights(
     onViewAllClick: () -> Unit = {}
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     val groupDatabaseManager = rememberSQLiteGroupDatabase()
     val allGroups by groupDatabaseManager.getAllGroups().collectAsState(initial = emptyList())
     val allMembers by groupDatabaseManager.getAllGroupMembers().collectAsState(initial = emptyList())
     val allExpenses by groupDatabaseManager.getAllGroupExpenses().collectAsState(initial = emptyList())
     
     // Calculate user's balance for each group
-    val groupHighlights = remember(allGroups, allMembers, allExpenses) {
+    val groupHighlights = remember(allGroups, allMembers, allExpenses, currencySymbol) {
         allGroups.map { group ->
             val groupMembers = allMembers.filter { it.groupId == group.id }
             val groupExpenses = allExpenses.filter { it.groupId == group.id }
@@ -105,9 +111,9 @@ private fun GroupHighlights(
             
             val isPositive = userBalance >= 0
             val amountText = if (isPositive) {
-                "+$${String.format("%.2f", userBalance)}"
+                "+$currencySymbol${String.format("%.2f", userBalance)}"
             } else {
-                "$${String.format("%.2f", -userBalance)}"
+                "$currencySymbol${String.format("%.2f", -userBalance)}"
             }
             
             val chipText = if (isPositive) "You get" else "You owe"

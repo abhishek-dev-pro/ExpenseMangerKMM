@@ -32,6 +32,9 @@ import com.example.androidkmm.design.DesignSystem
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import com.example.androidkmm.utils.getCurrencySymbol
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -347,6 +350,10 @@ private fun MonthlySummaryCard(
     currentYear: Int,
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     val monthNames = listOf(
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -448,7 +455,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$${String.format("%.0f", income)}",
+                            text = "$currencySymbol${String.format("%.0f", income)}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -478,7 +485,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$${String.format("%.0f", expenses)}",
+                            text = "$currencySymbol${String.format("%.0f", expenses)}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -517,7 +524,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$${String.format("%.0f", savings)}",
+                            text = "$currencySymbol${String.format("%.0f", savings)}",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold

@@ -19,12 +19,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun PersonLedgerItem(
     person: LedgerPerson,
     onClick: () -> Unit
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -93,9 +100,9 @@ fun PersonLedgerItem(
             ) {
                 Text(
                     text = when {
-                        person.balance == 0.0 -> "$0.00"
-                        person.balance > 0 -> "$${formatDouble(person.balance)}"
-                        else -> "$${formatDouble(-person.balance)}"
+                        person.balance == 0.0 -> "$currencySymbol${formatDouble(0.0)}"
+                        person.balance > 0 -> "$currencySymbol${formatDouble(person.balance)}"
+                        else -> "$currencySymbol${formatDouble(-person.balance)}"
                     },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,

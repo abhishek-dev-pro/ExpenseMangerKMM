@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 
 @Composable
 fun TransactionItem(
@@ -26,6 +29,10 @@ fun TransactionItem(
     onDelete: () -> Unit = {},
     isHighlighted: Boolean = false
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,7 +94,7 @@ fun TransactionItem(
                 }
                 
                 Text(
-                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$${formatDouble(transaction.amount)}",
+                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$currencySymbol${formatDouble(transaction.amount)}",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
@@ -142,7 +149,7 @@ fun TransactionItem(
                 }
                 
                 Text(
-                    text = "Balance: $${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
+                    text = "Balance: $currencySymbol${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
                     fontSize = 12.sp,
                     color = LedgerTheme.textSecondary()
                 )

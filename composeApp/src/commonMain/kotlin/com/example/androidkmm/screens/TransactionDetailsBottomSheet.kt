@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 
 // Colors for Transaction Details
 object TransactionDetailColors {
@@ -49,6 +52,10 @@ fun TransactionDetailsBottomSheet(
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     var isEditMode by remember { mutableStateOf(false) }
     var editedTransaction by remember { mutableStateOf(transaction) }
     var showLedgerDialog by remember { mutableStateOf(false) }
@@ -81,6 +88,7 @@ fun TransactionDetailsBottomSheet(
             } else {
                 TransactionDetailsContent(
                     transaction = transaction,
+                    currencySymbol = currencySymbol,
                     onEdit = {
                         // Check if this is a ledger transaction
                         if (transaction.category == "Ledger" && transaction.id.startsWith("main_")) {
@@ -241,6 +249,7 @@ fun TransactionDetailsBottomSheet(
 @Composable
 private fun TransactionDetailsContent(
     transaction: com.example.androidkmm.models.Transaction,
+    currencySymbol: String,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit
@@ -336,7 +345,7 @@ private fun TransactionDetailsContent(
                 }
 
                 Text(
-                    text = "$${amountPrefix}${formatDouble(transaction.amount, 2)}",
+                    text = "$currencySymbol${amountPrefix}${formatDouble(transaction.amount, 2)}",
                     color = amountColor,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold
@@ -670,6 +679,7 @@ private fun TransactionDetailsContent(
 @Composable
 private fun EditTransactionContent(
     transaction: com.example.androidkmm.models.Transaction,
+    currencySymbol: String,
     onSave: (com.example.androidkmm.models.Transaction) -> Unit,
     onCancel: () -> Unit,
     onTransactionChange: (com.example.androidkmm.models.Transaction) -> Unit,
@@ -863,7 +873,7 @@ private fun EditTransactionContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$",
+                        text = currencySymbol,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Light

@@ -43,10 +43,12 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
+import com.example.androidkmm.utils.getCurrencySymbol
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab
 import com.example.androidkmm.models.Account
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.theme.AppTheme
 import com.example.androidkmm.theme.AppColors
 
@@ -2163,33 +2165,35 @@ fun CustomizeScreen(
             // Header with back button
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            Color(0xFF2C2C2E),
-                            CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+
                 
-                Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Text(
                     text = "Customize",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .background(
+                            Color(0xFF2C2C2E),
+                            CircleShape
+                        )
+                        .size(40.dp)
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
         
@@ -2284,7 +2288,31 @@ fun DarkModeSetting() {
 
 @Composable
 fun CurrencySetting() {
-    var selectedCurrency by remember { mutableStateOf("USD") }
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val scope = rememberCoroutineScope()
+    
+    // Get current settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currentCurrency = remember(appSettings.value.currencySymbol) {
+        // Find currency code from symbol
+        when (appSettings.value.currencySymbol) {
+            "$" -> "USD"
+            "€" -> "EUR"
+            "£" -> "GBP"
+            "₹" -> "INR"
+            "¥" -> "JPY"
+            "C$" -> "CAD"
+            "A$" -> "AUD"
+            else -> "USD"
+        }
+    }
+    
+    var selectedCurrency by remember { mutableStateOf(currentCurrency) }
+    
+    // Update selectedCurrency when currentCurrency changes
+    LaunchedEffect(currentCurrency) {
+        selectedCurrency = currentCurrency
+    }
     var showCurrencyDropdown by remember { mutableStateOf(false) }
     
     val currencies = listOf("USD", "EUR", "GBP", "INR", "JPY", "CAD", "AUD")
@@ -2312,7 +2340,7 @@ fun CurrencySetting() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "$",
+                    text = getCurrencySymbol(selectedCurrency),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -2387,6 +2415,11 @@ fun CurrencySetting() {
                             onClick = {
                                 selectedCurrency = currency
                                 showCurrencyDropdown = false
+                                // Save the currency symbol to database
+                                scope.launch {
+                                    val symbol = getCurrencySymbol(currency)
+                                    settingsDatabaseManager.updateCurrencySymbol(symbol)
+                                }
                             }
                         )
                     }

@@ -23,6 +23,9 @@ import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.screens.filters.AmountRange
 import com.example.androidkmm.screens.filters.FilterColors
 import com.example.androidkmm.screens.filters.PredefinedAmountRange
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
+import androidx.compose.runtime.collectAsState
 
 /**
  * Amount range filter section
@@ -39,6 +42,10 @@ fun AmountRangeSection(
     amountRange: AmountRange,
     onAmountRangeChange: (AmountRange) -> Unit
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     Column {
         Text(
             text = "Amount Range",
@@ -56,10 +63,10 @@ fun AmountRangeSection(
             items(PredefinedAmountRange.values().toList()) { predefinedRange ->
                 AmountRangeChip(
                     label = when (predefinedRange) {
-                        PredefinedAmountRange.UNDER_25 -> "Under $25"
-                        PredefinedAmountRange.BETWEEN_25_100 -> "$25 - $100"
-                        PredefinedAmountRange.BETWEEN_100_500 -> "$100 - $500"
-                        PredefinedAmountRange.OVER_500 -> "Over $500"
+                        PredefinedAmountRange.UNDER_25 -> "Under $currencySymbol${25}"
+                        PredefinedAmountRange.BETWEEN_25_100 -> "$currencySymbol${25} - $currencySymbol${100}"
+                        PredefinedAmountRange.BETWEEN_100_500 -> "$currencySymbol${100} - $currencySymbol${500}"
+                        PredefinedAmountRange.OVER_500 -> "Over $currencySymbol${500}"
                     },
                     isSelected = amountRange.predefined == predefinedRange,
                     onClick = {
@@ -91,7 +98,7 @@ fun AmountRangeSection(
                 },
                 leadingIcon = {
                     Text(
-                        text = "$",
+                        text = currencySymbol,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
@@ -129,7 +136,7 @@ fun AmountRangeSection(
                 },
                 leadingIcon = {
                     Text(
-                        text = "$",
+                        text = currencySymbol,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium

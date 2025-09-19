@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteCategoryDatabase
 import com.example.androidkmm.database.SQLiteAccountDatabase
 import com.example.androidkmm.database.SQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.*
+import androidx.compose.runtime.collectAsState
 import kotlin.time.ExperimentalTime
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.TimeZone
@@ -38,6 +40,10 @@ fun AddExpenseScreen(
     accountDatabaseManager: SQLiteAccountDatabase,
     transactionDatabaseManager: SQLiteTransactionDatabase
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -128,7 +134,7 @@ fun AddExpenseScreen(
             ) { innerTextField ->
                 if (amount.isEmpty()) {
                     Text(
-                        text = "$0.00",
+                        text = "$currencySymbol${0.00}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold

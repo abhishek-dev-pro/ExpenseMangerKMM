@@ -8,6 +8,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
@@ -30,6 +32,10 @@ fun SpendingByCategorySection(
     currentYear: Int,
     onCategoryClick: (String) -> Unit
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     val allTransactions = if (transactionDatabaseManager != null) {
         transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList()).value
     } else {
@@ -90,7 +96,7 @@ fun SpendingByCategorySection(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "$${String.format("%.2f", amount)}",
+                            text = "$currencySymbol${String.format("%.2f", amount)}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.TimeZone
@@ -32,6 +35,10 @@ import kotlin.time.ExperimentalTime
 fun RecentTransactionsSection(
     onViewAllClick: () -> Unit
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by rememberSQLiteSettingsDatabase().getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     var recentTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -211,7 +218,7 @@ fun RecentTransactionsSection(
                 verticalArrangement = Arrangement.spacedBy(0.8.dp)
             ) {
                 recentTransactions.forEach { transaction ->
-                    RecentTransactionItem(transaction = transaction)
+                    RecentTransactionItem(transaction = transaction, currencySymbol = currencySymbol)
                 }
             }
         }
@@ -220,7 +227,8 @@ fun RecentTransactionsSection(
 
 @Composable
 private fun RecentTransactionItem(
-    transaction: Transaction
+transaction: Transaction,
+currencySymbol: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -274,7 +282,7 @@ private fun RecentTransactionItem(
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    text = formatAmount(transaction.amount, transaction.type),
+                    text = formatAmount(transaction.amount, transaction.type, currencySymbol),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = when (transaction.type) {
@@ -294,12 +302,12 @@ private fun RecentTransactionItem(
     }
 }
 
-private fun formatAmount(amount: Double, type: TransactionType): String {
+private fun formatAmount(amount: Double, type: TransactionType, currencySymbol: String): String {
     val formattedAmount = "%.2f".format(amount)
     return when (type) {
-        TransactionType.INCOME -> "$$formattedAmount"
-        TransactionType.EXPENSE -> "$$formattedAmount"
-        TransactionType.TRANSFER -> "$$formattedAmount"
+        TransactionType.INCOME -> "$currencySymbol$formattedAmount"
+        TransactionType.EXPENSE -> "$currencySymbol$formattedAmount"
+        TransactionType.TRANSFER -> "$currencySymbol$formattedAmount"
     }
 }
 

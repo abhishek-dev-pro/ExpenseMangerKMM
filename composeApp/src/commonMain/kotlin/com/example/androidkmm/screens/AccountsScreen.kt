@@ -36,7 +36,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.Account
+import com.example.androidkmm.models.AppSettings
 
 // Color definitions for AccountsScreen - now using MaterialTheme
 internal val AccountsGreenSuccess = Color(0xFF4CAF50)
@@ -47,6 +49,11 @@ internal val AccountsBluePrimary = Color(0xFF2196F3)
 fun AccountsScreen(
     onBackClick: () -> Unit
 ) {
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
+    
     var showAddAccountSheet by remember { mutableStateOf(false) }
     var showEditAccountSheet by remember { mutableStateOf(false) }
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
@@ -68,7 +75,6 @@ fun AccountsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
         ) {
             // Header
             Row(
@@ -173,7 +179,7 @@ fun AccountsScreen(
                 }
                 1 -> {
                     // Overview Tab
-                    OverviewContent(accounts = accounts)
+                    OverviewContent(accounts = accounts, currencySymbol = currencySymbol)
                 }
             }
         }
@@ -1129,7 +1135,7 @@ private fun AddNewAccountButton(
 }
 
 @Composable
-private fun OverviewContent(accounts: List<Account>) {
+private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1170,7 +1176,7 @@ private fun OverviewContent(accounts: List<Account>) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = "$currencySymbol${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccountsGreenSuccess
@@ -1199,7 +1205,7 @@ private fun OverviewContent(accounts: List<Account>) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "$0",
+                                text = "$currencySymbol${0}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccountsRedError

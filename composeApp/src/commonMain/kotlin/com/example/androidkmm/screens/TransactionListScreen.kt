@@ -59,6 +59,7 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.models.AppSettings
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -79,12 +80,15 @@ fun TransactionsScreen(
     onNavigateToLedger: (String, String) -> Unit = { _, _ -> }
 ) {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
-    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
-    val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     
+    // Get currency symbol from settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    
     val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
-    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
     val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
     
     // Fix any existing transfer transactions that might not have proper transferTo field
@@ -245,6 +249,7 @@ fun TransactionsScreen(
         // Animated Summary Card that shrinks smoothly
         AnimatedSummaryCard(
             transactions = transactionsForSummary,
+            currencySymbol = currencySymbol,
             carryForwardAmount = carryForwardAmount,
             totalAccountBalance = totalAccountBalance,
             isCompact = showCompactSummary
@@ -282,6 +287,7 @@ fun TransactionsScreen(
             items(dayGroups) { dayGroup ->
                     DayGroupSection(
                         dayGroup = dayGroup,
+                        currencySymbol = currencySymbol,
                         transactionDatabaseManager = transactionDatabaseManager,
                         categoryDatabaseManager = categoryDatabaseManager,
                         accountDatabaseManager = accountDatabaseManager,
@@ -511,7 +517,7 @@ private fun MonthNavigation(
         IconButton(
             onClick = onPreviousMonth,
             modifier = Modifier
-                .size(32.dp)
+                .size(18.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF121212)) // background #121212
                 .border(
@@ -524,7 +530,7 @@ private fun MonthNavigation(
                 imageVector = Icons.Default.KeyboardArrowLeft,
                 contentDescription = "Previous Month",
                 tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
 
@@ -539,7 +545,7 @@ private fun MonthNavigation(
             onClick = if (isNextMonthDisabled) { {} } else onNextMonth,
             enabled = !isNextMonthDisabled,
             modifier = Modifier
-                .size(32.dp)
+                .size(18.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF121212)) // background #121212
                 .border(
@@ -556,14 +562,14 @@ private fun MonthNavigation(
                 } else {
                     MaterialTheme.colorScheme.onBackground
                 },
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
     }
 }
 
 @Composable
-private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
+private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, currencySymbol: String, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
     // Calculate totals from actual transaction data
     val totalIncome = transactions
         .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
@@ -599,7 +605,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
             SummaryColumn(
                 icon = Icons.Default.TrendingUp,
                 iconColor = TransactionColors.income,
-                amount = "${formatDouble(totalIncome, 2)}",
+                amount = "$currencySymbol${formatDouble(totalIncome, 2)}",
                 label = "Income",
                 amountColor = TransactionColors.income
             )
@@ -607,7 +613,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
             SummaryColumn(
                 icon = Icons.Default.TrendingDown,
                 iconColor = TransactionColors.expense,
-                amount = "${formatDouble(totalExpense, 2)}",
+                amount = "$currencySymbol${formatDouble(totalExpense, 2)}",
                 label = "Expenses",
                 amountColor = TransactionColors.expense
             )
@@ -615,7 +621,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
             SummaryColumn(
                 icon = Icons.Default.AttachMoney,
                 iconColor = if (total >= 0) TransactionColors.income else TransactionColors.expense,
-                amount = "${if (total >= 0) "+" else ""}${formatDouble(total, 2)}",
+                amount = "${if (total >= 0) "+" else ""}$currencySymbol${formatDouble(total, 2)}",
                 label = "Total",
                 amountColor = if (total >= 0) TransactionColors.income else TransactionColors.expense
             )
@@ -741,6 +747,7 @@ private fun SearchAndFilter(
 @Composable
 private fun DayGroupSection(
     dayGroup: DayGroup,
+    currencySymbol: String,
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
@@ -774,7 +781,7 @@ private fun DayGroupSection(
             ) {
                 // Always show income (0 if no income)
                     Text(
-                    text = "+${formatDouble(dayGroup.income, 2)}",
+                    text = "+$currencySymbol${formatDouble(dayGroup.income, 2)}",
                         color = TransactionColors.income,
                         fontSize = 16.sp,
                     fontStyle = FontStyle.Normal,
@@ -785,7 +792,7 @@ private fun DayGroupSection(
                 )
                 // Always show expense (0 if no expense)
                     Text(
-                    text = "-${formatDouble(dayGroup.expense, 2)}",
+                    text = "-$currencySymbol${formatDouble(dayGroup.expense, 2)}",
                         color = TransactionColors.expense,
                         fontSize = 16.sp,
                     fontStyle = FontStyle.Normal,
@@ -799,7 +806,7 @@ private fun DayGroupSection(
 
         // Transactions
         dayGroup.transactions.forEach { transaction ->
-            TransactionCard(transaction) { clickedTransaction ->
+            TransactionCard(transaction, currencySymbol) { clickedTransaction ->
                 selectedTransaction = clickedTransaction
                 showBottomSheet = true
             }
@@ -886,6 +893,7 @@ private fun DayGroupSection(
 @Composable
 fun TransactionCard(
     transaction: com.example.androidkmm.models.Transaction,
+    currencySymbol: String,
     onClick: (com.example.androidkmm.models.Transaction) -> Unit = {}
 ) {
     // Debug: Print transaction details
@@ -999,9 +1007,9 @@ fun TransactionCard(
                 }
 
                 val amountText = when (transaction.type) {
-                com.example.androidkmm.models.TransactionType.INCOME -> "$${formatDouble(transaction.amount, 2)}"
-                com.example.androidkmm.models.TransactionType.EXPENSE -> "$${formatDouble(transaction.amount, 2)}"
-                com.example.androidkmm.models.TransactionType.TRANSFER -> "$${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.INCOME -> "$currencySymbol${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.EXPENSE -> "$currencySymbol${formatDouble(transaction.amount, 2)}"
+                com.example.androidkmm.models.TransactionType.TRANSFER -> "$currencySymbol${formatDouble(transaction.amount, 2)}"
                 }
 
                 Text(
@@ -2428,6 +2436,7 @@ private fun groupTransactionsByDay(transactions: List<com.example.androidkmm.mod
 @Composable
 private fun AnimatedSummaryCard(
     transactions: List<com.example.androidkmm.models.Transaction>,
+    currencySymbol: String,
     carryForwardAmount: Double = 0.0,
     totalAccountBalance: Double = 0.0,
     isCompact: Boolean
@@ -2510,7 +2519,7 @@ private fun AnimatedSummaryCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 Text(
-                    text = "${formatDouble(totalIncome, 2)}",
+                    text = "$currencySymbol${formatDouble(totalIncome, 2)}",
                     color = TransactionColors.income,
                     fontSize = animatedAmountSize.sp,
                     fontWeight = FontWeight.Bold
@@ -2545,7 +2554,7 @@ private fun AnimatedSummaryCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 Text(
-                    text = "${formatDouble(totalExpense, 2)}",
+                    text = "$currencySymbol${formatDouble(totalExpense, 2)}",
                     color = TransactionColors.expense,
                     fontSize = animatedAmountSize.sp,
                     fontWeight = FontWeight.Bold
@@ -2571,7 +2580,7 @@ private fun AnimatedSummaryCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AttachMoney,
+                            imageVector = Icons.Default.Money,
                             contentDescription = "Total",
                             tint = (if (total >= 0) TransactionColors.income else TransactionColors.expense),
                             modifier = Modifier.size(24.dp)
@@ -2580,7 +2589,7 @@ private fun AnimatedSummaryCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 Text(
-                    text = if (total >= 0) "+${formatDouble(total, 2)}" else "${formatDouble(total, 2)}",
+                    text = if (total >= 0) "+$currencySymbol${formatDouble(total, 2)}" else "$currencySymbol${formatDouble(total, 2)}",
                     color = if (total >= 0) TransactionColors.income else TransactionColors.expense,
                     fontSize = animatedAmountSize.sp,
                     fontWeight = FontWeight.Normal
@@ -2597,7 +2606,7 @@ private fun AnimatedSummaryCard(
 }
 
 @Composable
-private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
+private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.Transaction>, currencySymbol: String, carryForwardAmount: Double = 0.0, totalAccountBalance: Double = 0.0) {
     val totalIncome = transactions
         .filter { it.type == com.example.androidkmm.models.TransactionType.INCOME }
         .sumOf { it.amount }
@@ -2634,7 +2643,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${formatDouble(totalIncome, 2)}",
+                    text = "$currencySymbol${formatDouble(totalIncome, 2)}",
                     color = TransactionColors.income,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -2652,7 +2661,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${formatDouble(totalExpense, 2)}",
+                    text = "$currencySymbol${formatDouble(totalExpense, 2)}",
                     color = TransactionColors.expense,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -2670,7 +2679,7 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (total >= 0) "+${formatDouble(total, 2)}" else "${formatDouble(total, 2)}",
+                    text = if (total >= 0) "+$currencySymbol${formatDouble(total, 2)}" else "$currencySymbol${formatDouble(total, 2)}",
                     color = if (total >= 0) TransactionColors.income else TransactionColors.expense,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
