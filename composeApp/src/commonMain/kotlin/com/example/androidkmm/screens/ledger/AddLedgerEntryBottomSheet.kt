@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -67,7 +68,9 @@ fun AddLedgerEntryBottomSheet(
     val allPeopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
     val allPeople = allPeopleState.value
     
-    val bottomSheetState = rememberModalBottomSheetState()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     var personName by remember { mutableStateOf(person?.name ?: "") }
     var showSuggestions by remember { mutableStateOf(false) }
     var currentTransactionType by remember { mutableStateOf(transactionType) }
@@ -151,8 +154,9 @@ fun AddLedgerEntryBottomSheet(
         content = {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .background(LedgerTheme.backgroundColor())
+                    .statusBarsPadding()
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
