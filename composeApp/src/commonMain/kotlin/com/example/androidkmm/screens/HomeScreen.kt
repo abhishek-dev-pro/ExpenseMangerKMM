@@ -64,8 +64,8 @@ fun HomeScreenContent(
             QuickActions(
                 onActionClick = { action ->
                     when (action) {
-                        "Ledger" -> onNavigateToLedger()
-                        "Transaction" -> onNavigateToAddTransaction()
+                        "+ Ledger" -> onNavigateToLedger()
+                        "+ Transaction" -> onNavigateToAddTransaction()
                     }
                 }
             )
