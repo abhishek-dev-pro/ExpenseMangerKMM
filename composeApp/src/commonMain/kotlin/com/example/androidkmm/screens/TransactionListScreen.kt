@@ -1093,6 +1093,8 @@ fun AddTransactionBottomSheet(
     var showToAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showAddCategorySheet by remember { mutableStateOf(false) }
+    var showAddAccountSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         // Set default date and time
@@ -1156,7 +1158,8 @@ fun AddTransactionBottomSheet(
                 TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
                 TransactionType.INCOME -> com.example.androidkmm.models.TransactionType.INCOME
                 TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.TRANSFER
-            }
+            },
+            onAddCategory = { showAddCategorySheet = true }
         )
     }
 
@@ -1170,7 +1173,8 @@ fun AddTransactionBottomSheet(
                 formData = formData.copy(account = account)
                 showFromAccountSheet = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { showAddAccountSheet = true }
         )
     }
 
@@ -1184,7 +1188,8 @@ fun AddTransactionBottomSheet(
                 formData = formData.copy(toAccount = account)
                 showToAccountSheet = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { showAddAccountSheet = true }
         )
     }
 
@@ -1210,6 +1215,60 @@ fun AddTransactionBottomSheet(
             },
             initialTime = formData.time
         )
+    }
+
+    // Add Category Bottom Sheet
+    if (showAddCategorySheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddCategorySheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null
+        ) {
+            AddCategoryBottomSheet(
+                categoryType = when (formData.type) {
+                    TransactionType.EXPENSE -> com.example.androidkmm.models.CategoryTab.EXPENSE
+                    TransactionType.INCOME -> com.example.androidkmm.models.CategoryTab.INCOME
+                    TransactionType.TRANSFER -> com.example.androidkmm.models.CategoryTab.EXPENSE // Default
+                },
+                onDismiss = { showAddCategorySheet = false },
+                onCategoryAdded = { category, onSuccess, onError ->
+                    categoryDatabaseManager.addCategory(
+                        category = category,
+                        onSuccess = {
+                            onSuccess()
+                            showAddCategorySheet = false
+                        },
+                        onError = { error ->
+                            onError(error.message ?: "Unknown error occurred")
+                        }
+                    )
+                }
+            )
+        }
+    }
+
+    // Add Account Bottom Sheet
+    if (showAddAccountSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddAccountSheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null
+        ) {
+            AddAccountBottomSheet(
+                onDismiss = { showAddAccountSheet = false },
+                onAccountAdded = { account ->
+                    accountDatabaseManager.addAccount(
+                        account = account,
+                        onSuccess = {
+                            showAddAccountSheet = false
+                        },
+                        onError = { error ->
+                            println("Error adding account: ${error.message}")
+                        }
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -2003,7 +2062,8 @@ fun AccountSelectionBottomSheet(
     title: String = "Select Account",
     subtitle: String = "Choose an account for your transaction",
     onAccountSelected: (Account) -> Unit,
-    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
+    onAddAccount: (() -> Unit)? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -2076,6 +2136,70 @@ fun AccountSelectionBottomSheet(
                     account = account,
                     onClick = { onAccountSelected(account) }
                 )
+            }
+
+            item {
+                // Add Account Button
+                Card(
+                    onClick = { onAddAccount?.invoke() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(vertical = 6.dp)
+                        .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                        ),
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Plus icon
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Account",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // Add Account text
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Add Account",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Create a new account",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
             }
 
             item {
@@ -2173,7 +2297,8 @@ fun CategorySelectionBottomSheet(
     onDismiss: () -> Unit,
     onCategorySelected: (TransactionCategory) -> Unit,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
-    transactionType: com.example.androidkmm.models.TransactionType
+    transactionType: com.example.androidkmm.models.TransactionType,
+    onAddCategory: (() -> Unit)? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<com.example.androidkmm.models.Category>())
@@ -2275,6 +2400,22 @@ fun CategorySelectionBottomSheet(
                             onClick = { onCategorySelected(category) }
                         )
                 }
+                
+                // Add Category Button (only show for non-transfer transactions)
+                if (transactionType != com.example.androidkmm.models.TransactionType.TRANSFER) {
+                    item {
+                        CategoryGridCard(
+                            category = TransactionCategory(
+                                id = "add_category",
+                                name = "Add",
+                                icon = Icons.Default.Add,
+                                color = MaterialTheme.colorScheme.primary
+                            ),
+                            onClick = { onAddCategory?.invoke() },
+                            isAddButton = true
+                        )
+                    }
+                }
             }
         }
     }
@@ -2338,7 +2479,8 @@ private fun CategoryCard(
 @Composable
 private fun CategoryGridCard(
     category: TransactionCategory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isAddButton: Boolean = false
 ) {
     Card(
         onClick = onClick,
@@ -2347,13 +2489,13 @@ private fun CategoryGridCard(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
             .border(
-                width = 0.5.dp,
-                color = Color.White.copy(alpha = 0.2f),
+                width = if (isAddButton) 1.dp else 0.5.dp,
+                color = if (isAddButton) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isAddButton) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -2382,7 +2524,7 @@ private fun CategoryGridCard(
 
             Text(
                 text = category.name,
-                            color = MaterialTheme.colorScheme.onBackground,
+                color = if (isAddButton) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -3730,4 +3872,252 @@ fun EditTransactionScreen(
         )
     }
 }
+
+@OptIn(ExperimentalTime::class)
+@Composable
+fun AddCategoryBottomSheetForTransaction(
+    categoryType: com.example.androidkmm.models.CategoryTab,
+    onDismiss: () -> Unit,
+    onCategoryAdded: (com.example.androidkmm.models.Category, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit
+) {
+    var categoryName by remember { mutableStateOf("") }
+    var selectedIcon by remember { mutableStateOf(Icons.Default.AttachMoney) }
+    var selectedIconIndex by remember { mutableStateOf(0) }
+    var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Add ${if (categoryType == com.example.androidkmm.models.CategoryTab.EXPENSE) "Expense" else "Income"} Category",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Category Name
+        Text(
+            text = "Category Name",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = categoryName,
+            onValueChange = { categoryName = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            placeholder = {
+                Text(
+                    text = "Enter category name",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp
+            )
+        )
+
+        // Icon Selection
+        Text(
+            text = "Choose Icon",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val icons = listOf(
+            Icons.Default.AttachMoney,
+            Icons.Default.ShoppingCart,
+            Icons.Default.Restaurant,
+            Icons.Default.LocalGasStation,
+            Icons.Default.Home,
+            Icons.Default.DirectionsCar,
+            Icons.Default.Flight,
+            Icons.Default.Movie,
+            Icons.Default.Sports,
+            Icons.Default.Favorite,
+            Icons.Default.MusicNote,
+            Icons.Default.Business,
+            Icons.Default.LocalCafe,
+            Icons.Default.Wallet
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(icons.size) { index ->
+                val icon = icons[index]
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (selectedIconIndex == index) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .clickable { 
+                            selectedIcon = icon
+                            selectedIconIndex = index
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (selectedIconIndex == index) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Color Selection
+        Text(
+            text = "Choose Color",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val colors = listOf(
+            Color(0xFF2196F3), Color(0xFF4CAF50), Color(0xFFFF9800),
+            Color(0xFFF44336), Color(0xFF9C27B0), Color(0xFF00BCD4),
+            Color(0xFF795548), Color(0xFF607D8B)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            colors.forEach { color ->
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (selectedColor == color) color
+                            else color.copy(alpha = 0.3f)
+                        )
+                        .border(
+                            width = if (selectedColor == color) 2.dp else 0.dp,
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                        .clickable { selectedColor = color },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedColor == color) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Add Category Button
+        Button(
+            onClick = {
+                if (isLoading) return@Button
+                
+                errorMessage = "" // Clear previous error
+                isLoading = true
+                
+                val category = com.example.androidkmm.models.Category(
+                    id = Clock.System.now().toEpochMilliseconds().toString(),
+                    name = categoryName,
+                    icon = selectedIcon,
+                    color = selectedColor,
+                    type = if (categoryType == com.example.androidkmm.models.CategoryTab.EXPENSE) com.example.androidkmm.models.CategoryType.EXPENSE else com.example.androidkmm.models.CategoryType.INCOME,
+                    isCustom = true
+                )
+                onCategoryAdded(
+                    category,
+                    {
+                        isLoading = false
+                        onDismiss()
+                    },
+                    { error ->
+                        isLoading = false
+                        errorMessage = error
+                    }
+                )
+            },
+            enabled = categoryName.isNotEmpty() && !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant,
+                contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Add Category",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
 
