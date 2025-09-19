@@ -164,7 +164,8 @@ class SQLiteLedgerDatabase(
     suspend fun addLedgerTransactionAndUpdatePerson(
         ledgerTransaction: LedgerTransaction,
         personId: String,
-        transactionDatabaseManager: SQLiteTransactionDatabase? = null
+        transactionDatabaseManager: SQLiteTransactionDatabase? = null,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase? = null
     ) {
         withContext(Dispatchers.Default) {
             // First, get the person and calculate the new balance
@@ -206,7 +207,13 @@ class SQLiteLedgerDatabase(
                         date = ledgerTransaction.date
                     )
                     
+                    // Add the transaction and update account balances
                     txDb.addLedgerTransaction(mainTransaction, personId, person.name)
+                    
+                    // Update account balances for the ledger transaction
+                    accountDatabaseManager?.let { accountDb ->
+                        updateAccountBalancesForLedgerTransaction(mainTransaction, txDb, accountDb)
+                    }
                 }
                 
                 // Update person's balance and transaction count
@@ -219,6 +226,15 @@ class SQLiteLedgerDatabase(
                 )
             }
         }
+    }
+    
+    private suspend fun updateAccountBalancesForLedgerTransaction(
+        transaction: com.example.androidkmm.models.Transaction,
+        transactionDatabaseManager: SQLiteTransactionDatabase,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        // Update account balances using the transaction database manager
+        transactionDatabaseManager.updateAccountBalancesForLedgerTransaction(transaction, accountDatabaseManager)
     }
     
     suspend fun deleteLedgerTransactionAndUpdatePerson(

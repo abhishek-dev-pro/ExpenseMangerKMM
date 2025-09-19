@@ -213,6 +213,39 @@ class SQLiteTransactionDatabase(
         }
     }
     
+    suspend fun updateAccountBalancesForLedgerTransaction(
+        transaction: Transaction,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        // Update account balances based on transaction type
+        when (transaction.type) {
+            com.example.androidkmm.models.TransactionType.INCOME -> {
+                // Add amount to account balance (money received)
+                val account = getAccountByName(transaction.account)
+                if (account != null) {
+                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val newBalance = currentBalance + transaction.amount
+                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (INCOME: +${transaction.amount})")
+                }
+            }
+            com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                // Subtract amount from account balance (money sent)
+                val account = getAccountByName(transaction.account)
+                if (account != null) {
+                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val newBalance = currentBalance - transaction.amount
+                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (EXPENSE: -${transaction.amount})")
+                }
+            }
+            com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                // Handle transfer logic if needed
+                println("DEBUG: Transfer transaction - no account balance update needed for ledger")
+            }
+        }
+    }
+    
     fun updateTransaction(transaction: Transaction, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         scope.launch {
             try {
@@ -442,7 +475,7 @@ class SQLiteTransactionDatabase(
         }
     }
     
-    private suspend fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
+    suspend fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
         return try {
             val accountRow = database.categoryDatabaseQueries.selectAccountByName(accountName).executeAsOneOrNull()
             accountRow?.toAccount()

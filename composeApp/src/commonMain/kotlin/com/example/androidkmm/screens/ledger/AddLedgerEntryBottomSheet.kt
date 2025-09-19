@@ -799,7 +799,7 @@ fun AddLedgerEntryBottomSheet(
                                                 // balanceAtTime will be set in addLedgerTransactionAndUpdatePerson
                                             )
                                             
-                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, existingPerson.id, transactionDatabaseManager)
+                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, existingPerson.id, transactionDatabaseManager, accountDatabaseManager)
                                         } else {
                                             // Create new person and add transaction
                                             val newPerson = LedgerPerson(
@@ -825,7 +825,7 @@ fun AddLedgerEntryBottomSheet(
                                                 // balanceAtTime will be set in addLedgerTransactionAndUpdatePerson
                                             )
                                             
-                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, newPerson.id, transactionDatabaseManager)
+                                            ledgerDatabaseManager.addLedgerTransactionAndUpdatePerson(transaction, newPerson.id, transactionDatabaseManager, accountDatabaseManager)
                                         }
                                     onDismiss()
                                 } catch (e: Exception) {
