@@ -706,55 +706,55 @@ fun AddLedgerEntryBottomSheet(
                 if (person == null) {
                     item {
                         // Common Examples
-                        Text(
-                            text = "Common Examples",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = LedgerTheme.textPrimary()
-                        )
+//                        Text(
+//                            text = "Common Examples",
+//                            fontSize = 16.sp,
+//                            fontWeight = FontWeight.Medium,
+//                            color = LedgerTheme.textPrimary()
+//                        )
+//
+//                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.height(160.dp)
-                        ) {
-                            items(commonExamples) { (title, subtitle) ->
-                                Button(
-                                    onClick = {
-                                        description = title
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF1F1F1F)
-                                    ),
-                                    shape = RoundedCornerShape(16.dp),
-                                    contentPadding = PaddingValues(12.dp)
-                                ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = title,
-                                            color = LedgerTheme.textPrimary(),
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Text(
-                                            text = subtitle,
-                                            color = LedgerTheme.textSecondary(),
-                                            fontSize = 10.sp,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
-                        }
+//                        LazyVerticalGrid(
+//                            columns = GridCells.Fixed(2),
+//                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//                            verticalArrangement = Arrangement.spacedBy(8.dp),
+//                            modifier = Modifier.height(160.dp)
+//                        ) {
+//                            items(commonExamples) { (title, subtitle) ->
+//                                Button(
+//                                    onClick = {
+//                                        description = title
+//                                    },
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .wrapContentHeight(),
+//                                    colors = ButtonDefaults.buttonColors(
+//                                        containerColor = Color(0xFF1F1F1F)
+//                                    ),
+//                                    shape = RoundedCornerShape(16.dp),
+//                                    contentPadding = PaddingValues(12.dp)
+//                                ) {
+//                                    Column(
+//                                        horizontalAlignment = Alignment.CenterHorizontally
+//                                    ) {
+//                                        Text(
+//                                            text = title,
+//                                            color = LedgerTheme.textPrimary(),
+//                                            fontSize = 12.sp,
+//                                            fontWeight = FontWeight.Medium,
+//                                            textAlign = TextAlign.Center
+//                                        )
+//                                        Text(
+//                                            text = subtitle,
+//                                            color = LedgerTheme.textSecondary(),
+//                                            fontSize = 10.sp,
+//                                            textAlign = TextAlign.Center
+//                                        )
+//                                    }
+//                                }
+//                            }
+//                        }
 
                     }
                 }
