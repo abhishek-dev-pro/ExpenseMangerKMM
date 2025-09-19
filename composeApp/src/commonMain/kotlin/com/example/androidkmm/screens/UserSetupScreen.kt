@@ -98,8 +98,16 @@ fun UserSetupScreen(
             // Name Input
             OutlinedTextField(
                 value = userName,
-                onValueChange = { 
-                    userName = it
+                onValueChange = { newValue ->
+                    // Auto-capitalize the first letter of each word
+                    val capitalizedName = newValue.split(" ").joinToString(" ") { word ->
+                        if (word.isNotEmpty()) {
+                            word.first().uppercaseChar() + word.drop(1).lowercase()
+                        } else {
+                            word
+                        }
+                    }
+                    userName = capitalizedName
                     showError = false
                 },
                 label = { Text("Your Name", color = Color.Gray) },
