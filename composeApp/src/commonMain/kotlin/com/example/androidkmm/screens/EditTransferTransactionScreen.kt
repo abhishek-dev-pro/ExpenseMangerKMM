@@ -53,8 +53,23 @@ fun EditTransferTransactionScreen(
     val accounts by accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList())
     
     // Date and Time picker states
+    val today = java.time.LocalDate.now()
+    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = System.currentTimeMillis()
+        initialSelectedDateMillis = System.currentTimeMillis(),
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Allow dates up to and including today
+                return utcTimeMillis < tomorrowMillis
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                // Only allow current year and previous years
+                return year <= today.year
+            }
+        }
     )
     val timePickerState = rememberTimePickerState(
         initialHour = 12,
@@ -638,10 +653,19 @@ fun EditTransferTransactionScreen(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            selectedDate = java.time.Instant.ofEpochMilli(millis)
+                            val date = java.time.Instant.ofEpochMilli(millis)
                                 .atZone(java.time.ZoneId.systemDefault())
                                 .toLocalDate()
-                                .toString()
+                            val today = java.time.LocalDate.now()
+                            
+                            // Check if selected date is in the future
+                            if (date.isAfter(today)) {
+                                // Don't allow future dates - just close dialog without selecting
+                                showDatePicker = false
+                                return@TextButton
+                            }
+                            
+                            selectedDate = date.toString()
                         }
                         showDatePicker = false
                     }

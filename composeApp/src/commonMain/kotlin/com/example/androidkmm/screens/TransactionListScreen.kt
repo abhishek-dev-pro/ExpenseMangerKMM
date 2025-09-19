@@ -3067,6 +3067,10 @@ private fun DatePickerDialog(
     onDateSelected: (String) -> Unit,
     initialDate: String = ""
 ) {
+    val today = java.time.LocalDate.now()
+    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
             try {
@@ -3075,16 +3079,46 @@ private fun DatePickerDialog(
                     val year = parts[0].toInt()
                     val month = parts[1].toInt()
                     val day = parts[2].toInt()
-                    java.time.LocalDate.of(year, month, day)
-                        .atStartOfDay(java.time.ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    val selectedDate = java.time.LocalDate.of(year, month, day)
+                    // If the initial date is in the future, use today instead
+                    if (selectedDate.isAfter(today)) {
+                        todayMillis
+                    } else {
+                        selectedDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    }
                 } else null
             } catch (e: Exception) {
                 null
             }
-        } else null
+        } else null,
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Allow dates up to and including today
+                return utcTimeMillis < tomorrowMillis
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                // Only allow current year and previous years
+                return year <= today.year
+            }
+        }
     )
+    
+    // Additional validation to prevent future date selection
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        datePickerState.selectedDateMillis?.let { selectedMillis ->
+            val selectedDate = java.time.Instant.ofEpochMilli(selectedMillis)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+            val today = java.time.LocalDate.now()
+            
+            // If a future date is somehow selected, reset to today
+            if (selectedDate.isAfter(today)) {
+                datePickerState.selectedDateMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }
+        }
+    }
+    
     var showDialog by remember { mutableStateOf(true) }
 
     if (showDialog) {
@@ -3139,6 +3173,15 @@ private fun DatePickerDialog(
                             val date = java.time.Instant.ofEpochMilli(millis)
                                 .atZone(java.time.ZoneId.systemDefault())
                                 .toLocalDate()
+                            val today = java.time.LocalDate.now()
+                            
+                            // Check if selected date is in the future
+                            if (date.isAfter(today)) {
+                                // Don't allow future dates - just close dialog without selecting
+                                showDialog = false
+                                return@TextButton
+                            }
+                            
                             val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
                             onDateSelected(dateString)
                         }

@@ -538,11 +538,26 @@ fun EditLedgerEntryBottomSheet(
                     val month = currentDate[1].toInt()
                     val day = currentDate[2].toInt()
                     
+                    val today = java.time.LocalDate.now()
+                    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    
                     val datePickerState = rememberDatePickerState(
                         initialSelectedDateMillis = java.time.LocalDate.of(year, month, day)
                             .atStartOfDay(java.time.ZoneId.systemDefault())
                             .toInstant()
-                            .toEpochMilli()
+                            .toEpochMilli(),
+                        selectableDates = object : androidx.compose.material3.SelectableDates {
+                            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                                // Allow dates up to and including today
+                                return utcTimeMillis < tomorrowMillis
+                            }
+                            
+                            override fun isSelectableYear(year: Int): Boolean {
+                                // Only allow current year and previous years
+                                return year <= today.year
+                            }
+                        }
                     )
                     
                     DatePicker(
@@ -558,6 +573,15 @@ fun EditLedgerEntryBottomSheet(
                                 val date = java.time.Instant.ofEpochMilli(millis)
                                     .atZone(java.time.ZoneId.systemDefault())
                                     .toLocalDate()
+                                val today = java.time.LocalDate.now()
+                                
+                                // Check if selected date is in the future
+                                if (date.isAfter(today)) {
+                                    // Don't allow future dates - just close dialog without selecting
+                                    showDatePicker = false
+                                    return@Button
+                                }
+                                
                                 selectedDate = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
                             }
                             showDatePicker = false
