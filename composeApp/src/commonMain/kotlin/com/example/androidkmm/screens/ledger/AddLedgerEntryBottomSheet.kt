@@ -367,7 +367,7 @@ fun AddLedgerEntryBottomSheet(
                                         Icon(
                                             imageVector = Icons.Default.ArrowUpward,
                                             contentDescription = null,
-                                            tint = if (currentTransactionType == TransactionType.SENT) Color.White else LedgerTheme.textSecondary(),
+                                            tint = if (currentTransactionType == TransactionType.SENT) Color.White else Color.Black,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
@@ -425,7 +425,7 @@ fun AddLedgerEntryBottomSheet(
                                         Icon(
                                             imageVector = Icons.Default.ArrowDownward,
                                             contentDescription = null,
-                                            tint = if (currentTransactionType == TransactionType.RECEIVED) Color.White else LedgerTheme.textSecondary(),
+                                            tint = if (currentTransactionType == TransactionType.RECEIVED) Color.White else Color.Black,
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
