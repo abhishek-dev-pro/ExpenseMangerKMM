@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
+import com.example.androidkmm.database.SQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
@@ -137,7 +138,11 @@ fun ProfileMainScreen() {
             )
             "categories" -> CategoriesScreen(
                 onBackClick = { currentScreen = "profile" },
-                onAddCategory = { showAddCategorySheet = true }
+                onAddCategory = { tab -> 
+                    selectedCategoryTab = tab
+                    showAddCategorySheet = true 
+                },
+                categoryDatabaseManager = categoryDatabaseManager
             )
             "customize" -> CustomizeScreen(
                 onBackClick = { currentScreen = "profile" }
@@ -1149,7 +1154,7 @@ private fun IncomeCategoriesContent(
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            categories.chunked(2).forEach { rowCategories ->
+            categories.chunked(3).forEach { rowCategories ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -1165,6 +1170,8 @@ private fun IncomeCategoriesContent(
                     }
                     // Fill remaining space if odd number of items
                     if (rowCategories.size == 1) {
+                        Spacer(modifier = Modifier.weight(2f))
+                    } else if (rowCategories.size == 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -1224,7 +1231,7 @@ private fun ExpenseCategoriesContent(
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            categories.chunked(2).forEach { rowCategories ->
+            categories.chunked(3).forEach { rowCategories ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -1240,6 +1247,8 @@ private fun ExpenseCategoriesContent(
                     }
                     // Fill remaining space if odd number of items
                     if (rowCategories.size == 1) {
+                        Spacer(modifier = Modifier.weight(2f))
+                    } else if (rowCategories.size == 2) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
@@ -1443,8 +1452,8 @@ private fun TabButton(
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            containerColor = if (isSelected) Color(0xFF4285F4) else Color.Transparent,
+            contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
         ),
         shape = RoundedCornerShape(8.dp),
         modifier = modifier.height(40.dp),
@@ -2437,9 +2446,9 @@ fun CurrencySetting() {
 @Composable
 fun CategoriesScreen(
     onBackClick: () -> Unit,
-    onAddCategory: () -> Unit
+    onAddCategory: (CategoryTab) -> Unit,
+    categoryDatabaseManager: SQLiteCategoryDatabase
 ) {
-    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val scope = rememberCoroutineScope()
     
     // Flow for categories from database
@@ -2519,7 +2528,7 @@ fun CategoriesScreen(
                 ExpenseCategoriesContent(
                     categories = expenseCategories.value,
                     customCategories = customCategories.value.filter { it.type == CategoryType.EXPENSE },
-                    onAddCustomCategory = onAddCategory,
+                    onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
                     onEditCategory = { category ->
                         // Handle edit category
                     },
@@ -2536,7 +2545,7 @@ fun CategoriesScreen(
                 IncomeCategoriesContent(
                     categories = incomeCategories.value,
                     customCategories = customCategories.value.filter { it.type == CategoryType.INCOME },
-                    onAddCustomCategory = onAddCategory,
+                    onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
                     onEditCategory = { category ->
                         // Handle edit category
                     },
