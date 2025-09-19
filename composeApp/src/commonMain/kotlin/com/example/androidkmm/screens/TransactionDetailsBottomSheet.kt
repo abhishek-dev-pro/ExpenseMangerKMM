@@ -32,6 +32,7 @@ import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.screens.EditTransferTransactionScreen
 
 // Colors for Transaction Details
 object TransactionDetailColors {
@@ -72,19 +73,34 @@ fun TransactionDetailsBottomSheet(
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             if (isEditMode) {
-                EditTransactionScreen(
-                    transaction = editedTransaction,
-                    onDismiss = {
-                        isEditMode = false
-                        editedTransaction = transaction
-                    },
-                    onSave = { updatedTransaction: com.example.androidkmm.models.Transaction ->
-                        onEdit(updatedTransaction)
-                        isEditMode = false
-                    },
-                    categoryDatabaseManager = categoryDatabaseManager,
-                    accountDatabaseManager = accountDatabaseManager
-                )
+                if (editedTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
+                    EditTransferTransactionScreen(
+                        transaction = editedTransaction,
+                        onDismiss = {
+                            isEditMode = false
+                            editedTransaction = transaction
+                        },
+                        onSave = { updatedTransaction: com.example.androidkmm.models.Transaction ->
+                            onEdit(updatedTransaction)
+                            isEditMode = false
+                        },
+                        accountDatabaseManager = accountDatabaseManager
+                    )
+                } else {
+                    EditTransactionScreen(
+                        transaction = editedTransaction,
+                        onDismiss = {
+                            isEditMode = false
+                            editedTransaction = transaction
+                        },
+                        onSave = { updatedTransaction: com.example.androidkmm.models.Transaction ->
+                            onEdit(updatedTransaction)
+                            isEditMode = false
+                        },
+                        categoryDatabaseManager = categoryDatabaseManager,
+                        accountDatabaseManager = accountDatabaseManager
+                    )
+                }
             } else {
                 TransactionDetailsContent(
                     transaction = transaction,
@@ -381,7 +397,11 @@ private fun TransactionDetailsContent(
                 Spacer(modifier = Modifier.height(3.dp))
 
                 Text(
-                    text = transaction.title,
+                    text = if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
+                        transaction.title.ifBlank { "Funds Transfer" }
+                    } else {
+                        transaction.title
+                    },
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold
@@ -466,97 +486,95 @@ private fun TransactionDetailsContent(
         // Account Section(s) - Different for each transaction type
         when (transaction.type) {
             com.example.androidkmm.models.TransactionType.TRANSFER -> {
-                // Transfer Summary Card
+
+                // From Account Section
                 item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
-                            .border(
-                                width = 0.5.dp,
-                                color = Color.White.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
-                            ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        ),
-                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    Column {
+                        Text(
+                            text = "From Account",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp)
                         ) {
-                            // Transfer Icon
+                            // From Account Icon
                             Box(
                                 modifier = Modifier
-                                    .size(48.dp)
+                                    .size(32.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF3B82F6)),
+                                    .background(Color(0xFF4CAF50)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.SwapHoriz,
-                                    contentDescription = "Transfer",
+                                    imageVector = Icons.Default.AccountBalance,
+                                    contentDescription = "From Account",
                                     tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = transaction.account,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
 
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Transfer Direction
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                // To Account Section
+                item {
+                    Column {
+                        Text(
+                            text = "To Account",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(16.dp)
+                        ) {
+                            // To Account Icon
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF757575)),
+                                contentAlignment = Alignment.Center
                             ) {
-                                // From Account
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "FROM",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = transaction.account,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
-
-                                // Arrow
                                 Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Transfer to",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
+                                    imageVector = Icons.Default.CreditCard,
+                                    contentDescription = "To Account",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
                                 )
-
-                                // To Account
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = "TO",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = transaction.transferTo ?: "Unknown Account",
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        textAlign = TextAlign.Center
-                                    )
-                                }
                             }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = transaction.transferTo ?: "Unknown Account",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
                         }
                     }
                 }
