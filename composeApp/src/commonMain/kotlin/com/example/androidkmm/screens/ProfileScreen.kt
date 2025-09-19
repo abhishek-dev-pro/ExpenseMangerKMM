@@ -88,6 +88,8 @@ fun ProfileMainScreen() {
     var showAccountSheet by remember { mutableStateOf(false) }
     var showAddAccountSheet by remember { mutableStateOf(false) }
     var showAddCategorySheet by remember { mutableStateOf(false) }
+    var showEditCategorySheet by remember { mutableStateOf(false) }
+    var categoryToEdit by remember { mutableStateOf<Category?>(null) }
     var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
     var showCreateGroupScreen by remember { mutableStateOf(false) }
     var showClearDataDialog by remember { mutableStateOf(false) }
@@ -141,6 +143,10 @@ fun ProfileMainScreen() {
                 onAddCategory = { tab -> 
                     selectedCategoryTab = tab
                     showAddCategorySheet = true 
+                },
+                onEditCategory = { category ->
+                    categoryToEdit = category
+                    showEditCategorySheet = true
                 },
                 categoryDatabaseManager = categoryDatabaseManager
             )
@@ -209,6 +215,40 @@ fun ProfileMainScreen() {
                             },
                             onError = { error ->
                                 println("DEBUG: Error adding category: ${error.message}")
+                                onError(error.message ?: "Unknown error occurred")
+                            }
+                        )
+                    }
+                )
+            }
+        }
+
+        // Edit Category Bottom Sheet
+        if (showEditCategorySheet && categoryToEdit != null) {
+            ModalBottomSheet(
+                onDismissRequest = { 
+                    showEditCategorySheet = false
+                    categoryToEdit = null
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                dragHandle = null
+            ) {
+                EditCategoryBottomSheet(
+                    category = categoryToEdit!!,
+                    onDismiss = { 
+                        showEditCategorySheet = false
+                        categoryToEdit = null
+                    },
+                    onCategoryUpdated = { updatedCategory, onSuccess, onError ->
+                        println("DEBUG: onCategoryUpdated callback called with: ${updatedCategory.name}")
+                        categoryDatabaseManager.updateCategory(
+                            category = updatedCategory,
+                            onSuccess = {
+                                println("DEBUG: Category updated successfully")
+                                onSuccess()
+                            },
+                            onError = { error ->
+                                println("DEBUG: Error updating category: ${error.message}")
                                 onError(error.message ?: "Unknown error occurred")
                             }
                         )
@@ -1788,6 +1828,7 @@ fun AddCategoryBottomSheet(
 ) {
     var categoryName by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf(Icons.Default.AttachMoney) }
+    var selectedIconIndex by remember { mutableStateOf(0) }
     var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
     var errorMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -1869,12 +1910,17 @@ fun AddCategoryBottomSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.height(120.dp)
         ) {
-            items(categoryIcons) { icon ->
+            items(categoryIcons.size) { index ->
+                val icon = categoryIcons[index]
                 IconSelector(
                     icon = icon,
                     color = selectedColor,
-                    isSelected = selectedIcon == icon,
-                    onClick = { selectedIcon = icon }
+                    isSelected = selectedIconIndex == index,
+                    onClick = { 
+                        selectedIconIndex = index
+                        selectedIcon = icon
+                        println("DEBUG: Selected icon index: $index, icon: $icon")
+                    }
                 )
             }
         }
@@ -2020,6 +2066,204 @@ fun AddCategoryBottomSheet(
             } else {
                 Text(
                     text = "Add Category",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+fun EditCategoryBottomSheet(
+    category: Category,
+    onDismiss: () -> Unit,
+    onCategoryUpdated: (Category, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit
+) {
+    var categoryName by remember { mutableStateOf(category.name) }
+    var selectedIcon by remember { mutableStateOf(category.icon) }
+    var selectedIconIndex by remember { 
+        mutableStateOf(categoryIcons.indexOf(category.icon).takeIf { it >= 0 } ?: 0)
+    }
+    var selectedColor by remember { mutableStateOf(category.color) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Edit ${if (category.type == CategoryType.EXPENSE) "Expense" else "Income"} Category",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Category Name
+        Text(
+            text = "Category Name",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = categoryName,
+            onValueChange = { categoryName = it },
+            placeholder = { Text("Enter category name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
+            ),
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Choose Icon
+        Text(
+            text = "Choose Icon",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(6),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.height(120.dp)
+        ) {
+            items(categoryIcons.size) { index ->
+                val icon = categoryIcons[index]
+                IconSelector(
+                    icon = icon,
+                    color = selectedColor,
+                    isSelected = selectedIconIndex == index,
+                    onClick = { 
+                        selectedIconIndex = index
+                        selectedIcon = icon
+                        println("DEBUG: Selected icon index: $index, icon: $icon")
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Choose Color
+        Text(
+            text = "Choose Color",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(6),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.height(120.dp)
+        ) {
+            items(categoryColors) { color ->
+                ColorSelector(
+                    color = color,
+                    isSelected = selectedColor == color,
+                    onClick = { selectedColor = color }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Error Message
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
+
+        // Update Category Button
+        Button(
+            onClick = {
+                if (isLoading) return@Button
+                
+                errorMessage = "" // Clear previous error
+                isLoading = true
+                
+                println("DEBUG: Update Category button clicked with name: '$categoryName'")
+                val updatedCategory = category.copy(
+                    name = categoryName,
+                    icon = selectedIcon,
+                    color = selectedColor
+                )
+                println("DEBUG: Created updated category object: ${updatedCategory.name}, type: ${updatedCategory.type}, isCustom: ${updatedCategory.isCustom}")
+                onCategoryUpdated(
+                    updatedCategory,
+                    {
+                        isLoading = false
+                        onDismiss()
+                    },
+                    { error ->
+                        isLoading = false
+                        errorMessage = error
+                    }
+                )
+            },
+            enabled = categoryName.isNotEmpty() && !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant,
+                contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Update Category",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -2447,6 +2691,7 @@ fun CurrencySetting() {
 fun CategoriesScreen(
     onBackClick: () -> Unit,
     onAddCategory: (CategoryTab) -> Unit,
+    onEditCategory: (Category) -> Unit,
     categoryDatabaseManager: SQLiteCategoryDatabase
 ) {
     val scope = rememberCoroutineScope()
@@ -2529,9 +2774,7 @@ fun CategoriesScreen(
                     categories = expenseCategories.value,
                     customCategories = customCategories.value.filter { it.type == CategoryType.EXPENSE },
                     onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
-                    onEditCategory = { category ->
-                        // Handle edit category
-                    },
+                    onEditCategory = onEditCategory,
                     onDeleteCategory = { category ->
                         try {
                             categoryDatabaseManager.deleteCategory(category)
@@ -2546,9 +2789,7 @@ fun CategoriesScreen(
                     categories = incomeCategories.value,
                     customCategories = customCategories.value.filter { it.type == CategoryType.INCOME },
                     onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
-                    onEditCategory = { category ->
-                        // Handle edit category
-                    },
+                    onEditCategory = onEditCategory,
                     onDeleteCategory = { category ->
                         try {
                             categoryDatabaseManager.deleteCategory(category)
