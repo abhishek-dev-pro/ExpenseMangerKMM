@@ -127,7 +127,6 @@ fun LedgerMainScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LedgerTheme.backgroundColor())
-            .statusBarsPadding()
     ) {
         // Header
         Row(
