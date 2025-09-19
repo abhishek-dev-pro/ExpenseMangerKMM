@@ -160,11 +160,16 @@ fun AccountsScreen(
                                         selectedAccount = account
                                         showEditAccountSheet = true
                                     },
-                                    onDeleteClick = {
-                                        scope.launch {
-                                            accountDatabaseManager.deleteAccount(account)
+                                    onDeleteClick = if (account.name.equals("Cash", ignoreCase = true)) {
+                                        { /* Cash account cannot be deleted */ }
+                                    } else {
+                                        {
+                                            scope.launch {
+                                                accountDatabaseManager.deleteAccount(account)
+                                            }
                                         }
-                                    }
+                                    },
+                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true)
                                 )
                             }
                         }
@@ -669,6 +674,17 @@ private fun EditAccountBottomSheet(
     var selectedBank by remember { mutableStateOf("HDFC Bank") }
     var customBankName by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf(account.balance) }
+    
+    // Check if this is a Cash account
+    val isCashAccount = account.name.equals("Cash", ignoreCase = true)
+    
+    // Track if any changes have been made
+    val hasChanges = remember(accountName, selectedAccountType, selectedBank, initialBalance) {
+        accountName != account.name ||
+        selectedAccountType != account.type ||
+        initialBalance != account.balance ||
+        (selectedAccountType == "Bank Account" && selectedBank != "HDFC Bank")
+    }
 
     val bankOptions = listOf(
         "HDFC Bank", "State Bank of India (SBI)",
@@ -694,17 +710,24 @@ private fun EditAccountBottomSheet(
 
         BasicTextField(
             value = accountName,
-            onValueChange = { accountName = it },
-            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+            onValueChange = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { accountName = it } },
+            textStyle = TextStyle(
+                color = if (isCashAccount) Color.Gray else Color.White, 
+                fontSize = 16.sp
+            ),
+            readOnly = isCashAccount,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(12.dp))
+                .background(
+                    if (isCashAccount) Color(0xFF2A2A2A) else Color.Black, 
+                    RoundedCornerShape(12.dp)
+                )
                 .border(1.dp, Color.White, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
-                        text = "e.g. HDFC Savings, Cash Wallet",
+                        text = if (isCashAccount) "Cash (Default Account)" else "e.g. HDFC Savings, Cash Wallet",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 16.sp
                     )
@@ -720,7 +743,7 @@ private fun EditAccountBottomSheet(
             text = "Account Type",
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = if (isCashAccount) Color.Gray else MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -734,36 +757,36 @@ private fun EditAccountBottomSheet(
                 AccountsAccountTypeCard(
                     title = "Bank Account",
                     icon = Icons.Default.AccountBalance,
-                    iconColor = Color(0xFF4285F4),
+                    iconColor = if (isCashAccount) Color.Gray else Color(0xFF4285F4),
                     isSelected = selectedAccountType == "Bank Account",
-                    onClick = { selectedAccountType = "Bank Account" }
+                    onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Bank Account" } }
                 )
             }
             item {
                 AccountsAccountTypeCard(
                     title = "Credit/Debit Card",
                     icon = Icons.Default.CreditCard,
-                    iconColor = Color(0xFF34A853),
+                    iconColor = if (isCashAccount) Color.Gray else Color(0xFF34A853),
                     isSelected = selectedAccountType == "Credit/Debit Card",
-                    onClick = { selectedAccountType = "Credit/Debit Card" }
+                    onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Credit/Debit Card" } }
                 )
             }
             item {
                 AccountsAccountTypeCard(
                     title = "Cash",
                     icon = Icons.Default.AttachMoney,
-                    iconColor = Color(0xFFFF6D01),
+                    iconColor = if (isCashAccount) Color.Gray else Color(0xFFFF6D01),
                     isSelected = selectedAccountType == "Cash",
-                    onClick = { selectedAccountType = "Cash" }
+                    onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Cash" } }
                 )
             }
             item {
                 AccountsAccountTypeCard(
                     title = "Digital Wallet",
                     icon = Icons.Default.Wallet,
-                    iconColor = Color(0xFF9C27B0),
+                    iconColor = if (isCashAccount) Color.Gray else Color(0xFF9C27B0),
                     isSelected = selectedAccountType == "Digital Wallet",
-                    onClick = { selectedAccountType = "Digital Wallet" }
+                    onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Digital Wallet" } }
                 )
             }
         }
@@ -893,7 +916,7 @@ private fun EditAccountBottomSheet(
                 .wrapContentHeight(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6C6C6C)
+                containerColor = if (hasChanges) Color(0xFF4285F4) else Color(0xFF6C6C6C)
             )
         ) {
             Text(
@@ -1008,7 +1031,8 @@ private fun getAccountTypeColor(type: String): Color {
 private fun NewAccountCard(
     account: Account,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    showDeleteButton: Boolean = true
 ) {
     Card(
         modifier = Modifier
@@ -1082,18 +1106,92 @@ private fun NewAccountCard(
                     )
                 }
 
-                IconButton(
-                    onClick = onDeleteClick,
-                    modifier = Modifier.size(32.dp)
+                if (showDeleteButton) {
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = AccountsRedError,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹") {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(0.5.dp, Color(0xFF333333)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Account Icon with different styling
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF2A2A2A)),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = AccountsRedError,
+                        imageVector = Icons.Default.AttachMoney,
+                        contentDescription = account.type,
+                        tint = Color(0xFF4CAF50),
                         modifier = Modifier.size(18.dp)
                     )
                 }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                // Account Details
+                Column {
+                    Text(
+                        text = account.name,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = account.type,
+                        fontSize = 12.sp,
+                        color = Color(0xFF888888)
+                    )
+                }
             }
+
+            // Balance with different styling
+            Text(
+                text = if (account.balance.startsWith("+") || account.balance.startsWith("₹") || account.balance.startsWith("$")) {
+                    account.balance // Already has currency symbol
+                } else {
+                    "$currencySymbol${account.balance}"
+                },
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (account.balance.startsWith("+") || account.balance.startsWith("₹") || account.balance.startsWith("$")) {
+                    Color(0xFF4CAF50)
+                } else {
+                    Color(0xFFF44336)
+                }
+            )
         }
     }
 }
@@ -1141,7 +1239,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
             .fillMaxSize()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         contentPadding = PaddingValues(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             // Financial Overview Section
@@ -1247,11 +1345,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
 
         // Account List in Overview
         items(accounts) { account ->
-            NewAccountCard(
-                account = account,
-                onEditClick = { /* Handle edit */ },
-                onDeleteClick = { /* Handle delete */ }
-            )
+            ReadOnlyAccountCard(account = account, currencySymbol = currencySymbol)
         }
     }
 }
