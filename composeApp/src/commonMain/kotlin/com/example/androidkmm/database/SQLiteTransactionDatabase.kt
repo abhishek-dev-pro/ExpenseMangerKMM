@@ -502,6 +502,56 @@ class SQLiteTransactionDatabase(
             }
         }
     }
+
+    suspend fun resetToDefaults() {
+        withContext(Dispatchers.Default) {
+            database.transaction {
+                // Clear all data first
+                database.categoryDatabaseQueries.deleteAllTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerPersons()
+                database.categoryDatabaseQueries.deleteAllGroupExpenseSplits()
+                database.categoryDatabaseQueries.deleteAllGroupExpenses()
+                database.categoryDatabaseQueries.deleteAllGroupMembers()
+                database.categoryDatabaseQueries.deleteAllGroups()
+                database.categoryDatabaseQueries.deleteAllCustomAccounts()
+                database.categoryDatabaseQueries.deleteAllCustomCategories()
+                
+                // Delete ALL categories first (including default ones) to avoid constraint conflicts
+                database.categoryDatabaseQueries.deleteAllCategories()
+                
+                // Re-insert default categories (expense and income)
+                // Expense Categories
+                database.categoryDatabaseQueries.insertCategory("1", "Food", "Restaurant", "#FFFF9800", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("2", "Transport", "DirectionsCar", "#FF2196F3", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("3", "Housing", "Home", "#FF4CAF50", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("4", "Utilities", "Lightbulb", "#FFFFC107", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("5", "Health", "LocalHospital", "#FFE91E63", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("6", "Shopping", "ShoppingCart", "#FF9C27B0", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("7", "Entertainment", "Movie", "#FF673AB7", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("8", "Travel", "Flight", "#FF3F51B5", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("9", "Education", "School", "#FF009688", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("10", "Savings", "Savings", "#FF4CAF50", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("11", "Loans", "AccountBalance", "#FFF44336", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("12", "Gifts", "CardGiftcard", "#FFE91E63", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("13", "Others", "Category", "#FF607D8B", "EXPENSE", 0)
+                
+                // Income Categories
+                database.categoryDatabaseQueries.insertCategory("14", "Salary", "AttachMoney", "#FF4CAF50", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("15", "Freelance", "Work", "#FF2196F3", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("16", "Investment", "TrendingUp", "#FF9C27B0", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("17", "Rental Income", "Home", "#FF4CAF50", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("18", "Gift", "CardGiftcard", "#FFE91E63", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("19", "Bonus", "Stars", "#FFFF9800", "INCOME", 0)
+                
+                // Delete ALL accounts first (including default ones) to avoid constraint conflicts
+                database.categoryDatabaseQueries.deleteAllAccounts()
+                
+                // Re-insert default account (Cash)
+                database.categoryDatabaseQueries.insertAccount("1", "Cash", "₹0", "AttachMoney", "#FF4CAF50", "CASH", 0)
+            }
+        }
+    }
 }
 
 // Icon name to ImageVector mapping for transactions

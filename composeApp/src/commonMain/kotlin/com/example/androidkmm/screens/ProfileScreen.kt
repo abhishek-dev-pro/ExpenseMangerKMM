@@ -272,44 +272,44 @@ fun ProfileMainScreen() {
                 text = {
                     Column {
                         Text(
-                            text = "This action will permanently delete:",
+                            text = "This action will reset your data to defaults:",
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                         
                         Text(
-                            text = "• All transactions",
+                            text = "• Delete all transactions",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "• All accounts",
+                            text = "• Delete all custom accounts (keep default Cash)",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "• All categories",
+                            text = "• Delete all custom categories (keep default ones)",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "• All ledger entries",
+                            text = "• Delete all ledger entries",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "• All groups and group expenses",
+                            text = "• Delete all groups and group expenses",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "• All app settings",
+                            text = "• Reset accounts and categories to defaults",
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 12.dp)
@@ -328,8 +328,8 @@ fun ProfileMainScreen() {
                         onClick = {
                             showClearDataDialog = false
                             scope.launch {
-                                // Clear all data from all databases
-                                transactionDatabaseManager.clearAllData()
+                                // Reset data to defaults instead of clearing everything
+                                transactionDatabaseManager.resetToDefaults()
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
@@ -337,7 +337,7 @@ fun ProfileMainScreen() {
                         )
                     ) {
                         Text(
-                            text = "Clear All Data",
+                            text = "Reset to Defaults",
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
@@ -532,6 +532,11 @@ fun ProfileScreen(
                 subtitle = "Manage expense and income categories",
                 onClick = onCategoriesClick
             )
+        }
+
+        item {
+            // Carry Forward Toggle
+            CarryForwardToggle()
         }
 
         item {
@@ -2799,6 +2804,66 @@ fun CategoriesScreen(
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun CarryForwardToggle() {
+    var isCarryForwardEnabled by remember { mutableStateOf(true) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Carry Forward",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Automatically carry forward balances",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = isCarryForwardEnabled,
+                onCheckedChange = { isCarryForwardEnabled = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
         }
     }
 }

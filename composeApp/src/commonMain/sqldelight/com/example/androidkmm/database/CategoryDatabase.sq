@@ -489,3 +489,9 @@ DELETE FROM account WHERE is_custom = 1;
 
 deleteAllCustomCategories:
 DELETE FROM category WHERE type = 'custom';
+
+deleteAllCategories:
+DELETE FROM category;
+
+deleteAllAccounts:
+DELETE FROM account;
