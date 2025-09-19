@@ -34,6 +34,7 @@ import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.utils.removeCurrencySymbols
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import kotlinx.coroutines.launch
@@ -445,7 +446,7 @@ fun EditLedgerEntryBottomSheet(
                                     try {
                                         // Get current account balance for balanceAtTime
                                         val currentAccountBalance = selectedAccount?.let { account ->
-                                            account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                                            removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                                         } ?: 0.0
                                         
                                         // Update the ledger transaction

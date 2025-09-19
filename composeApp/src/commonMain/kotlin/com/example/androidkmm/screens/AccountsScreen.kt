@@ -1192,7 +1192,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "+$${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = "+$currencySymbol${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccountsGreenSuccess

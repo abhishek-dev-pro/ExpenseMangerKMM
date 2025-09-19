@@ -16,6 +16,8 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
+import com.example.androidkmm.utils.removeCurrencySymbols
+import com.example.androidkmm.utils.getCurrencySymbol
 // import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
@@ -223,7 +225,7 @@ class SQLiteTransactionDatabase(
                 // Add amount to account balance (money received)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                     println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (INCOME: +${transaction.amount})")
@@ -233,7 +235,7 @@ class SQLiteTransactionDatabase(
                 // Subtract amount from account balance (money sent)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                     println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (EXPENSE: -${transaction.amount})")
@@ -398,7 +400,7 @@ class SQLiteTransactionDatabase(
                 // Add amount to account balance
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -407,7 +409,7 @@ class SQLiteTransactionDatabase(
                 // Subtract amount from account balance
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -418,13 +420,13 @@ class SQLiteTransactionDatabase(
                 val toAccount = transaction.transferTo?.let { getAccountByName(it) }
                 
                 if (fromAccount != null) {
-                    val currentFromBalance = fromAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                 }
                 
                 if (toAccount != null) {
-                    val currentToBalance = toAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                 }
@@ -441,7 +443,7 @@ class SQLiteTransactionDatabase(
                 // Subtract amount from account balance (reverse income)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -450,7 +452,7 @@ class SQLiteTransactionDatabase(
                 // Add amount to account balance (reverse expense)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -461,13 +463,13 @@ class SQLiteTransactionDatabase(
                 val toAccount = transaction.transferTo?.let { getAccountByName(it) }
                 
                 if (fromAccount != null) {
-                    val currentFromBalance = fromAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                 }
                 
                 if (toAccount != null) {
-                    val currentToBalance = toAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                 }
@@ -506,6 +508,9 @@ class SQLiteTransactionDatabase(
     suspend fun resetToDefaults() {
         withContext(Dispatchers.Default) {
             database.transaction {
+                // Use default currency symbol for now (will be updated when user changes currency)
+                val currencySymbol = getCurrencySymbol("INR") // Default to INR
+                
                 // Clear all data first
                 database.categoryDatabaseQueries.deleteAllTransactions()
                 database.categoryDatabaseQueries.deleteAllLedgerTransactions()
@@ -547,8 +552,8 @@ class SQLiteTransactionDatabase(
                 // Delete ALL accounts first (including default ones) to avoid constraint conflicts
                 database.categoryDatabaseQueries.deleteAllAccounts()
                 
-                // Re-insert default account (Cash)
-                database.categoryDatabaseQueries.insertAccount("1", "Cash", "₹0", "AttachMoney", "#FF4CAF50", "CASH", 0)
+                // Re-insert default account (Cash) with dynamic currency symbol
+                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "AttachMoney", "#FF4CAF50", "CASH", 0)
             }
         }
     }

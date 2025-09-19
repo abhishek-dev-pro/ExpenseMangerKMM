@@ -1531,6 +1531,11 @@ fun AddAccountBottomSheet(
     var selectedAccountType by remember { mutableStateOf("Bank Account") }
     var selectedBank by remember { mutableStateOf("HDFC Bank") }
     var initialBalance by remember { mutableStateOf("0.00") }
+    
+    // Get settings to get currency symbol
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val settings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = settings.currencySymbol
 
     val bankOptions = listOf(
         "HDFC Bank", "State Bank of India (SBI)",
@@ -1710,7 +1715,7 @@ fun AddAccountBottomSheet(
                     name = accountName.ifEmpty {
                         if (selectedAccountType == "Bank Account") selectedBank else selectedAccountType
                     },
-                    balance = "₹$initialBalance",
+                    balance = "$currencySymbol$initialBalance",
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
                         "Credit/Debit Card" -> Icons.Default.CreditCard

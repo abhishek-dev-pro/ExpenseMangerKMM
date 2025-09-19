@@ -45,6 +45,11 @@ fun InsightsScreen(
     var showSearchScreen by remember { mutableStateOf(false) }
     var searchInitialFilters by remember { mutableStateOf<FilterOptions>(FilterOptions()) }
     
+    // Get currency symbol from settings
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val settings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = settings.currencySymbol
+    
     // Function to handle category click
     val handleCategoryClick = { category: String, currentMonth: Int, currentYear: Int ->
         // Set up filters for this category and current month
@@ -109,6 +114,7 @@ fun InsightsScreen(
         when (selectedTab) {
             0 -> OverviewTab(
                 transactionDatabaseManager = transactionDatabaseManager,
+                currencySymbol = currencySymbol,
                 onCategoryClick = handleCategoryClick
             )
             1 -> GoalsTab()
@@ -132,6 +138,7 @@ fun InsightsScreen(
 @Composable
 private fun OverviewTab(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
+    currencySymbol: String = "$",
     onCategoryClick: (String, Int, Int) -> Unit = { _, _, _ -> }
 ) {
     var currentMonth by remember { mutableStateOf(9) } // September = 9
@@ -214,7 +221,8 @@ private fun OverviewTab(
                 transactionDatabaseManager = transactionDatabaseManager,
                 currentMonth = currentMonth,
                 currentYear = currentYear,
-                monthlyIncome = monthlyIncome
+                monthlyIncome = monthlyIncome,
+                currencySymbol = currencySymbol
             )
         }
         
@@ -237,6 +245,7 @@ private fun OverviewTab(
                 transactionDatabaseManager = transactionDatabaseManager,
                 currentMonth = currentMonth,
                 currentYear = currentYear,
+                currencySymbol = currencySymbol,
                 onCategoryClick = { category -> onCategoryClick(category, currentMonth, currentYear) }
             )
         }
@@ -1097,7 +1106,8 @@ private fun RecentLargeExpensesSection(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
     currentMonth: Int,
     currentYear: Int,
-    monthlyIncome: Double
+    monthlyIncome: Double,
+    currencySymbol: String = "$"
 ) {
     Column(
         modifier = Modifier.padding(horizontal = 0.dp)
@@ -1148,7 +1158,7 @@ private fun RecentLargeExpensesSection(
         
         if (recentExpenses.isNotEmpty()) {
             recentExpenses.forEachIndexed { index, expense ->
-                ExpenseCard(expense = expense)
+                ExpenseCard(expense = expense, currencySymbol = currencySymbol)
                 if (index < recentExpenses.size - 1) {
                     Spacer(Modifier.height(2.dp)) // Further reduced gap between cards
                 }
@@ -1182,7 +1192,7 @@ private fun RecentLargeExpensesSection(
 }
 
 @Composable
-private fun ExpenseCard(expense: ExpenseData) {
+private fun ExpenseCard(expense: ExpenseData, currencySymbol: String = "$") {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -1237,7 +1247,7 @@ private fun ExpenseCard(expense: ExpenseData) {
             
             // Amount
             Text(
-                text = "-$${String.format("%.2f", expense.amount)}",
+                text = "-$currencySymbol${String.format("%.2f", expense.amount)}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFF44336)
@@ -1288,6 +1298,7 @@ private fun SpendingByCategorySection(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
     currentMonth: Int,
     currentYear: Int,
+    currencySymbol: String = "$",
     onCategoryClick: (String) -> Unit = {}
 ) {
     Column {
@@ -1337,7 +1348,7 @@ private fun SpendingByCategorySection(
                 
                 if (categoryData.isNotEmpty()) {
                     // Donut Chart
-                    SpendingDonutChart(categoryData = categoryData)
+                    SpendingDonutChart(categoryData = categoryData, currencySymbol = currencySymbol)
                     
                     Spacer(Modifier.height(20.dp))
                     
@@ -1351,6 +1362,7 @@ private fun SpendingByCategorySection(
                             category = category,
                             amount = amount,
                             percentage = percentage,
+                            currencySymbol = currencySymbol,
                             onCategoryClick = {
                                 onCategoryClick(category)
                             }
@@ -1381,7 +1393,7 @@ private fun SpendingByCategorySection(
 }
 
 @Composable
-private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>) {
+private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currencySymbol: String = "$") {
     val colors = listOf(
         Color(0xFF4CAF50), // Green
         Color(0xFFF44336), // Red
@@ -1476,7 +1488,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "$${String.format("%.0f", totalAmount)}",
+                        text = "$currencySymbol${String.format("%.0f", totalAmount)}",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -1531,6 +1543,7 @@ private fun CategorySpendingItem(
     category: String,
     amount: Double,
     percentage: Int,
+    currencySymbol: String = "$",
     onCategoryClick: () -> Unit
 ) {
     Card(
@@ -1580,7 +1593,7 @@ private fun CategorySpendingItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "$${String.format("%.2f", amount)} • $percentage%",
+                    text = "$currencySymbol${String.format("%.2f", amount)} • $percentage%",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
