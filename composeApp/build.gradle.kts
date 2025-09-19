@@ -71,11 +71,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.example.androidkmm"
+    namespace = "com.moneymate.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.example.androidkmm"
+        applicationId = "com.moneymate.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -115,7 +115,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.example.androidkmm"
+            packageName = "com.moneymate.app"
             packageVersion = "1.0.0"
         }
     }

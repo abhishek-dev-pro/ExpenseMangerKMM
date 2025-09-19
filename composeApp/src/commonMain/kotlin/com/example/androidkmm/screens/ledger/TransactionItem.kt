@@ -182,17 +182,6 @@ fun TransactionItem(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    IconButton(
-                        onClick = { },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = LedgerTheme.textSecondary(),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
                     
                     IconButton(
                         onClick = onDelete,

@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		0104C90C193FB2EB67620FD6 /* AndroidKMM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AndroidKMM.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0104C90C193FB2EB67620FD6 /* MoneyMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoneyMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		07BECA26908BFB0E235BE515 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0104C90C193FB2EB67620FD6 /* AndroidKMM.app */,
+				0104C90C193FB2EB67620FD6 /* MoneyMate.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 0104C90C193FB2EB67620FD6 /* AndroidKMM.app */;
+			productReference = 0104C90C193FB2EB67620FD6 /* MoneyMate.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
