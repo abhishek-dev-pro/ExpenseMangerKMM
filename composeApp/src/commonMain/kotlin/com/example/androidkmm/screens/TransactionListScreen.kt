@@ -3202,7 +3202,7 @@ fun EditTransactionScreen(
                                 TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
                                 TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.TRANSFER
                             },
-                            category = selectedCategoryName,
+                            category = if (selectedType == TransactionType.TRANSFER) "" else selectedCategoryName,
                             account = selectedAccountName,
                             transferTo = selectedToAccountName.ifEmpty { null }
                         )
@@ -3308,75 +3308,152 @@ fun EditTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Category & Account Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Category
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Category",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { showCategorySheet = true }
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (selectedCategoryName.isNotEmpty()) {
-                            Text(
-                                text = selectedCategoryName,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 14.sp
-                            )
-                        } else {
-                            Text(
-                                text = "Select",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 14.sp
-                            )
+            // Category & Account Row (or From/To Account for Transfer)
+            if (selectedType == TransactionType.TRANSFER) {
+                // Transfer: Show From Account and To Account
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // From Account
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "From Account",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { showFromAccountSheet = true }
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (selectedAccountName.isNotEmpty()) {
+                                Text(
+                                    text = selectedAccountName,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Select",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+
+                    // To Account
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "To Account",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { showToAccountSheet = true }
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (selectedToAccountName.isNotEmpty()) {
+                                Text(
+                                    text = selectedToAccountName,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Select",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                // Income/Expense: Show Category and Account
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Category
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Category",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { showCategorySheet = true }
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (selectedCategoryName.isNotEmpty()) {
+                                Text(
+                                    text = selectedCategoryName,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Select",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
 
-                // Account
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Account",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { showFromAccountSheet = true }
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (selectedAccountName.isNotEmpty()) {
-                            Text(
-                                text = selectedAccountName, // Only account name, no bank name
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 14.sp
-                            )
-                        } else {
-                            Text(
-                                text = "Select",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 14.sp
-                            )
+                    // Account
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Account",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { showFromAccountSheet = true }
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (selectedAccountName.isNotEmpty()) {
+                                Text(
+                                    text = selectedAccountName, // Only account name, no bank name
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
+                                )
+                            } else {
+                                Text(
+                                    text = "Select",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -3501,6 +3578,19 @@ fun EditTransactionScreen(
             onAccountSelected = { account: com.example.androidkmm.models.Account ->
                 selectedAccountName = account.name
                 showFromAccountSheet = false
+            },
+            accountDatabaseManager = accountDatabaseManager
+        )
+    }
+
+    if (showToAccountSheet) {
+        AccountSelectionBottomSheet(
+            onDismiss = { showToAccountSheet = false },
+            title = "Select To Account",
+            subtitle = "Choose destination account",
+            onAccountSelected = { account: com.example.androidkmm.models.Account ->
+                selectedToAccountName = account.name
+                showToAccountSheet = false
             },
             accountDatabaseManager = accountDatabaseManager
         )
