@@ -490,31 +490,36 @@ fun ProfileScreen(
         }
 
         item {
-            MenuCard(
-                icon = Icons.Default.Group,
-                title = "Groups",
-                subtitle = "Manage expense groups and shared expenses",
-                onClick = onGroupsClick
-            )
+            // Currency Setting
+            CurrencySetting()
         }
 
-        item {
-            MenuCard(
-                icon = Icons.Default.Security,
-                title = "Privacy & Security",
-                subtitle = "Account security settings",
-                onClick = { }
-            )
-        }
+//        item {
+//            MenuCard(
+//                icon = Icons.Default.Group,
+//                title = "Groups",
+//                subtitle = "Manage expense groups and shared expenses",
+//                onClick = onGroupsClick
+//            )
+//        }
 
-        item {
-            MenuCard(
-                icon = Icons.Default.Settings,
-                title = "Customize",
-                subtitle = "Customize app settings and preferences",
-                onClick = onCustomizeClick
-            )
-        }
+//        item {
+//            MenuCard(
+//                icon = Icons.Default.Security,
+//                title = "Privacy & Security",
+//                subtitle = "Account security settings",
+//                onClick = { }
+//            )
+//        }
+//
+//        item {
+//            MenuCard(
+//                icon = Icons.Default.Settings,
+//                title = "Customize",
+//                subtitle = "Customize app settings and preferences",
+//                onClick = onCustomizeClick
+//            )
+//        }
 
         item {
             // Account Information
