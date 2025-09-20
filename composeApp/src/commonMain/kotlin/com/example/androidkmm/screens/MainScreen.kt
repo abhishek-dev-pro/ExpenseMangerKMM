@@ -2,7 +2,7 @@ package com.example.androidkmm.screens
 
 import ProfileMainScreen
 import TransactionsScreen
-import AddTransactionBottomSheet
+import AddTransactionScreen
 // CreateGroupScreen is now in GroupScreen.kt
 import com.example.androidkmm.screens.ledger.LedgerMainScreen
 import com.example.androidkmm.screens.ledger.AddLedgerEntryBottomSheet
@@ -132,9 +132,9 @@ fun MainScreen() {
                 }
             }
             
-            // Add Transaction Bottom Sheet
+            // Add Transaction Screen
             if (showAddTransactionSheet) {
-                AddTransactionBottomSheet(
+                AddTransactionScreen(
                     onDismiss = { 
                         showAddTransactionSheet = false
                         defaultTransactionType = null

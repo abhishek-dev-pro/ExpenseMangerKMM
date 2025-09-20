@@ -17,9 +17,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.animation.*
@@ -49,6 +52,10 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.screens.EditTransferTransactionScreen
@@ -308,9 +315,9 @@ fun TransactionsScreen(
 
     }
 
-    // Show bottom sheet
+    // Show full screen add transaction
     if (showAddSheet) {
-        AddTransactionBottomSheet(
+        AddTransactionScreen(
             onDismiss = { showAddSheet = false },
             onSave = { transactionFormData ->
                 // Convert TransactionFormData to Transaction and save to database
@@ -700,12 +707,7 @@ private fun SearchAndFilter(
         OutlinedTextField(
             value = "",
             onValueChange = { },
-            placeholder = {
-                Text(
-                    text = "Search transactions...",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            placeholder = { Text("Search transactions...") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -1077,16 +1079,13 @@ fun TransactionCard(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun AddTransactionBottomSheet(
+fun AddTransactionScreen(
     onDismiss: () -> Unit,
     onSave: (TransactionFormData) -> Unit,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     defaultTransactionType: com.example.androidkmm.models.TransactionType? = null
 ) {
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
     var formData by remember { mutableStateOf(TransactionFormData()) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
@@ -1115,34 +1114,53 @@ fun AddTransactionBottomSheet(
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .width(36.dp)
-                    .height(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(2.dp)
+    // Full screen content
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Header with back button
+        TopAppBar(
+            title = { 
+                Text(
+                    text = "Add Transaction",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        )
+        
+        // Scrollable content - using Column with verticalScroll instead of LazyColumn
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AddTransactionContent(
+                formData = formData,
+                onFormDataChange = { formData = it },
+                onShowCategorySheet = { showCategorySheet = true },
+                onShowFromAccountSheet = { showFromAccountSheet = true },
+                onShowToAccountSheet = { showToAccountSheet = true },
+                onShowDatePicker = { showDatePicker = true },
+                onShowTimePicker = { showTimePicker = true },
+                onSave = { onSave(formData) },
+                onDismiss = onDismiss
             )
         }
-    ) {
-        AddTransactionContent(
-            formData = formData,
-            onFormDataChange = { formData = it },
-            onShowCategorySheet = { showCategorySheet = true },
-            onShowFromAccountSheet = { showFromAccountSheet = true },
-            onShowToAccountSheet = { showToAccountSheet = true },
-            onShowDatePicker = { showDatePicker = true },
-            onShowTimePicker = { showTimePicker = true },
-            onSave = { onSave(formData) },
-            onDismiss = onDismiss
-        )
     }
 
     // Category Selection Sheet
@@ -1288,6 +1306,65 @@ private fun AddTransactionContent(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Get screen configuration for responsive design
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+    val screenWidth = configuration.screenWidthDp
+    val density = LocalDensity.current
+    
+    // Determine screen size category - FIXED for proper small phone detection
+    val isSmallScreen = screenHeight < 600  // Small phones like iPhone SE, Pixel 4a
+    val isMediumScreen = screenHeight >= 600 && screenHeight < 700  // Medium phones
+    val isLargeScreen = screenHeight >= 700  // Large phones like iPhone Pro Max
+    
+    // Dynamic sizing based on screen size - MUCH MORE AGGRESSIVE for small phones
+    val spacing = when {
+        isSmallScreen -> 16.dp  // Much more spacing
+        isMediumScreen -> 20.dp
+        else -> 24.dp
+    }
+    
+    val titleFontSize = when {
+        isSmallScreen -> 12.sp  // Much smaller title
+        isMediumScreen -> 14.sp
+        else -> 16.sp
+    }
+    
+    val labelFontSize = when {
+        isSmallScreen -> 10.sp  // Much smaller labels
+        isMediumScreen -> 12.sp
+        else -> 14.sp
+    }
+    
+    val inputHeight = when {
+        isSmallScreen -> 32.dp  // Much smaller inputs
+        isMediumScreen -> 40.dp
+        else -> 48.dp
+    }
+    
+    val receiptHeight = when {
+        isSmallScreen -> 30.dp  // Much smaller receipt area
+        isMediumScreen -> 40.dp
+        else -> 50.dp
+    }
+    
+    val buttonHeight = when {
+        isSmallScreen -> 48.dp  // Bigger button
+        isMediumScreen -> 52.dp
+        else -> 56.dp
+    }
+    
+    val buttonPadding = when {
+        isSmallScreen -> 8.dp  // Less padding
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    
+    val amountFontSize = when {
+        isSmallScreen -> 36.sp  // Much bigger amount text
+        isMediumScreen -> 40.sp
+        else -> 44.sp
+    }
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     
@@ -1410,248 +1487,218 @@ private fun AddTransactionContent(
             onSave()
         }
     }
-    LazyColumn(
+    
+    // Simple Column layout without LazyColumn
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
-            .navigationBarsPadding(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(top = 0.dp)  // Remove top padding completely
+            .padding(horizontal = if (isSmallScreen) 8.dp else 20.dp, vertical = if (isSmallScreen) 1.dp else 8.dp)
+            .padding(bottom = if (isSmallScreen) 120.dp else 140.dp),  // Account for bottom nav bar
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
-        item {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        // Transaction Type Selector
+        TransactionTypeSelector(
+            selectedType = formData.type,
+            onTypeSelected = { type ->
+                // Clear category when transaction type changes to ensure proper filtering
+                onFormDataChange(formData.copy(
+                    type = type,
+                    category = null
+                ))
+            },
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen
+        )
 
+        // Amount Input
+        AmountInputSection(
+            amount = formData.amount,
+            onAmountChange = { amount ->
+                onFormDataChange(formData.copy(amount = amount))
+            },
+            errorMessage = validationErrors["amount"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            titleFontSize = titleFontSize,
+            amountFontSize = amountFontSize
+        )
 
-                Column(horizontalAlignment = Alignment.Start) {
-                    Text(
-                        text = "Add Transaction",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    val subtitle = when (formData.type) {
-                        TransactionType.EXPENSE -> "Track your expense"
-                        TransactionType.INCOME -> "Track your income"
-                        TransactionType.TRANSFER -> "Track your transfer"
-                    }
-                    Text(
-                        text = subtitle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
-                    )
-                }
-
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        item {
-            // Transaction Type Selector
-            TransactionTypeSelector(
-                selectedType = formData.type,
-                onTypeSelected = { type ->
-                    // Clear category when transaction type changes to ensure proper filtering
-                    onFormDataChange(formData.copy(
-                        type = type,
-                        category = null
-                    ))
-                }
-            )
-        }
-
-        item {
-            // Amount Input
-            AmountInputSection(
-                amount = formData.amount,
-                onAmountChange = { amount ->
-                    onFormDataChange(formData.copy(amount = amount))
-                },
-                errorMessage = validationErrors["amount"]
-            )
-        }
-
-        item {
-            // Account Selection - different for transfer vs others
-            if (formData.type == TransactionType.TRANSFER) {
-                // From Account and To Account for transfers
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "From Account",
-                        selectedText = formData.account?.name ?: "Select",
-                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowFromAccountSheet
-                    )
-
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "To Account",
-                        selectedText = formData.toAccount?.name ?: "Select",
-                        icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowToAccountSheet
-                    )
-                }
-            } else {
-                // Category and Account for income/expense
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "Category",
-                        selectedText = formData.category?.name ?: "Select",
-                        icon = formData.category?.icon ?: Icons.Default.Category,
-                        iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowCategorySheet
-                    )
-
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "Account",
-                        selectedText = formData.account?.name ?: "Select",
-                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowFromAccountSheet
-                    )
-                }
-            }
-        }
-
-        item {
-            // Title Input
-            InputField(
-                label = "Title",
-                value = formData.title,
-                onValueChange = { title ->
-                    // Limit title to 30 characters
-                    val limitedTitle = if (title.length <= 30) title else title.take(30)
-                    onFormDataChange(formData.copy(title = limitedTitle))
-                },
-                placeholder = "e.g., Lunch at Subway",
-                errorMessage = validationErrors["title"]
-            )
-        }
-
-        item {
-            // Date and Time
-            Text(
-                text = "Date & Time",
-                            color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(Modifier.height(4.dp))
-
+        // Account Selection - different for transfer vs others
+        if (formData.type == TransactionType.TRANSFER) {
+            // From Account and To Account for transfers
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DateTimeSelector(
-                    modifier = Modifier.weight(1f),
-                    value = if (formData.date.isEmpty()) "Today" else {
-                        try {
-                            val parts = formData.date.split("-")
-                            if (parts.size == 3) {
-                                val year = parts[0]
-                                val month = parts[1]
-                                val day = parts[2]
-                                "$day/$month/$year"
-                            } else {
-                                formData.date
-                            }
-                        } catch (e: Exception) {
-                            formData.date
-                        }
-                    },
-                    icon = Icons.Default.CalendarMonth,
-                    isSelected = true,
-                    onClick = onShowDatePicker
-                )
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "From Account",
+                                selectedText = formData.account?.name ?: "Select",
+                                icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowFromAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
 
-                DateTimeSelector(
-                    modifier = Modifier.weight(1f),
-                    value = formData.time.ifEmpty { "01:31" },
-                    icon = Icons.Default.AccessTime,
-                    isSelected = true,
-                    onClick = onShowTimePicker
-                )
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "To Account",
+                                selectedText = formData.toAccount?.name ?: "Select",
+                                icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowToAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
+            }
+        } else {
+            // Category and Account for income/expense
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "Category",
+                                selectedText = formData.category?.name ?: "Select",
+                                icon = formData.category?.icon ?: Icons.Default.Category,
+                                iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowCategorySheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
+
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "Account",
+                                selectedText = formData.account?.name ?: "Select",
+                                icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowFromAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
             }
         }
 
-        item {
-            // Description Input
-            InputField(
-                label = "Description (Optional)",
-                value = formData.description,
-                onValueChange = { description ->
-                    // Limit description to 75 characters
-                    val limitedDescription = if (description.length <= 75) description else description.take(75)
-                    onFormDataChange(formData.copy(description = limitedDescription))
+        // Title Input
+        InputField(
+            label = "Title",
+            value = formData.title,
+            onValueChange = { title ->
+                // Limit title to 30 characters
+                val limitedTitle = if (title.length <= 30) title else title.take(30)
+                onFormDataChange(formData.copy(title = limitedTitle))
+            },
+            placeholder = "e.g., Lunch at Subway",
+            errorMessage = validationErrors["title"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            labelFontSize = labelFontSize,
+            inputHeight = inputHeight
+        )
+
+        // Date and Time
+        Text(
+            text = "Date & Time",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
+            fontWeight = FontWeight.Medium
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            DateTimeSelector(
+                modifier = Modifier.weight(1f),
+                value = if (formData.date.isEmpty()) "Today" else {
+                    try {
+                        val parts = formData.date.split("-")
+                        if (parts.size == 3) {
+                            val year = parts[0]
+                            val month = parts[1]
+                            val day = parts[2]
+                            "$day/$month/$year"
+                        } else {
+                            formData.date
+                        }
+                    } catch (e: Exception) {
+                        formData.date
+                    }
                 },
-                placeholder = "e.g., we ate two each"
+                icon = Icons.Default.CalendarMonth,
+                isSelected = true,
+                onClick = onShowDatePicker,
+                isSmallScreen = isSmallScreen,
+                isMediumScreen = isMediumScreen,
+                inputHeight = inputHeight
+            )
+
+            DateTimeSelector(
+                modifier = Modifier.weight(1f),
+                value = formData.time.ifEmpty { "01:31" },
+                icon = Icons.Default.AccessTime,
+                isSelected = true,
+                onClick = onShowTimePicker,
+                isSmallScreen = isSmallScreen,
+                isMediumScreen = isMediumScreen,
+                inputHeight = inputHeight
             )
         }
 
-        item {
-            // Receipt Upload
-            ReceiptUploadSection()
-        }
+        // Description Input
+        InputField(
+            label = "Description (Optional)",
+            value = formData.description,
+            onValueChange = { description ->
+                // Limit description to 75 characters
+                val limitedDescription = if (description.length <= 75) description else description.take(75)
+                onFormDataChange(formData.copy(description = limitedDescription))
+            },
+            placeholder = "e.g., we ate two each",
+            errorMessage = validationErrors["description"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            labelFontSize = labelFontSize,
+            inputHeight = inputHeight
+        )
 
-        item {
-            // Save Button
-            val isReady = isFormReady()
-            Button(
-                onClick = { handleSave() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isReady) {
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                    },
-                    contentColor = if (isReady) {
-                        MaterialTheme.colorScheme.surface
-                    } else {
-                        MaterialTheme.colorScheme.onBackground
-                    }
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Save Transaction",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        // Receipt Upload
+        ReceiptUploadSection(
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            receiptHeight = receiptHeight,
+            labelFontSize = labelFontSize
+        )
+
+        // Save Button - Always visible with prominent styling
+        Button(
+            onClick = { handleSave() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(buttonHeight),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3) // Bright blue color
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = "Add Transaction",
+                color = Color.White,
+                fontSize = titleFontSize,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -1659,50 +1706,85 @@ private fun AddTransactionContent(
 @Composable
 private fun TransactionTypeSelector(
     selectedType: TransactionType,
-    onTypeSelected: (TransactionType) -> Unit
+    onTypeSelected: (TransactionType) -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false
 ) {
-    Row(
+    val toggleHeight = when {
+        isSmallScreen -> 32.dp  // Much shorter
+        isMediumScreen -> 36.dp
+        else -> 40.dp
+    }
+    
+    val toggleFontSize = when {
+        isSmallScreen -> 12.sp
+        isMediumScreen -> 14.sp
+        else -> 16.sp
+    }
+    
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .fillMaxWidth(0.9f)  // 90% width
+            .height(toggleHeight)
+            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(2.dp)
     ) {
-        TransactionType.values().forEach { type ->
-            val isSelected = selectedType == type
-            val (icon, text) = when (type) {
-                TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
-                TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
-                TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
-            }
+        // Sliding background for selected item
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(1f / 3f)  // 1/3 width for each option
+                .offset(
+                    x = when (selectedType) {
+                        TransactionType.EXPENSE -> 0.dp
+                        TransactionType.INCOME -> (toggleHeight * 1.1f)  // Move to middle position
+                        TransactionType.TRANSFER -> (toggleHeight * 2.2f)  // Move to right position
+                    }
+                )
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0xFF2196F3))
+        )
+        
+        // Toggle options
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TransactionType.values().forEach { type ->
+                val isSelected = selectedType == type
+                val (icon, text) = when (type) {
+                    TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
+                    TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
+                    TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
+                }
 
-            Button(
-                onClick = { onTypeSelected(type) },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
-                    contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = if (isSelected) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = text,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = text,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable { onTypeSelected(type) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = text,
+                            modifier = Modifier.size(if (isSmallScreen) 14.dp else 16.dp),
+                            tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(if (isSmallScreen) 4.dp else 6.dp))
+                        Text(
+                            text = text,
+                            fontSize = toggleFontSize,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }
@@ -1712,53 +1794,52 @@ private fun TransactionTypeSelector(
 private fun AmountInputSection(
     amount: String,
     onAmountChange: (String) -> Unit,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    titleFontSize: TextUnit = 18.sp,
+    amountFontSize: TextUnit = 20.sp
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
+        BasicTextField(
             value = amount,
-            onValueChange = { newValue ->
+            onValueChange = { newValue: String ->
                 // Only allow numbers and decimal point
-                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                val filteredValue = newValue.filter { char: Char -> char.isDigit() || char == '.' }
                 // Ensure only one decimal point
-                val decimalCount = filteredValue.count { it == '.' }
+                val decimalCount = filteredValue.count { char: Char -> char == '.' }
                 if (decimalCount <= 1) {
                     onAmountChange(filteredValue)
                 }
             },
+            modifier = Modifier.fillMaxWidth(),
             textStyle = TextStyle(
-                fontSize = 36.sp,
+                fontSize = amountFontSize,
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            isError = errorMessage != null,
-            placeholder = {
-                Text(
-                    text = "0.00",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Light,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth() // ensures proper centering
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.onBackground,
-                focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                errorBorderColor = Color.Red,
-                errorContainerColor = Color.Transparent
-            ),
-            modifier = Modifier.wrapContentWidth()
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (amount.isEmpty()) {
+                        Text(
+                            text = "0.00",
+                            fontSize = amountFontSize,
+                            fontWeight = FontWeight.Light,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    innerTextField()
+                }
+            }
         )
 
         Text(
@@ -1786,7 +1867,11 @@ private fun CategoryAccountSelector(
     selectedText: String,
     icon: ImageVector,
     iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    labelFontSize: TextUnit = 14.sp,
+    inputHeight: Dp = 56.dp
 ) {
     Column(
         modifier = modifier,
@@ -1794,14 +1879,16 @@ private fun CategoryAccountSelector(
     ) {
         Text(
             text = title,
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
         Button(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(inputHeight),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -1839,7 +1926,11 @@ private fun InputField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    labelFontSize: TextUnit = 14.sp,
+    inputHeight: Dp = 56.dp
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -1847,21 +1938,18 @@ private fun InputField(
         Text(
             text = label,
             color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(inputHeight),
+            placeholder = { Text(placeholder) },
             isError = errorMessage != null,
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -1893,11 +1981,14 @@ private fun DateTimeSelector(
     value: String,
     icon: ImageVector,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    inputHeight: Dp = 40.dp
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(40.dp).border(
+        modifier = modifier.height(inputHeight).border(
             width = 1.dp, // very thin
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), // white with alpha
             shape = RoundedCornerShape(12.dp)
@@ -1929,7 +2020,11 @@ private fun DateTimeSelector(
 
 @Composable
 private fun ReceiptUploadSection(
-    onReceiptSelected: (String) -> Unit = {}
+    onReceiptSelected: (String) -> Unit = {},
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    receiptHeight: Dp = 80.dp,
+    labelFontSize: TextUnit = 14.sp
 ) {
     var showImagePicker by remember { mutableStateOf(false) }
     var selectedImagePath by remember { mutableStateOf<String?>(null) }
@@ -1939,8 +2034,8 @@ private fun ReceiptUploadSection(
     ) {
         Text(
             text = "Receipt (Optional)",
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
@@ -2001,11 +2096,11 @@ private fun ReceiptUploadSection(
             }
         } else {
             // Show upload button
-        Button(
+Button(
                 onClick = { showImagePicker = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(receiptHeight)
                 .border(
                     width = 2.dp,
                     brush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
@@ -3738,12 +3833,7 @@ fun EditTransactionScreen(
                         val limitedTitle = if (it.length <= 30) it else it.take(30)
                         title = limitedTitle
                     },
-                    placeholder = { 
-                        Text(
-                            text = "Lunch at Subway",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ) 
-                    },
+                    placeholder = { Text("Lunch at Subway") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.outline,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -3772,12 +3862,7 @@ fun EditTransactionScreen(
                         val limitedDescription = if (it.length <= 75) it else it.take(75)
                         description = limitedDescription
                     },
-                    placeholder = { 
-                        Text(
-                            text = "we ate two each",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ) 
-                    },
+                    placeholder = { Text("we ate two each") },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.outline,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -3975,12 +4060,7 @@ fun AddCategoryBottomSheetForTransaction(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            placeholder = {
-                Text(
-                    text = "Enter category name",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            placeholder = { Text("Enter category name") },
             textStyle = TextStyle(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp
