@@ -88,7 +88,7 @@ fun PersonLedgerItem(
                     color = LedgerTheme.textPrimary()
                 )
                 Text(
-                    text = "${person.lastTransactionDate} • ${person.transactionCount} transaction${if (person.transactionCount > 1) "s" else ""}",
+                    text = "${person.lastTransactionDate} • ${person.transactionCount} entr${if (person.transactionCount > 1) "ies" else "y"}",
                     fontSize = 14.sp,
                     color = LedgerTheme.textSecondary()
                 )

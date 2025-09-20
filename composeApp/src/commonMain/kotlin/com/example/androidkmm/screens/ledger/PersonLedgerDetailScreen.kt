@@ -75,14 +75,19 @@ fun PersonLedgerDetailScreen(
     
     // Update person data when transactions change (this will trigger balance recalculation)
     LaunchedEffect(person.id, transactions) {
+        println("DEBUG: PersonLedgerDetailScreen - Transactions changed, updating person data")
         val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
         if (latestPerson != null) {
+            println("DEBUG: PersonLedgerDetailScreen - Updated person balance: ${latestPerson.balance}")
             updatedPerson = latestPerson
         }
     }
     
     var showSentBottomSheet by remember { mutableStateOf(false) }
     var showReceivedBottomSheet by remember { mutableStateOf(false) }
+    var showEditBottomSheet by remember { mutableStateOf(false) }
+    var transactionToEdit by remember { mutableStateOf<LedgerTransaction?>(null) }
+    var selectedTransactionType by remember { mutableStateOf("sent") } // "sent" or "received"
 
     Column(
         modifier = Modifier
@@ -137,7 +142,7 @@ fun PersonLedgerDetailScreen(
                     color = LedgerTheme.textPrimary()
                 )
                 Text(
-                    text = "${updatedPerson.transactionCount} transactions",
+                    text = "${updatedPerson.transactionCount} entr${if (updatedPerson.transactionCount > 1) "ies" else "y"}",
                     fontSize = 14.sp,
                     color = LedgerTheme.textSecondary()
                 )
@@ -229,53 +234,91 @@ fun PersonLedgerDetailScreen(
                 .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // You Sent Button
             Button(
-                onClick = { showSentBottomSheet = true },
+                onClick = { 
+                    selectedTransactionType = "sent"
+                    showSentBottomSheet = true 
+                },
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp),
+                    .height(56.dp)
+                    .border(
+                        width = 1.dp,
+                        color = if (selectedTransactionType == "sent") 
+                            Color(0xFF2196F3) 
+                        else 
+                            Color(0xFF4A4A4A),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2A1919)
+                    containerColor = if (selectedTransactionType == "sent") 
+                        Color(0xFF2196F3) 
+                    else 
+                        Color(0xFF1A1A1A)
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 2.dp
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowUpward,
                     contentDescription = null,
-                    tint = LedgerTheme.redAmount,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "You Sent",
-                    color = LedgerTheme.redAmount,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
+            // You Received Button
             Button(
-                onClick = { showReceivedBottomSheet = true },
+                onClick = { 
+                    selectedTransactionType = "received"
+                    showReceivedBottomSheet = true 
+                },
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp),
+                    .height(56.dp)
+                    .border(
+                        width = 1.dp,
+                        color = if (selectedTransactionType == "received") 
+                            Color(0xFF4CAF50) 
+                        else 
+                            Color(0xFF4A4A4A),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0F2419)
+                    containerColor = if (selectedTransactionType == "received") 
+                        Color(0xFF4CAF50) 
+                    else 
+                        Color(0xFF1A1A1A)
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 2.dp
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowDownward,
                     contentDescription = null,
-                    tint = LedgerTheme.greenAmount,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "You Received",
-                    color = LedgerTheme.greenAmount,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -353,6 +396,10 @@ fun PersonLedgerDetailScreen(
                     transaction = transaction,
                     balanceAtTransaction = balanceAtTransaction,
                     isHighlighted = isHighlighted,
+                    onEdit = {
+                        transactionToEdit = transaction
+                        showEditBottomSheet = true
+                    },
                     onDelete = {
                         coroutineScope.launch {
                             // Delete the ledger transaction and update person balance
@@ -422,6 +469,25 @@ fun PersonLedgerDetailScreen(
             },
             person = updatedPerson,
             transactionType = TransactionType.RECEIVED
+        )
+    }
+    
+    // Show edit transaction bottom sheet
+    if (showEditBottomSheet && transactionToEdit != null) {
+        EditLedgerEntryBottomSheet(
+            onDismiss = { 
+                showEditBottomSheet = false
+                transactionToEdit = null
+                // Refresh person data when bottom sheet is dismissed
+                coroutineScope.launch {
+                    val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
+                    if (latestPerson != null) {
+                        updatedPerson = latestPerson
+                    }
+                }
+            },
+            transaction = transactionToEdit!!,
+            person = updatedPerson
         )
     }
 }

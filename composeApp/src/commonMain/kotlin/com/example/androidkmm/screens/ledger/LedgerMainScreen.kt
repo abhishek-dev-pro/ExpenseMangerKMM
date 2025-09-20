@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -163,7 +164,7 @@ fun LedgerMainScreen(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
                     tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -286,7 +287,7 @@ fun LedgerMainScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         // Search Bar and Filter
         Row(
@@ -303,9 +304,9 @@ fun LedgerMainScreen(
                     Text(
                         text = "Search people",
                         color = LedgerTheme.textSecondary(),
-                        fontSize = 13.sp,
+                        fontSize = 14.sp,
                         maxLines = 1,
-                        modifier = Modifier.padding(vertical = 2.dp)
+                        modifier = Modifier.padding(vertical = 1.dp)
                     )
                 },
                 leadingIcon = {
@@ -313,11 +314,11 @@ fun LedgerMainScreen(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
                         tint = LedgerTheme.textSecondary(),
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 },
                 textStyle = androidx.compose.ui.text.TextStyle(
-                    fontSize = 13.sp
+                    fontSize = 14.sp
                 ),
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -330,7 +331,12 @@ fun LedgerMainScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .wrapContentHeight()
+                    .height(48.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
             )
             
             // Filter Dropdown
@@ -340,7 +346,12 @@ fun LedgerMainScreen(
                     onClick = { expanded = true },
                     modifier = Modifier
                         .height(48.dp)
-                        .width(100.dp),
+                        .width(100.dp)
+                        .border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = LedgerTheme.textPrimary()
@@ -350,11 +361,11 @@ fun LedgerMainScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
                             text = selectedFilter,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -363,7 +374,7 @@ fun LedgerMainScreen(
                             imageVector = Icons.Default.ArrowDownward,
                             contentDescription = null,
                             tint = LedgerTheme.textSecondary(),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -406,7 +417,7 @@ fun LedgerMainScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Filter and People Section
         Row(
@@ -462,18 +473,90 @@ fun LedgerMainScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // People List
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp)
-        ) {
-            items(people) { person ->
-                PersonLedgerItem(
-                    person = person,
-                    onClick = { selectedPerson = person }
+        // People List or Empty State
+        if (people.isEmpty()) {
+            // Empty State
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 48.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Receipt Icon
+                Icon(
+                    imageVector = Icons.Default.Receipt,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(80.dp)
                 )
-                if (person != people.last()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // "No ledger entries yet" text
+                Text(
+                    text = "No ledger entries yet",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // "No ledger entries found for this month" text
+                Text(
+                    text = "No ledger entries found for this month",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Add Ledger Entry Button
+                Button(
+                    onClick = { showAddBottomSheet = true },
+                    modifier = Modifier
+                        .width(240.dp)
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Add Ledger Entry",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+        } else {
+            // People List
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp)
+            ) {
+                items(people) { person ->
+                    PersonLedgerItem(
+                        person = person,
+                        onClick = { selectedPerson = person }
+                    )
+                    if (person != people.last()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }

@@ -27,6 +27,7 @@ fun TransactionItem(
     transaction: LedgerTransaction,
     balanceAtTransaction: Double,
     onDelete: () -> Unit = {},
+    onEdit: () -> Unit = {},
     isHighlighted: Boolean = false
 ) {
     // Get currency symbol from settings
@@ -182,7 +183,20 @@ fun TransactionItem(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    // Edit button
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = Color(0xFF2196F3),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                     
+                    // Delete button
                     IconButton(
                         onClick = onDelete,
                         modifier = Modifier.size(24.dp)

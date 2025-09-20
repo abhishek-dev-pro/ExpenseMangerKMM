@@ -16,6 +16,8 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
+import com.example.androidkmm.utils.removeCurrencySymbols
+import com.example.androidkmm.utils.getCurrencySymbol
 // import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
@@ -213,6 +215,39 @@ class SQLiteTransactionDatabase(
         }
     }
     
+    suspend fun updateAccountBalancesForLedgerTransaction(
+        transaction: Transaction,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        // Update account balances based on transaction type
+        when (transaction.type) {
+            com.example.androidkmm.models.TransactionType.INCOME -> {
+                // Add amount to account balance (money received)
+                val account = getAccountByName(transaction.account)
+                if (account != null) {
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                    val newBalance = currentBalance + transaction.amount
+                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (INCOME: +${transaction.amount})")
+                }
+            }
+            com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                // Subtract amount from account balance (money sent)
+                val account = getAccountByName(transaction.account)
+                if (account != null) {
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                    val newBalance = currentBalance - transaction.amount
+                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (EXPENSE: -${transaction.amount})")
+                }
+            }
+            com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                // Handle transfer logic if needed
+                println("DEBUG: Transfer transaction - no account balance update needed for ledger")
+            }
+        }
+    }
+    
     fun updateTransaction(transaction: Transaction, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         scope.launch {
             try {
@@ -365,7 +400,7 @@ class SQLiteTransactionDatabase(
                 // Add amount to account balance
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -374,7 +409,7 @@ class SQLiteTransactionDatabase(
                 // Subtract amount from account balance
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -385,13 +420,13 @@ class SQLiteTransactionDatabase(
                 val toAccount = transaction.transferTo?.let { getAccountByName(it) }
                 
                 if (fromAccount != null) {
-                    val currentFromBalance = fromAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                 }
                 
                 if (toAccount != null) {
-                    val currentToBalance = toAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                 }
@@ -408,7 +443,7 @@ class SQLiteTransactionDatabase(
                 // Subtract amount from account balance (reverse income)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -417,7 +452,7 @@ class SQLiteTransactionDatabase(
                 // Add amount to account balance (reverse expense)
                 val account = getAccountByName(transaction.account)
                 if (account != null) {
-                    val currentBalance = account.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
                 }
@@ -428,13 +463,13 @@ class SQLiteTransactionDatabase(
                 val toAccount = transaction.transferTo?.let { getAccountByName(it) }
                 
                 if (fromAccount != null) {
-                    val currentFromBalance = fromAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                 }
                 
                 if (toAccount != null) {
-                    val currentToBalance = toAccount.balance.replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                 }
@@ -442,7 +477,7 @@ class SQLiteTransactionDatabase(
         }
     }
     
-    private suspend fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
+    suspend fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
         return try {
             val accountRow = database.categoryDatabaseQueries.selectAccountByName(accountName).executeAsOneOrNull()
             accountRow?.toAccount()
@@ -466,6 +501,59 @@ class SQLiteTransactionDatabase(
                 database.categoryDatabaseQueries.deleteAllGroups()
                 database.categoryDatabaseQueries.deleteAllCustomAccounts()
                 database.categoryDatabaseQueries.deleteAllCustomCategories()
+            }
+        }
+    }
+
+    suspend fun resetToDefaults() {
+        withContext(Dispatchers.Default) {
+            database.transaction {
+                // Use default currency symbol for now (will be updated when user changes currency)
+                val currencySymbol = getCurrencySymbol("INR") // Default to INR
+                
+                // Clear all data first
+                database.categoryDatabaseQueries.deleteAllTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerTransactions()
+                database.categoryDatabaseQueries.deleteAllLedgerPersons()
+                database.categoryDatabaseQueries.deleteAllGroupExpenseSplits()
+                database.categoryDatabaseQueries.deleteAllGroupExpenses()
+                database.categoryDatabaseQueries.deleteAllGroupMembers()
+                database.categoryDatabaseQueries.deleteAllGroups()
+                database.categoryDatabaseQueries.deleteAllCustomAccounts()
+                database.categoryDatabaseQueries.deleteAllCustomCategories()
+                
+                // Delete ALL categories first (including default ones) to avoid constraint conflicts
+                database.categoryDatabaseQueries.deleteAllCategories()
+                
+                // Re-insert default categories (expense and income)
+                // Expense Categories
+                database.categoryDatabaseQueries.insertCategory("1", "Food", "Restaurant", "#FFFF9800", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("2", "Transport", "DirectionsCar", "#FF2196F3", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("3", "Housing", "Home", "#FF4CAF50", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("4", "Utilities", "Lightbulb", "#FFFFC107", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("5", "Health", "LocalHospital", "#FFE91E63", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("6", "Shopping", "ShoppingCart", "#FF9C27B0", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("7", "Entertainment", "Movie", "#FF673AB7", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("8", "Travel", "Flight", "#FF3F51B5", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("9", "Education", "School", "#FF009688", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("10", "Savings", "Savings", "#FF4CAF50", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("11", "Loans", "AccountBalance", "#FFF44336", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("12", "Gifts", "CardGiftcard", "#FFE91E63", "EXPENSE", 0)
+                database.categoryDatabaseQueries.insertCategory("13", "Others", "Category", "#FF607D8B", "EXPENSE", 0)
+                
+                // Income Categories
+                database.categoryDatabaseQueries.insertCategory("14", "Salary", "AttachMoney", "#FF4CAF50", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("15", "Freelance", "Work", "#FF2196F3", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("16", "Investment", "TrendingUp", "#FF9C27B0", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("17", "Rental Income", "Home", "#FF4CAF50", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("18", "Gift", "CardGiftcard", "#FFE91E63", "INCOME", 0)
+                database.categoryDatabaseQueries.insertCategory("19", "Bonus", "Stars", "#FFFF9800", "INCOME", 0)
+                
+                // Delete ALL accounts first (including default ones) to avoid constraint conflicts
+                database.categoryDatabaseQueries.deleteAllAccounts()
+                
+                // Re-insert default account (Cash) with dynamic currency symbol
+                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "AttachMoney", "#FF4CAF50", "CASH", 0)
             }
         }
     }

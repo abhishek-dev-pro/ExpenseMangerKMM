@@ -7,6 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.TransactionType
 import com.example.androidkmm.utils.Logger
@@ -32,8 +34,13 @@ import kotlinx.datetime.LocalDate
 @Composable
 fun OverviewTab(
     transactionDatabaseManager: SQLiteTransactionDatabase? = null,
+    currencySymbol: String = "$",
     onCategoryClick: (String, Int, Int) -> Unit = { _, _, _ -> }
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val actualCurrencySymbol = if (currencySymbol == "$") appSettings.currencySymbol else currencySymbol
+    
     var currentMonth by remember { mutableStateOf(9) } // September = 9
     var currentYear by remember { mutableStateOf(2025) }
     

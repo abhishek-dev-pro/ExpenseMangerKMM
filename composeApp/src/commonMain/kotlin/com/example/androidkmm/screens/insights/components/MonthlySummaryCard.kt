@@ -9,6 +9,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
@@ -29,6 +31,10 @@ fun MonthlySummaryCard(
     currentYear: Int,
     transactionDatabaseManager: SQLiteTransactionDatabase?
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.currencySymbol
+    
     val allTransactions = if (transactionDatabaseManager != null) {
         transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList()).value
     } else {
@@ -88,7 +94,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$${String.format("%.2f", monthlyData.first)}",
+                        text = "$currencySymbol${String.format("%.2f", monthlyData.first)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -105,7 +111,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$${String.format("%.2f", monthlyData.second)}",
+                        text = "$currencySymbol${String.format("%.2f", monthlyData.second)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error
@@ -122,7 +128,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$${String.format("%.2f", monthlyData.third)}",
+                        text = "$currencySymbol${String.format("%.2f", monthlyData.third)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (monthlyData.third >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error

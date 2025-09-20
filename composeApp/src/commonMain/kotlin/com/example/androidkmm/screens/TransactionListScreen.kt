@@ -11,12 +11,18 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.animation.*
@@ -24,6 +30,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -45,8 +52,13 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.screens.EditTransferTransactionScreen
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -303,9 +315,9 @@ fun TransactionsScreen(
 
     }
 
-    // Show bottom sheet
+    // Show full screen add transaction
     if (showAddSheet) {
-        AddTransactionBottomSheet(
+        AddTransactionScreen(
             onDismiss = { showAddSheet = false },
             onSave = { transactionFormData ->
                 // Convert TransactionFormData to Transaction and save to database
@@ -457,28 +469,31 @@ private fun TransactionHeader(
         Column {
             Text(
                 text = "Transactions",
-                            color = MaterialTheme.colorScheme.onBackground,
-                fontSize =20.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = "$transactionCount transactions",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
         }
 
-        FloatingActionButton(
+        IconButton(
             onClick = onAddClick,
-            modifier = Modifier.size(36.dp),
-            containerColor = MaterialTheme.colorScheme.onBackground,
-            contentColor = MaterialTheme.colorScheme.surface,
-            shape = CircleShape
+            modifier = Modifier
+                .size(48.dp)
+                .background(
+                    Color.White,
+                    CircleShape
+                )
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Transaction",
+                tint = Color.Black,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -510,7 +525,7 @@ private fun MonthNavigation(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -586,7 +601,7 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 4.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
                 width = 0.5.dp, // very thin border
@@ -692,12 +707,7 @@ private fun SearchAndFilter(
         OutlinedTextField(
             value = "",
             onValueChange = { },
-            placeholder = {
-                Text(
-                    text = "Search transactions...",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            placeholder = { Text("Search transactions...") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -862,31 +872,58 @@ private fun DayGroupSection(
 
     // Edit Transaction Screen
     if (showEditScreen && selectedTransaction != null) {
-        EditTransactionScreen(
-            transaction = selectedTransaction!!,
-            onDismiss = {
-                showEditScreen = false
-                selectedTransaction = null
-            },
-            onSave = { editedTransaction: com.example.androidkmm.models.Transaction ->
-                // Update transaction in database with balance updates
-                transactionDatabaseManager.updateTransactionWithBalanceUpdate(
-                    oldTransaction = selectedTransaction!!,
-                    newTransaction = editedTransaction,
-                    accountDatabaseManager = accountDatabaseManager,
-                    onSuccess = {
-                        println("Transaction updated successfully: ${editedTransaction.title}")
-                        showEditScreen = false
-                        selectedTransaction = null
-                    },
-                    onError = { error ->
-                        println("Error updating transaction: ${error.message}")
-                    }
-                )
-            },
-            categoryDatabaseManager = categoryDatabaseManager,
-            accountDatabaseManager = accountDatabaseManager
-        )
+        if (selectedTransaction!!.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
+            EditTransferTransactionScreen(
+                transaction = selectedTransaction!!,
+                onDismiss = {
+                    showEditScreen = false
+                    selectedTransaction = null
+                },
+                onSave = { editedTransaction: com.example.androidkmm.models.Transaction ->
+                    // Update transaction in database with balance updates
+                    transactionDatabaseManager.updateTransactionWithBalanceUpdate(
+                        oldTransaction = selectedTransaction!!,
+                        newTransaction = editedTransaction,
+                        accountDatabaseManager = accountDatabaseManager,
+                        onSuccess = {
+                            println("Transfer transaction updated successfully: ${editedTransaction.title}")
+                            showEditScreen = false
+                            selectedTransaction = null
+                        },
+                        onError = { error ->
+                            println("Error updating transfer transaction: ${error.message}")
+                        }
+                    )
+                },
+                accountDatabaseManager = accountDatabaseManager
+            )
+        } else {
+            EditTransactionScreen(
+                transaction = selectedTransaction!!,
+                onDismiss = {
+                    showEditScreen = false
+                    selectedTransaction = null
+                },
+                onSave = { editedTransaction: com.example.androidkmm.models.Transaction ->
+                    // Update transaction in database with balance updates
+                    transactionDatabaseManager.updateTransactionWithBalanceUpdate(
+                        oldTransaction = selectedTransaction!!,
+                        newTransaction = editedTransaction,
+                        accountDatabaseManager = accountDatabaseManager,
+                        onSuccess = {
+                            println("Transaction updated successfully: ${editedTransaction.title}")
+                            showEditScreen = false
+                            selectedTransaction = null
+                        },
+                        onError = { error ->
+                            println("Error updating transaction: ${error.message}")
+                        }
+                    )
+                },
+                categoryDatabaseManager = categoryDatabaseManager,
+                accountDatabaseManager = accountDatabaseManager
+            )
+        }
     }
 }
 
@@ -1042,22 +1079,21 @@ fun TransactionCard(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
-fun AddTransactionBottomSheet(
+fun AddTransactionScreen(
     onDismiss: () -> Unit,
     onSave: (TransactionFormData) -> Unit,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     defaultTransactionType: com.example.androidkmm.models.TransactionType? = null
 ) {
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
     var formData by remember { mutableStateOf(TransactionFormData()) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
     var showToAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showAddCategorySheet by remember { mutableStateOf(false) }
+    var showAddAccountSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         // Set default date and time
@@ -1078,34 +1114,53 @@ fun AddTransactionBottomSheet(
         )
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        dragHandle = {
-            Box(
-                modifier = Modifier
-                    .width(36.dp)
-                    .height(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(2.dp)
+    // Full screen content
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Header with back button
+        TopAppBar(
+            title = { 
+                Text(
+                    text = "Add Transaction",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
+            )
+        )
+        
+        // Scrollable content - using Column with verticalScroll instead of LazyColumn
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            AddTransactionContent(
+                formData = formData,
+                onFormDataChange = { formData = it },
+                onShowCategorySheet = { showCategorySheet = true },
+                onShowFromAccountSheet = { showFromAccountSheet = true },
+                onShowToAccountSheet = { showToAccountSheet = true },
+                onShowDatePicker = { showDatePicker = true },
+                onShowTimePicker = { showTimePicker = true },
+                onSave = { onSave(formData) },
+                onDismiss = onDismiss
             )
         }
-    ) {
-        AddTransactionContent(
-            formData = formData,
-            onFormDataChange = { formData = it },
-            onShowCategorySheet = { showCategorySheet = true },
-            onShowFromAccountSheet = { showFromAccountSheet = true },
-            onShowToAccountSheet = { showToAccountSheet = true },
-            onShowDatePicker = { showDatePicker = true },
-            onShowTimePicker = { showTimePicker = true },
-            onSave = { onSave(formData) },
-            onDismiss = onDismiss
-        )
     }
 
     // Category Selection Sheet
@@ -1121,7 +1176,8 @@ fun AddTransactionBottomSheet(
                 TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
                 TransactionType.INCOME -> com.example.androidkmm.models.TransactionType.INCOME
                 TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.TRANSFER
-            }
+            },
+            onAddCategory = { showAddCategorySheet = true }
         )
     }
 
@@ -1135,7 +1191,8 @@ fun AddTransactionBottomSheet(
                 formData = formData.copy(account = account)
                 showFromAccountSheet = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { showAddAccountSheet = true }
         )
     }
 
@@ -1149,7 +1206,8 @@ fun AddTransactionBottomSheet(
                 formData = formData.copy(toAccount = account)
                 showToAccountSheet = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { showAddAccountSheet = true }
         )
     }
 
@@ -1176,6 +1234,60 @@ fun AddTransactionBottomSheet(
             initialTime = formData.time
         )
     }
+
+    // Add Category Bottom Sheet
+    if (showAddCategorySheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddCategorySheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null
+        ) {
+            AddCategoryBottomSheet(
+                categoryType = when (formData.type) {
+                    TransactionType.EXPENSE -> com.example.androidkmm.models.CategoryTab.EXPENSE
+                    TransactionType.INCOME -> com.example.androidkmm.models.CategoryTab.INCOME
+                    TransactionType.TRANSFER -> com.example.androidkmm.models.CategoryTab.EXPENSE // Default
+                },
+                onDismiss = { showAddCategorySheet = false },
+                onCategoryAdded = { category, onSuccess, onError ->
+                    categoryDatabaseManager.addCategory(
+                        category = category,
+                        onSuccess = {
+                            onSuccess()
+                            showAddCategorySheet = false
+                        },
+                        onError = { error ->
+                            onError(error.message ?: "Unknown error occurred")
+                        }
+                    )
+                }
+            )
+        }
+    }
+
+    // Add Account Bottom Sheet
+    if (showAddAccountSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddAccountSheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null
+        ) {
+            AddAccountBottomSheet(
+                onDismiss = { showAddAccountSheet = false },
+                onAccountAdded = { account ->
+                    accountDatabaseManager.addAccount(
+                        account = account,
+                        onSuccess = {
+                            showAddAccountSheet = false
+                        },
+                        onError = { error ->
+                            println("Error adding account: ${error.message}")
+                        }
+                    )
+                }
+            )
+        }
+    }
 }
 
 // Rest of the composables remain the same...
@@ -1194,6 +1306,65 @@ private fun AddTransactionContent(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Get screen configuration for responsive design
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+    val screenWidth = configuration.screenWidthDp
+    val density = LocalDensity.current
+    
+    // Determine screen size category - FIXED for proper small phone detection
+    val isSmallScreen = screenHeight < 600  // Small phones like iPhone SE, Pixel 4a
+    val isMediumScreen = screenHeight >= 600 && screenHeight < 700  // Medium phones
+    val isLargeScreen = screenHeight >= 700  // Large phones like iPhone Pro Max
+    
+    // Dynamic sizing based on screen size - MUCH MORE AGGRESSIVE for small phones
+    val spacing = when {
+        isSmallScreen -> 16.dp  // Much more spacing
+        isMediumScreen -> 20.dp
+        else -> 24.dp
+    }
+    
+    val titleFontSize = when {
+        isSmallScreen -> 12.sp  // Much smaller title
+        isMediumScreen -> 14.sp
+        else -> 16.sp
+    }
+    
+    val labelFontSize = when {
+        isSmallScreen -> 10.sp  // Much smaller labels
+        isMediumScreen -> 12.sp
+        else -> 14.sp
+    }
+    
+    val inputHeight = when {
+        isSmallScreen -> 32.dp  // Much smaller inputs
+        isMediumScreen -> 40.dp
+        else -> 48.dp
+    }
+    
+    val receiptHeight = when {
+        isSmallScreen -> 30.dp  // Much smaller receipt area
+        isMediumScreen -> 40.dp
+        else -> 50.dp
+    }
+    
+    val buttonHeight = when {
+        isSmallScreen -> 48.dp  // Bigger button
+        isMediumScreen -> 52.dp
+        else -> 56.dp
+    }
+    
+    val buttonPadding = when {
+        isSmallScreen -> 8.dp  // Less padding
+        isMediumScreen -> 12.dp
+        else -> 16.dp
+    }
+    
+    val amountFontSize = when {
+        isSmallScreen -> 36.sp  // Much bigger amount text
+        isMediumScreen -> 40.sp
+        else -> 44.sp
+    }
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     
@@ -1316,244 +1487,218 @@ private fun AddTransactionContent(
             onSave()
         }
     }
-    LazyColumn(
+    
+    // Simple Column layout without LazyColumn
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
-            .navigationBarsPadding(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(top = 0.dp)  // Remove top padding completely
+            .padding(horizontal = if (isSmallScreen) 8.dp else 20.dp, vertical = if (isSmallScreen) 1.dp else 8.dp)
+            .padding(bottom = if (isSmallScreen) 120.dp else 140.dp),  // Account for bottom nav bar
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
-        item {
-            // Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        // Transaction Type Selector
+        TransactionTypeSelector(
+            selectedType = formData.type,
+            onTypeSelected = { type ->
+                // Clear category when transaction type changes to ensure proper filtering
+                onFormDataChange(formData.copy(
+                    type = type,
+                    category = null
+                ))
+            },
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen
+        )
 
+        // Amount Input
+        AmountInputSection(
+            amount = formData.amount,
+            onAmountChange = { amount ->
+                onFormDataChange(formData.copy(amount = amount))
+            },
+            errorMessage = validationErrors["amount"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            titleFontSize = titleFontSize,
+            amountFontSize = amountFontSize
+        )
 
-                Column(horizontalAlignment = Alignment.Start) {
-                    Text(
-                        text = "Add Transaction",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    val subtitle = when (formData.type) {
-                        TransactionType.EXPENSE -> "Track your expense"
-                        TransactionType.INCOME -> "Track your income"
-                        TransactionType.TRANSFER -> "Track your transfer"
-                    }
-                    Text(
-                        text = subtitle,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
-                    )
-                }
-
-                IconButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-
-        item {
-            // Transaction Type Selector
-            TransactionTypeSelector(
-                selectedType = formData.type,
-                onTypeSelected = { type ->
-                    onFormDataChange(formData.copy(type = type))
-                }
-            )
-        }
-
-        item {
-            // Amount Input
-            AmountInputSection(
-                amount = formData.amount,
-                onAmountChange = { amount ->
-                    onFormDataChange(formData.copy(amount = amount))
-                },
-                errorMessage = validationErrors["amount"]
-            )
-        }
-
-        item {
-            // Account Selection - different for transfer vs others
-            if (formData.type == TransactionType.TRANSFER) {
-                // From Account and To Account for transfers
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "From Account",
-                        selectedText = formData.account?.name ?: "Select",
-                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowFromAccountSheet
-                    )
-
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "To Account",
-                        selectedText = formData.toAccount?.name ?: "Select",
-                        icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowToAccountSheet
-                    )
-                }
-            } else {
-                // Category and Account for income/expense
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "Category",
-                        selectedText = formData.category?.name ?: "Select",
-                        icon = formData.category?.icon ?: Icons.Default.Category,
-                        iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowCategorySheet
-                    )
-
-                    CategoryAccountSelector(
-                        modifier = Modifier.weight(1f),
-                        title = "Account",
-                        selectedText = formData.account?.name ?: "Select",
-                        icon = formData.account?.icon ?: Icons.Default.CreditCard,
-                        iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
-                        onClick = onShowFromAccountSheet
-                    )
-                }
-            }
-        }
-
-        item {
-            // Title Input
-            InputField(
-                label = "Title",
-                value = formData.title,
-                onValueChange = { title ->
-                    // Limit title to 30 characters
-                    val limitedTitle = if (title.length <= 30) title else title.take(30)
-                    onFormDataChange(formData.copy(title = limitedTitle))
-                },
-                placeholder = "e.g., Lunch at Subway",
-                errorMessage = validationErrors["title"]
-            )
-        }
-
-        item {
-            // Date and Time
-            Text(
-                text = "Date & Time",
-                            color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(Modifier.height(4.dp))
-
+        // Account Selection - different for transfer vs others
+        if (formData.type == TransactionType.TRANSFER) {
+            // From Account and To Account for transfers
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DateTimeSelector(
-                    modifier = Modifier.weight(1f),
-                    value = if (formData.date.isEmpty()) "Today" else {
-                        try {
-                            val parts = formData.date.split("-")
-                            if (parts.size == 3) {
-                                val year = parts[0]
-                                val month = parts[1]
-                                val day = parts[2]
-                                "$day/$month/$year"
-                            } else {
-                                formData.date
-                            }
-                        } catch (e: Exception) {
-                            formData.date
-                        }
-                    },
-                    icon = Icons.Default.CalendarMonth,
-                    isSelected = true,
-                    onClick = onShowDatePicker
-                )
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "From Account",
+                                selectedText = formData.account?.name ?: "Select",
+                                icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowFromAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
 
-                DateTimeSelector(
-                    modifier = Modifier.weight(1f),
-                    value = formData.time.ifEmpty { "01:31" },
-                    icon = Icons.Default.AccessTime,
-                    isSelected = true,
-                    onClick = onShowTimePicker
-                )
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "To Account",
+                                selectedText = formData.toAccount?.name ?: "Select",
+                                icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowToAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
+            }
+        } else {
+            // Category and Account for income/expense
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "Category",
+                                selectedText = formData.category?.name ?: "Select",
+                                icon = formData.category?.icon ?: Icons.Default.Category,
+                                iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowCategorySheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
+
+                            CategoryAccountSelector(
+                                modifier = Modifier.weight(1f),
+                                title = "Account",
+                                selectedText = formData.account?.name ?: "Select",
+                                icon = formData.account?.icon ?: Icons.Default.CreditCard,
+                                iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
+                                onClick = onShowFromAccountSheet,
+                                isSmallScreen = isSmallScreen,
+                                isMediumScreen = isMediumScreen,
+                                labelFontSize = labelFontSize,
+                                inputHeight = inputHeight
+                            )
             }
         }
 
-        item {
-            // Description Input
-            InputField(
-                label = "Description (Optional)",
-                value = formData.description,
-                onValueChange = { description ->
-                    // Limit description to 75 characters
-                    val limitedDescription = if (description.length <= 75) description else description.take(75)
-                    onFormDataChange(formData.copy(description = limitedDescription))
+        // Title Input
+        InputField(
+            label = "Title",
+            value = formData.title,
+            onValueChange = { title ->
+                // Limit title to 30 characters
+                val limitedTitle = if (title.length <= 30) title else title.take(30)
+                onFormDataChange(formData.copy(title = limitedTitle))
+            },
+            placeholder = "e.g., Lunch at Subway",
+            errorMessage = validationErrors["title"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            labelFontSize = labelFontSize,
+            inputHeight = inputHeight
+        )
+
+        // Date and Time
+        Text(
+            text = "Date & Time",
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
+            fontWeight = FontWeight.Medium
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            DateTimeSelector(
+                modifier = Modifier.weight(1f),
+                value = if (formData.date.isEmpty()) "Today" else {
+                    try {
+                        val parts = formData.date.split("-")
+                        if (parts.size == 3) {
+                            val year = parts[0]
+                            val month = parts[1]
+                            val day = parts[2]
+                            "$day/$month/$year"
+                        } else {
+                            formData.date
+                        }
+                    } catch (e: Exception) {
+                        formData.date
+                    }
                 },
-                placeholder = "e.g., we ate two each"
+                icon = Icons.Default.CalendarMonth,
+                isSelected = true,
+                onClick = onShowDatePicker,
+                isSmallScreen = isSmallScreen,
+                isMediumScreen = isMediumScreen,
+                inputHeight = inputHeight
+            )
+
+            DateTimeSelector(
+                modifier = Modifier.weight(1f),
+                value = formData.time.ifEmpty { "01:31" },
+                icon = Icons.Default.AccessTime,
+                isSelected = true,
+                onClick = onShowTimePicker,
+                isSmallScreen = isSmallScreen,
+                isMediumScreen = isMediumScreen,
+                inputHeight = inputHeight
             )
         }
 
-        item {
-            // Receipt Upload
-            ReceiptUploadSection()
-        }
+        // Description Input
+        InputField(
+            label = "Description (Optional)",
+            value = formData.description,
+            onValueChange = { description ->
+                // Limit description to 75 characters
+                val limitedDescription = if (description.length <= 75) description else description.take(75)
+                onFormDataChange(formData.copy(description = limitedDescription))
+            },
+            placeholder = "e.g., we ate two each",
+            errorMessage = validationErrors["description"],
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            labelFontSize = labelFontSize,
+            inputHeight = inputHeight
+        )
 
-        item {
-            // Save Button
-            val isReady = isFormReady()
-            Button(
-                onClick = { handleSave() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isReady) {
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                    },
-                    contentColor = if (isReady) {
-                        MaterialTheme.colorScheme.surface
-                    } else {
-                        MaterialTheme.colorScheme.onBackground
-                    }
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Save Transaction",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+        // Receipt Upload
+        ReceiptUploadSection(
+            isSmallScreen = isSmallScreen,
+            isMediumScreen = isMediumScreen,
+            receiptHeight = receiptHeight,
+            labelFontSize = labelFontSize
+        )
+
+        // Save Button - Always visible with prominent styling
+        Button(
+            onClick = { handleSave() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(buttonHeight),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF2196F3) // Bright blue color
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = "Add Transaction",
+                color = Color.White,
+                fontSize = titleFontSize,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
@@ -1561,52 +1706,85 @@ private fun AddTransactionContent(
 @Composable
 private fun TransactionTypeSelector(
     selectedType: TransactionType,
-    onTypeSelected: (TransactionType) -> Unit
+    onTypeSelected: (TransactionType) -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false
 ) {
-    Row(
+    val toggleHeight = when {
+        isSmallScreen -> 32.dp  // Much shorter
+        isMediumScreen -> 36.dp
+        else -> 40.dp
+    }
+    
+    val toggleFontSize = when {
+        isSmallScreen -> 12.sp
+        isMediumScreen -> 14.sp
+        else -> 16.sp
+    }
+    
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .fillMaxWidth(0.9f)  // 90% width
+            .height(toggleHeight)
+            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(2.dp)
     ) {
-        TransactionType.values().forEach { type ->
-            val isSelected = selectedType == type
-            val (icon, text) = when (type) {
-                TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
-                TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
-                TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
-            }
+        // Sliding background for selected item
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(1f / 3f)  // 1/3 width for each option
+                .offset(
+                    x = when (selectedType) {
+                        TransactionType.EXPENSE -> 0.dp
+                        TransactionType.INCOME -> (toggleHeight * 1.1f)  // Move to middle position
+                        TransactionType.TRANSFER -> (toggleHeight * 2.2f)  // Move to right position
+                    }
+                )
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0xFF2196F3))
+        )
+        
+        // Toggle options
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            TransactionType.values().forEach { type ->
+                val isSelected = selectedType == type
+                val (icon, text) = when (type) {
+                    TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
+                    TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
+                    TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
+                }
 
-            Button(
-                onClick = { onTypeSelected(type) },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f)
-                    else Color.Transparent,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onBackground
-                    else MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                border = if (isSelected) BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-                ) else null,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = text,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = text,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable { onTypeSelected(type) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = text,
+                            modifier = Modifier.size(if (isSmallScreen) 14.dp else 16.dp),
+                            tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(if (isSmallScreen) 4.dp else 6.dp))
+                        Text(
+                            text = text,
+                            fontSize = toggleFontSize,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }
@@ -1616,53 +1794,52 @@ private fun TransactionTypeSelector(
 private fun AmountInputSection(
     amount: String,
     onAmountChange: (String) -> Unit,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    titleFontSize: TextUnit = 18.sp,
+    amountFontSize: TextUnit = 20.sp
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
+        BasicTextField(
             value = amount,
-            onValueChange = { newValue ->
+            onValueChange = { newValue: String ->
                 // Only allow numbers and decimal point
-                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                val filteredValue = newValue.filter { char: Char -> char.isDigit() || char == '.' }
                 // Ensure only one decimal point
-                val decimalCount = filteredValue.count { it == '.' }
+                val decimalCount = filteredValue.count { char: Char -> char == '.' }
                 if (decimalCount <= 1) {
                     onAmountChange(filteredValue)
                 }
             },
+            modifier = Modifier.fillMaxWidth(),
             textStyle = TextStyle(
-                fontSize = 36.sp,
+                fontSize = amountFontSize,
                 fontWeight = FontWeight.Light,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            isError = errorMessage != null,
-            placeholder = {
-                Text(
-                    text = "0.00",
-                    fontSize = 36.sp,
-                    fontWeight = FontWeight.Light,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth() // ensures proper centering
-                )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.onBackground,
-                focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                errorBorderColor = Color.Red,
-                errorContainerColor = Color.Transparent
-            ),
-            modifier = Modifier.wrapContentWidth()
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (amount.isEmpty()) {
+                        Text(
+                            text = "0.00",
+                            fontSize = amountFontSize,
+                            fontWeight = FontWeight.Light,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    innerTextField()
+                }
+            }
         )
 
         Text(
@@ -1690,7 +1867,11 @@ private fun CategoryAccountSelector(
     selectedText: String,
     icon: ImageVector,
     iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    labelFontSize: TextUnit = 14.sp,
+    inputHeight: Dp = 56.dp
 ) {
     Column(
         modifier = modifier,
@@ -1698,14 +1879,16 @@ private fun CategoryAccountSelector(
     ) {
         Text(
             text = title,
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
         Button(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(inputHeight),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -1743,29 +1926,30 @@ private fun InputField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    labelFontSize: TextUnit = 14.sp,
+    inputHeight: Dp = 56.dp
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = label,
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(inputHeight),
+            placeholder = { Text(placeholder) },
             isError = errorMessage != null,
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -1797,11 +1981,14 @@ private fun DateTimeSelector(
     value: String,
     icon: ImageVector,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    inputHeight: Dp = 40.dp
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(40.dp).border(
+        modifier = modifier.height(inputHeight).border(
             width = 1.dp, // very thin
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), // white with alpha
             shape = RoundedCornerShape(12.dp)
@@ -1833,7 +2020,11 @@ private fun DateTimeSelector(
 
 @Composable
 private fun ReceiptUploadSection(
-    onReceiptSelected: (String) -> Unit = {}
+    onReceiptSelected: (String) -> Unit = {},
+    isSmallScreen: Boolean = false,
+    isMediumScreen: Boolean = false,
+    receiptHeight: Dp = 80.dp,
+    labelFontSize: TextUnit = 14.sp
 ) {
     var showImagePicker by remember { mutableStateOf(false) }
     var selectedImagePath by remember { mutableStateOf<String?>(null) }
@@ -1843,8 +2034,8 @@ private fun ReceiptUploadSection(
     ) {
         Text(
             text = "Receipt (Optional)",
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = labelFontSize,
             fontWeight = FontWeight.SemiBold
         )
 
@@ -1905,11 +2096,11 @@ private fun ReceiptUploadSection(
             }
         } else {
             // Show upload button
-        Button(
+Button(
                 onClick = { showImagePicker = true },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(receiptHeight)
                 .border(
                     width = 2.dp,
                     brush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
@@ -1966,7 +2157,8 @@ fun AccountSelectionBottomSheet(
     title: String = "Select Account",
     subtitle: String = "Choose an account for your transaction",
     onAccountSelected: (Account) -> Unit,
-    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
+    onAddAccount: (() -> Unit)? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -2039,6 +2231,70 @@ fun AccountSelectionBottomSheet(
                     account = account,
                     onClick = { onAccountSelected(account) }
                 )
+            }
+
+            item {
+                // Add Account Button
+                Card(
+                    onClick = { onAddAccount?.invoke() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(vertical = 6.dp)
+                        .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                        ),
+                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Plus icon
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Account",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // Add Account text
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Add Account",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = "Create a new account",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
             }
 
             item {
@@ -2136,7 +2392,8 @@ fun CategorySelectionBottomSheet(
     onDismiss: () -> Unit,
     onCategorySelected: (TransactionCategory) -> Unit,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
-    transactionType: com.example.androidkmm.models.TransactionType
+    transactionType: com.example.androidkmm.models.TransactionType,
+    onAddCategory: (() -> Unit)? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<com.example.androidkmm.models.Category>())
@@ -2238,6 +2495,22 @@ fun CategorySelectionBottomSheet(
                             onClick = { onCategorySelected(category) }
                         )
                 }
+                
+                // Add Category Button (only show for non-transfer transactions)
+                if (transactionType != com.example.androidkmm.models.TransactionType.TRANSFER) {
+                    item {
+                        CategoryGridCard(
+                            category = TransactionCategory(
+                                id = "add_category",
+                                name = "Add",
+                                icon = Icons.Default.Add,
+                                color = MaterialTheme.colorScheme.primary
+                            ),
+                            onClick = { onAddCategory?.invoke() },
+                            isAddButton = true
+                        )
+                    }
+                }
             }
         }
     }
@@ -2301,7 +2574,8 @@ private fun CategoryCard(
 @Composable
 private fun CategoryGridCard(
     category: TransactionCategory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isAddButton: Boolean = false
 ) {
     Card(
         onClick = onClick,
@@ -2310,13 +2584,13 @@ private fun CategoryGridCard(
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
             .border(
-                width = 0.5.dp,
-                color = Color.White.copy(alpha = 0.2f),
+                width = if (isAddButton) 1.dp else 0.5.dp,
+                color = if (isAddButton) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isAddButton) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
@@ -2345,7 +2619,7 @@ private fun CategoryGridCard(
 
             Text(
                 text = category.name,
-                            color = MaterialTheme.colorScheme.onBackground,
+                color = if (isAddButton) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -2720,16 +2994,16 @@ private fun EmptyTransactionState(
                 modifier = Modifier
                     .background(
                         color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(32.dp)
                     )
-                    .size(24.dp),
+                    .size(120.dp),
 
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Receipt,
                     contentDescription = "No transactions",
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(80.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -2739,8 +3013,8 @@ private fun EmptyTransactionState(
             Text(
                 text = "No transactions yet",
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium
             )
 
 
@@ -2748,7 +3022,7 @@ private fun EmptyTransactionState(
             Text(
                 text = "No transactions found for $monthName $selectedYear",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp,
+                fontSize = 14.sp,
                 textAlign = TextAlign.Center
             )
 
@@ -2763,18 +3037,19 @@ private fun EmptyTransactionState(
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
-                    .height(32.dp)
-                    .padding(horizontal = 8.dp)
+                    .height(40.dp)
+                    .padding(horizontal = 12.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add transaction",
-                    modifier = Modifier.size(12.dp)
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "Add Transaction",
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
@@ -2887,6 +3162,10 @@ private fun DatePickerDialog(
     onDateSelected: (String) -> Unit,
     initialDate: String = ""
 ) {
+    val today = java.time.LocalDate.now()
+    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
             try {
@@ -2895,16 +3174,46 @@ private fun DatePickerDialog(
                     val year = parts[0].toInt()
                     val month = parts[1].toInt()
                     val day = parts[2].toInt()
-                    java.time.LocalDate.of(year, month, day)
-                        .atStartOfDay(java.time.ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    val selectedDate = java.time.LocalDate.of(year, month, day)
+                    // If the initial date is in the future, use today instead
+                    if (selectedDate.isAfter(today)) {
+                        todayMillis
+                    } else {
+                        selectedDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    }
                 } else null
             } catch (e: Exception) {
                 null
             }
-        } else null
+        } else null,
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Allow dates up to and including today
+                return utcTimeMillis < tomorrowMillis
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                // Only allow current year and previous years
+                return year <= today.year
+            }
+        }
     )
+    
+    // Additional validation to prevent future date selection
+    LaunchedEffect(datePickerState.selectedDateMillis) {
+        datePickerState.selectedDateMillis?.let { selectedMillis ->
+            val selectedDate = java.time.Instant.ofEpochMilli(selectedMillis)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+            val today = java.time.LocalDate.now()
+            
+            // If a future date is somehow selected, reset to today
+            if (selectedDate.isAfter(today)) {
+                datePickerState.selectedDateMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }
+        }
+    }
+    
     var showDialog by remember { mutableStateOf(true) }
 
     if (showDialog) {
@@ -2959,6 +3268,15 @@ private fun DatePickerDialog(
                             val date = java.time.Instant.ofEpochMilli(millis)
                                 .atZone(java.time.ZoneId.systemDefault())
                                 .toLocalDate()
+                            val today = java.time.LocalDate.now()
+                            
+                            // Check if selected date is in the future
+                            if (date.isAfter(today)) {
+                                // Don't allow future dates - just close dialog without selecting
+                                showDialog = false
+                                return@TextButton
+                            }
+                            
                             val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
                             onDateSelected(dateString)
                         }
@@ -3151,17 +3469,14 @@ fun EditTransactionScreen(
             when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> TransactionType.INCOME
                 com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionType.EXPENSE
-                com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.TRANSFER
+                com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.EXPENSE // Default to EXPENSE for transfer transactions
             }
         )
     }
     var selectedCategoryName by remember { mutableStateOf(transaction.category) }
     var selectedAccountName by remember { mutableStateOf(transaction.account) }
-    var selectedToAccountName by remember { mutableStateOf(transaction.transferTo ?: "") }
-    
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
-    var showToAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -3170,387 +3485,465 @@ fun EditTransactionScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Top App Bar
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Edit Transaction",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            },
-            actions = {
-                TextButton(
-                    onClick = {
-                        val updatedTransaction = transaction.copy(
-                            amount = amount.toDoubleOrNull() ?: 0.0,
-                            title = title,
-                            description = description,
-                            date = date,
-                            time = time,
-                            type = when (selectedType) {
-                                TransactionType.INCOME -> com.example.androidkmm.models.TransactionType.INCOME
-                                TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
-                                TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.TRANSFER
-                            },
-                            category = if (selectedType == TransactionType.TRANSFER) "" else selectedCategoryName,
-                            account = selectedAccountName,
-                            transferTo = selectedToAccountName.ifEmpty { null }
-                        )
-                        onSave(updatedTransaction)
-                    }
-                ) {
-                    Text(
-                        text = "Save",
-                        color = Color(0xFF2196F3),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Edit Transaction",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
             )
-        )
+            
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+        
 
-        // Form Content - Compact, no scrolling
+        // Form Content - Scrollable
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Transaction Type Selector - Highlighted
+            // Transaction Type Toggle - 80% width with larger text
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center
             ) {
-                TransactionType.values().forEach { type ->
-                    val isSelected = selectedType == type
-                    val (icon, text) = when (type) {
-                        TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
-                        TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
-                        TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
-                    }
-
-                    Button(
-                        onClick = { selectedType = type },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSelected) Color(0xFF2196F3) else Color.Transparent,
-                            contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = if (isSelected) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
-                        ),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                // Toggle Container - 80% width, even less tall
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF2A2A2A))
+                        .padding(2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = text,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = text,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
+                        // Expense Toggle
+                        val isExpenseSelected = selectedType == TransactionType.EXPENSE
+                        Button(
+                            onClick = { selectedType = TransactionType.EXPENSE },
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(18.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isExpenseSelected) Color(0xFF2196F3) else Color.Transparent,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 1.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TrendingDown,
+                                    contentDescription = "Expense",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Expense",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        
+                        // Income Toggle
+                        val isIncomeSelected = selectedType == TransactionType.INCOME
+                        Button(
+                            onClick = { selectedType = TransactionType.INCOME },
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(18.dp)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isIncomeSelected) Color(0xFF2196F3) else Color.Transparent,
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 1.dp),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TrendingUp,
+                                    contentDescription = "Income",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Income",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            // Amount Input - No $ sign
-            OutlinedTextField(
-                value = amount,
-                onValueChange = { newValue ->
-                    val filteredValue = newValue.filter { it.isDigit() || it == '.' }
-                    val decimalCount = filteredValue.count { it == '.' }
-                    if (decimalCount <= 1) {
-                        amount = filteredValue
-                    }
-                },
-                textStyle = TextStyle(
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Light,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onBackground
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                placeholder = {
-                    Text(
-                        text = "0.00",
+            // Amount Input - Without $ sign
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                BasicTextField(
+                    value = amount,
+                    onValueChange = { newValue: String ->
+                        val filteredValue = newValue.filter { char -> char.isDigit() || char == '.' }
+                        val decimalCount = filteredValue.count { char -> char == '.' }
+                        if (decimalCount <= 1) {
+                            amount = filteredValue
+                        }
+                    },
+                    textStyle = TextStyle(
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Light,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    cursorColor = MaterialTheme.colorScheme.onBackground
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Category & Account Row (or From/To Account for Transfer)
-            if (selectedType == TransactionType.TRANSFER) {
-                // Transfer: Show From Account and To Account
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // From Account
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "From Account",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showFromAccountSheet = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (selectedAccountName.isNotEmpty()) {
-                                Text(
-                                    text = selectedAccountName,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 14.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Select",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // To Account
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "To Account",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showToAccountSheet = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (selectedToAccountName.isNotEmpty()) {
-                                Text(
-                                    text = selectedToAccountName,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 14.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Select",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Income/Expense: Show Category and Account
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Category
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Category",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showCategorySheet = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (selectedCategoryName.isNotEmpty()) {
-                                Text(
-                                    text = selectedCategoryName,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 14.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Select",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // Account
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Account",
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showFromAccountSheet = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (selectedAccountName.isNotEmpty()) {
-                                Text(
-                                    text = selectedAccountName, // Only account name, no bank name
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 14.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Select",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-                }
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Center
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = "Enter amount",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
 
-            // Date & Time Row - Clickable pickers
+            // Category & Account Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Date
+                // Category
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Date & Time",
+                        text = "Category",
                         color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Date Picker
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showDatePicker = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CalendarMonth,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(16.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showCategorySheet = true }
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = RoundedCornerShape(12.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = "Category",
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        if (selectedCategoryName.isNotEmpty()) {
                             Text(
-                                text = date.split("-").let { parts ->
-                                    if (parts.size == 3) "${parts[2]}/${parts[1]}" else date
-                                },
+                                text = selectedCategoryName,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 12.sp
+                                fontSize = 14.sp
+                            )
+                        } else {
+                            Text(
+                                text = "Select",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
                             )
                         }
+                    }
+                }
 
-                        // Time Picker
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showTimePicker = true }
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(16.dp)
+                // Account
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Account",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showFromAccountSheet = true }
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = RoundedCornerShape(12.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountBalance,
+                            contentDescription = "Account",
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        if (selectedAccountName.isNotEmpty()) {
                             Text(
-                                text = time,
+                                text = selectedAccountName,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 12.sp
+                                fontSize = 14.sp
+                            )
+                        } else {
+                            Text(
+                                text = "Select",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp
                             )
                         }
                     }
                 }
             }
 
-            // Title & Description
-            OutlinedTextField(
-                value = title,
-                onValueChange = { 
-                    val limitedTitle = if (it.length <= 30) it else it.take(30)
-                    title = limitedTitle
-                },
-                label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Date & Time Row
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Date & Time",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Date Picker
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showDatePicker = true }
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = date.split("-").let { parts ->
+                                if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else date
+                            },
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp
+                        )
+                    }
 
-            OutlinedTextField(
-                value = description,
-                onValueChange = { 
-                    val limitedDescription = if (it.length <= 75) it else it.take(75)
-                    description = limitedDescription
-                },
-                label = { Text("Description (Optional)") },
-                modifier = Modifier.fillMaxWidth()
-            )
+                    // Time Picker
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showTimePicker = true }
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = time,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            // Title
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Title",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { 
+                        val limitedTitle = if (it.length <= 30) it else it.take(30)
+                        title = limitedTitle
+                    },
+                    placeholder = { Text("Lunch at Subway") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.outline,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // Description
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Description (Optional)",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { 
+                        val limitedDescription = if (it.length <= 75) it else it.take(75)
+                        description = limitedDescription
+                    },
+                    placeholder = { Text("we ate two each") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.outline,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.onBackground
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            
+            // Action Buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Cancel Button
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFF2A2A2A))
+                        .clickable { onDismiss() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Cancel",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                }
+                
+                // Save Changes Button
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .clickable {
+                            val updatedTransaction = transaction.copy(
+                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                title = title,
+                                description = description,
+                                date = date,
+                                time = time,
+                                type = when (selectedType) {
+                                    TransactionType.INCOME -> com.example.androidkmm.models.TransactionType.INCOME
+                                    TransactionType.EXPENSE -> com.example.androidkmm.models.TransactionType.EXPENSE
+                                    TransactionType.TRANSFER -> com.example.androidkmm.models.TransactionType.EXPENSE // Default to EXPENSE
+                                },
+                                category = selectedCategoryName,
+                                account = selectedAccountName,
+                                transferTo = null // Remove transfer support
+                            )
+                            onSave(updatedTransaction)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Save",
+                            modifier = Modifier.size(20.dp),
+                            tint = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Save Changes",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -3584,18 +3977,6 @@ fun EditTransactionScreen(
         )
     }
 
-    if (showToAccountSheet) {
-        AccountSelectionBottomSheet(
-            onDismiss = { showToAccountSheet = false },
-            title = "Select To Account",
-            subtitle = "Choose destination account",
-            onAccountSelected = { account: com.example.androidkmm.models.Account ->
-                selectedToAccountName = account.name
-                showToAccountSheet = false
-            },
-            accountDatabaseManager = accountDatabaseManager
-        )
-    }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -3619,3 +4000,247 @@ fun EditTransactionScreen(
         )
     }
 }
+
+@OptIn(ExperimentalTime::class)
+@Composable
+fun AddCategoryBottomSheetForTransaction(
+    categoryType: com.example.androidkmm.models.CategoryTab,
+    onDismiss: () -> Unit,
+    onCategoryAdded: (com.example.androidkmm.models.Category, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit
+) {
+    var categoryName by remember { mutableStateOf("") }
+    var selectedIcon by remember { mutableStateOf(Icons.Default.AttachMoney) }
+    var selectedIconIndex by remember { mutableStateOf(0) }
+    var selectedColor by remember { mutableStateOf(Color(0xFF2196F3)) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Add ${if (categoryType == com.example.androidkmm.models.CategoryTab.EXPENSE) "Expense" else "Income"} Category",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Category Name
+        Text(
+            text = "Category Name",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = categoryName,
+            onValueChange = { categoryName = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            placeholder = { Text("Enter category name") },
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp
+            )
+        )
+
+        // Icon Selection
+        Text(
+            text = "Choose Icon",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val icons = listOf(
+            Icons.Default.AttachMoney,
+            Icons.Default.ShoppingCart,
+            Icons.Default.Restaurant,
+            Icons.Default.LocalGasStation,
+            Icons.Default.Home,
+            Icons.Default.DirectionsCar,
+            Icons.Default.Flight,
+            Icons.Default.Movie,
+            Icons.Default.Sports,
+            Icons.Default.Favorite,
+            Icons.Default.MusicNote,
+            Icons.Default.Business,
+            Icons.Default.LocalCafe,
+            Icons.Default.Wallet
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(icons.size) { index ->
+                val icon = icons[index]
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (selectedIconIndex == index) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .clickable { 
+                            selectedIcon = icon
+                            selectedIconIndex = index
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (selectedIconIndex == index) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Color Selection
+        Text(
+            text = "Choose Color",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val colors = listOf(
+            Color(0xFF2196F3), Color(0xFF4CAF50), Color(0xFFFF9800),
+            Color(0xFFF44336), Color(0xFF9C27B0), Color(0xFF00BCD4),
+            Color(0xFF795548), Color(0xFF607D8B)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            colors.forEach { color ->
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (selectedColor == color) color
+                            else color.copy(alpha = 0.3f)
+                        )
+                        .border(
+                            width = if (selectedColor == color) 2.dp else 0.dp,
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                        .clickable { selectedColor = color },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (selectedColor == color) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        if (errorMessage.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Add Category Button
+        Button(
+            onClick = {
+                if (isLoading) return@Button
+                
+                errorMessage = "" // Clear previous error
+                isLoading = true
+                
+                val category = com.example.androidkmm.models.Category(
+                    id = Clock.System.now().toEpochMilliseconds().toString(),
+                    name = categoryName,
+                    icon = selectedIcon,
+                    color = selectedColor,
+                    type = if (categoryType == com.example.androidkmm.models.CategoryTab.EXPENSE) com.example.androidkmm.models.CategoryType.EXPENSE else com.example.androidkmm.models.CategoryType.INCOME,
+                    isCustom = true
+                )
+                onCategoryAdded(
+                    category,
+                    {
+                        isLoading = false
+                        onDismiss()
+                    },
+                    { error ->
+                        isLoading = false
+                        errorMessage = error
+                    }
+                )
+            },
+            enabled = categoryName.isNotEmpty() && !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant,
+                contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "Add Category",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+

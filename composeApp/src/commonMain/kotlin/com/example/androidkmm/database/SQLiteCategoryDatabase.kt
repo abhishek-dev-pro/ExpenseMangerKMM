@@ -203,7 +203,13 @@ private val iconMap = mapOf(
     "AttachMoney" to Icons.Default.AttachMoney,
     "Work" to Icons.Default.Work,
     "TrendingUp" to Icons.Default.TrendingUp,
-    "Stars" to Icons.Default.Stars
+    "Stars" to Icons.Default.Stars,
+    "SportsEsports" to Icons.Default.SportsEsports,
+    "Favorite" to Icons.Default.Favorite,
+    "MusicNote" to Icons.Default.MusicNote,
+    "Business" to Icons.Default.Business,
+    "LocalCafe" to Icons.Default.LocalCafe,
+    "Wallet" to Icons.Default.Wallet
 )
 
 // ImageVector to icon name mapping

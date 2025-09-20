@@ -211,9 +211,18 @@ fun UserSetupScreen(
                                 return@launch
                             }
                             
-                            println("DEBUG: Saving name: '$trimmedName'")
+                            // Format name: first letter capitalized, rest lowercase
+                            val formattedName = trimmedName.split(" ").joinToString(" ") { word ->
+                                if (word.isNotEmpty()) {
+                                    word.first().uppercaseChar() + word.drop(1).lowercase()
+                                } else {
+                                    word
+                                }
+                            }
+                            
+                            println("DEBUG: Saving formatted name: '$formattedName'")
                             // Save user name to settings
-                            settingsDatabase.updateUserName(trimmedName)
+                            settingsDatabase.updateUserName(formattedName)
                             println("DEBUG: Name saved successfully")
                             
                             // Save email if provided, otherwise auto-generate

@@ -31,6 +31,10 @@ fun FilterDatePickerDialog(
     onDateSelected: (String) -> Unit,
     initialDate: String = ""
 ) {
+    val today = LocalDate.now()
+    val todayMillis = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val tomorrowMillis = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
             try {
@@ -39,15 +43,29 @@ fun FilterDatePickerDialog(
                     val year = parts[0].toInt()
                     val month = parts[1].toInt()
                     val day = parts[2].toInt()
-                    LocalDate.of(year, month, day)
-                        .atStartOfDay(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    val selectedDate = LocalDate.of(year, month, day)
+                    // If the initial date is in the future, use today instead
+                    if (selectedDate.isAfter(today)) {
+                        todayMillis
+                    } else {
+                        selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    }
                 } else null
             } catch (e: Exception) {
                 null
             }
-        } else null
+        } else null,
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Allow dates up to and including today
+                return utcTimeMillis < tomorrowMillis
+            }
+            
+            override fun isSelectableYear(year: Int): Boolean {
+                // Only allow current year and previous years
+                return year <= today.year
+            }
+        }
     )
 
     // Track selected date for display
@@ -111,6 +129,15 @@ fun FilterDatePickerDialog(
                         val localDate = Instant.ofEpochMilli(millis)
                             .atZone(ZoneId.systemDefault())
                             .toLocalDate()
+                        val today = LocalDate.now()
+                        
+                        // Check if selected date is in the future
+                        if (localDate.isAfter(today)) {
+                            // Don't allow future dates - just close dialog without selecting
+                            onDismiss()
+                            return@Button
+                        }
+                        
                         val formattedDate = "${localDate.year}-${localDate.monthValue.toString().padStart(2, '0')}-${localDate.dayOfMonth.toString().padStart(2, '0')}"
                         onDateSelected(formattedDate)
                     }
