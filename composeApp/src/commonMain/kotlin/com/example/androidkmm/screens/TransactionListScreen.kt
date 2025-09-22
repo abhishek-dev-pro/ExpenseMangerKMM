@@ -1306,148 +1306,55 @@ private fun AddTransactionContent(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Get screen configuration for responsive design
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp
-    val screenWidth = configuration.screenWidthDp
-    val density = LocalDensity.current
+    // Use responsive design system
+    val responsiveDimensions = com.example.androidkmm.utils.ResponsiveDesign.getResponsiveDimensions()
+    val isSmallScreen = com.example.androidkmm.utils.ResponsiveDesign.isSmallScreen()
+    val isMediumScreen = com.example.androidkmm.utils.ResponsiveDesign.isMediumScreen()
     
-    // Determine screen size category - FIXED for proper small phone detection
-    val isSmallScreen = screenHeight < 600  // Small phones like iPhone SE, Pixel 4a
-    val isMediumScreen = screenHeight >= 600 && screenHeight < 700  // Medium phones
-    val isLargeScreen = screenHeight >= 700  // Large phones like iPhone Pro Max
-    
-    // Dynamic sizing based on screen size - MUCH MORE AGGRESSIVE for small phones
-    val spacing = when {
-        isSmallScreen -> 16.dp  // Much more spacing
-        isMediumScreen -> 20.dp
-        else -> 24.dp
-    }
-    
-    val titleFontSize = when {
-        isSmallScreen -> 12.sp  // Much smaller title
-        isMediumScreen -> 14.sp
-        else -> 16.sp
-    }
-    
-    val labelFontSize = when {
-        isSmallScreen -> 10.sp  // Much smaller labels
-        isMediumScreen -> 12.sp
-        else -> 14.sp
-    }
-    
-    val inputHeight = when {
-        isSmallScreen -> 32.dp  // Much smaller inputs
-        isMediumScreen -> 40.dp
-        else -> 48.dp
-    }
-    
-    val receiptHeight = when {
-        isSmallScreen -> 30.dp  // Much smaller receipt area
-        isMediumScreen -> 40.dp
-        else -> 50.dp
-    }
-    
-    val buttonHeight = when {
-        isSmallScreen -> 48.dp  // Bigger button
-        isMediumScreen -> 52.dp
-        else -> 56.dp
-    }
-    
-    val buttonPadding = when {
-        isSmallScreen -> 8.dp  // Less padding
-        isMediumScreen -> 12.dp
-        else -> 16.dp
-    }
-    
-    val amountFontSize = when {
-        isSmallScreen -> 36.sp  // Much bigger amount text
-        isMediumScreen -> 40.sp
-        else -> 44.sp
-    }
+    // Extract dimensions for easier access
+    val spacing = responsiveDimensions.spacing
+    val titleFontSize = responsiveDimensions.titleFontSize
+    val labelFontSize = responsiveDimensions.labelFontSize
+    val inputHeight = responsiveDimensions.inputHeight
+    val receiptHeight = responsiveDimensions.receiptHeight
+    val buttonHeight = responsiveDimensions.buttonHeight
+    val buttonPadding = responsiveDimensions.buttonPadding
+    val amountFontSize = responsiveDimensions.amountFontSize
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     
-    // Validation function
+    // Validation function using standardized validation
     fun validateForm(): Boolean {
-        val errors = mutableMapOf<String, String>()
-        
-        // For transfers, amount and both accounts are mandatory
-        if (formData.type == TransactionType.TRANSFER) {
-            // Validate amount
-            if (formData.amount.isBlank()) {
-                errors["amount"] = "Amount is required"
-            } else {
-                // Check if amount contains only numbers, decimal point, and is valid
-                val amountRegex = Regex("^\\d*\\.?\\d*$")
-                if (!amountRegex.matches(formData.amount)) {
-                    errors["amount"] = "Amount must contain only numbers"
-                } else {
-                    val amountValue = formData.amount.toDoubleOrNull()
-                    if (amountValue == null || amountValue <= 0) {
-                        errors["amount"] = "Please enter a valid amount"
-                    }
-                }
+        val validationResult = when (formData.type) {
+            TransactionType.TRANSFER -> {
+                com.example.androidkmm.utils.FormValidation.validateTransferForm(
+                    amount = formData.amount,
+                    fromAccount = formData.account,
+                    toAccount = formData.toAccount
+                )
             }
-            
-            // Validate from account
-            if (formData.account == null) {
-                errors["account"] = "From account is required"
+            TransactionType.INCOME -> {
+                com.example.androidkmm.utils.FormValidation.validateIncomeForm(
+                    amount = formData.amount,
+                    title = formData.title,
+                    category = formData.category,
+                    account = formData.account,
+                    description = formData.description
+                )
             }
-            
-            // Validate to account
-            if (formData.toAccount == null) {
-                errors["toAccount"] = "To account is required"
-            }
-            
-            // Validate that accounts are different
-            if (formData.account != null && formData.toAccount != null && 
-                formData.account?.name == formData.toAccount?.name) {
-                errors["transferTo"] = "Transfer to account must be different from from account"
-            }
-        } else {
-            // For income/expense, validate all required fields
-            // Validate title
-            if (formData.title.isBlank()) {
-                errors["title"] = "Title is required"
-            } else if (formData.title.length > 30) {
-                errors["title"] = "Title must be 30 characters or less"
-            }
-            
-            // Validate description
-            if (formData.description.length > 75) {
-                errors["description"] = "Description must be 75 characters or less"
-            }
-            
-            // Validate amount
-            if (formData.amount.isBlank()) {
-                errors["amount"] = "Amount is required"
-            } else {
-                // Check if amount contains only numbers, decimal point, and is valid
-                val amountRegex = Regex("^\\d*\\.?\\d*$")
-                if (!amountRegex.matches(formData.amount)) {
-                    errors["amount"] = "Amount must contain only numbers"
-                } else {
-                    val amountValue = formData.amount.toDoubleOrNull()
-                    if (amountValue == null || amountValue <= 0) {
-                        errors["amount"] = "Please enter a valid amount"
-                    }
-                }
-            }
-            
-            // Validate category
-            if (formData.category == null) {
-                errors["category"] = "Category is required"
-            }
-            
-            // Validate account
-            if (formData.account == null) {
-                errors["account"] = "Account is required"
+            TransactionType.EXPENSE -> {
+                com.example.androidkmm.utils.FormValidation.validateExpenseForm(
+                    amount = formData.amount,
+                    title = formData.title,
+                    category = formData.category,
+                    account = formData.account,
+                    description = formData.description
+                )
             }
         }
         
-        validationErrors = errors
-        return errors.isEmpty()
+        validationErrors = validationResult.errors
+        return validationResult.isValid
     }
     
     // Check if all mandatory fields are filled
@@ -3090,12 +2997,12 @@ private fun formatDateForDisplay(dateString: String): String {
     }
 }
 
-private fun getSampleAccounts(): List<Account> {
+private fun getSampleAccounts(currencySymbol: String): List<Account> {
     return listOf(
         Account(
             id = "1",
             name = "Personal Account",
-            balance = "₹10,000",
+            balance = "${currencySymbol}10,000",
             icon = Icons.Default.AccountBalance,
             color = AppColors.Info,
             type = "Savings"
@@ -3103,7 +3010,7 @@ private fun getSampleAccounts(): List<Account> {
         Account(
             id = "2",
             name = "Business Account",
-            balance = "₹50,000",
+            balance = "${currencySymbol}50,000",
             icon = Icons.Default.Business,
             color = Color(0xFF4CAF50), // green
             type = "Current"
@@ -3111,7 +3018,7 @@ private fun getSampleAccounts(): List<Account> {
         Account(
             id = "3",
             name = "Travel Fund",
-            balance = "₹5,000",
+            balance = "${currencySymbol}5,000",
             icon = Icons.Default.Flight,
             color = Color(0xFFFF9800), // orange
             type = "Savings"
@@ -3119,7 +3026,7 @@ private fun getSampleAccounts(): List<Account> {
         Account(
             id = "4",
             name = "Emergency Fund",
-            balance = "₹25,000",
+            balance = "${currencySymbol}25,000",
             icon = Icons.Default.Savings,
             color = Color(0xFF2196F3), // blue
             type = "Savings"
@@ -3127,7 +3034,7 @@ private fun getSampleAccounts(): List<Account> {
         Account(
             id = "5",
             name = "Joint Account",
-            balance = "₹15,000",
+            balance = "${currencySymbol}15,000",
             icon = Icons.Default.Group,
             color = Color(0xFFE91E63), // pink
             type = "Shared"

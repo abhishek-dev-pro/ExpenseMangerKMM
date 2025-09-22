@@ -64,8 +64,8 @@ fun HomeScreenContent(
             QuickActions(
                 onActionClick = { action ->
                     when (action) {
-                        "+ Ledger" -> onNavigateToLedger()
-                        "+ Transaction" -> onNavigateToAddTransaction()
+                        "Ledger" -> onNavigateToLedger()
+                        "Transaction" -> onNavigateToAddTransaction()
                     }
                 }
             )
@@ -195,9 +195,9 @@ private fun GroupHighlights(
             }
         }
     } else {
-        // Group list - use Column with reduced spacing
+        // Group list - use Column with consistent spacing
         Column(
-            verticalArrangement = Arrangement.spacedBy(0.8.dp)
+            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.xs)
         ) {
             groupHighlights.forEach { group ->
                 GroupItem(

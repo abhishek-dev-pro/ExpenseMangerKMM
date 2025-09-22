@@ -62,7 +62,23 @@ fun AddExpenseScreen(
         "${now.time.hour.toString().padStart(2, '0')}:${now.time.minute.toString().padStart(2, '0')}"
     }
 
-    val isFormValid = title.isNotBlank() && amount.isNotBlank() && selectedCategory != null && selectedAccount != null
+    // Enhanced form validation with detailed error tracking
+    var validationErrors by remember { mutableStateOf(mapOf<String, String>()) }
+    
+    fun validateForm(): Boolean {
+        val validationResult = com.example.androidkmm.utils.FormValidation.validateExpenseForm(
+            amount = amount,
+            title = title,
+            category = selectedCategory,
+            account = selectedAccount,
+            description = description
+        )
+        
+        validationErrors = validationResult.errors
+        return validationResult.isValid
+    }
+    
+    val isFormValid = validateForm()
 
     Column(
         modifier = Modifier
@@ -112,7 +128,10 @@ fun AddExpenseScreen(
             Spacer(Modifier.height(8.dp))
             BasicTextField(
                 value = amount,
-                onValueChange = { amount = it },
+                onValueChange = { 
+                    val sanitized = com.example.androidkmm.utils.InputSanitizer.sanitizeAmount(it)
+                    amount = sanitized
+                },
                 singleLine = true,
                 textStyle = TextStyle(
                     color = MaterialTheme.colorScheme.onBackground,
@@ -127,7 +146,7 @@ fun AddExpenseScreen(
                     )
                     .border(
                         width = 1.dp,
-                        color = Color.White.copy(alpha = 0.3f),
+                        color = if (validationErrors.containsKey("amount")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 16.dp)
@@ -142,6 +161,14 @@ fun AddExpenseScreen(
                 }
                 innerTextField()
             }
+            
+            // Amount error message
+            if (validationErrors.containsKey("amount")) {
+                Spacer(Modifier.height(4.dp))
+                com.example.androidkmm.components.FieldErrorMessage(
+                    message = validationErrors["amount"] ?: ""
+                )
+            }
 
             Spacer(Modifier.height(32.dp))
 
@@ -155,7 +182,10 @@ fun AddExpenseScreen(
             Spacer(Modifier.height(8.dp))
             BasicTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { 
+                    val sanitized = com.example.androidkmm.utils.InputSanitizer.sanitizeTitle(it)
+                    title = sanitized
+                },
                 singleLine = true,
                 textStyle = TextStyle(
                     color = MaterialTheme.colorScheme.onBackground,
@@ -169,7 +199,7 @@ fun AddExpenseScreen(
                     )
                     .border(
                         width = 1.dp,
-                        color = Color.White.copy(alpha = 0.3f),
+                        color = if (validationErrors.containsKey("title")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -181,6 +211,14 @@ fun AddExpenseScreen(
                     )
                 }
                 innerTextField()
+            }
+            
+            // Title error message
+            if (validationErrors.containsKey("title")) {
+                Spacer(Modifier.height(4.dp))
+                com.example.androidkmm.components.FieldErrorMessage(
+                    message = validationErrors["title"] ?: ""
+                )
             }
 
             Spacer(Modifier.height(24.dp))
@@ -202,7 +240,7 @@ fun AddExpenseScreen(
                     )
                     .border(
                         width = 1.dp,
-                        color = Color.White.copy(alpha = 0.3f),
+                        color = if (validationErrors.containsKey("category")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .clickable { showCategoryPicker = true }
@@ -249,6 +287,16 @@ fun AddExpenseScreen(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
+            
+            // Category error message
+            if (validationErrors.containsKey("category")) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = validationErrors["category"] ?: "",
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
             }
 
             Spacer(Modifier.height(24.dp))
@@ -331,7 +379,10 @@ fun AddExpenseScreen(
             Spacer(Modifier.height(8.dp))
             BasicTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = { 
+                    val sanitized = com.example.androidkmm.utils.InputSanitizer.sanitizeDescription(it)
+                    description = sanitized
+                },
                 textStyle = TextStyle(
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp

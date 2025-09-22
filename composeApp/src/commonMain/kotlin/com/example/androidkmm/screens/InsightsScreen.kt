@@ -83,10 +83,10 @@ fun InsightsScreen(
             text = "Financial Insights",
             color = MaterialTheme.colorScheme.onBackground,
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
+            fontSize = DesignSystem.Typography.title3,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = DesignSystem.Spacing.lg, vertical = DesignSystem.Spacing.sm)
         )
         
         // Tab Row
@@ -102,7 +102,7 @@ fun InsightsScreen(
                     text = {
                         Text(
                             text = title,
-                            fontSize = 14.sp,
+                            fontSize = DesignSystem.Typography.body,
                             fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal
                         )
                     }
@@ -308,7 +308,7 @@ private fun MonthSelectorCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(horizontal = DesignSystem.Spacing.lg, vertical = DesignSystem.Spacing.sm),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -325,13 +325,13 @@ private fun MonthSelectorCard(
             ) {
                 Text(
                     text = "${monthNames[currentMonth - 1]} $currentYear",
-                    fontSize = 20.sp,
+                    fontSize = DesignSystem.Typography.title3,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = if (isAtCurrentMonth) "Current Month" else "Historic Month",
-                    fontSize = 12.sp,
+                    fontSize = DesignSystem.Typography.caption1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

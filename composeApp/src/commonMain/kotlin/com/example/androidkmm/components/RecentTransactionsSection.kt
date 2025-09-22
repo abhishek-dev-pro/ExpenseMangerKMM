@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
@@ -33,7 +34,8 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 @Composable
 fun RecentTransactionsSection(
-    onViewAllClick: () -> Unit
+    onViewAllClick: () -> Unit,
+    onRetry: () -> Unit = {}
 ) {
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val appSettings by rememberSQLiteSettingsDatabase().getAppSettings().collectAsState(initial = AppSettings())
@@ -43,9 +45,16 @@ fun RecentTransactionsSection(
     var recentTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var hasError by remember { mutableStateOf(false) }
+    var retryCount by remember { mutableStateOf(0) }
+    
+    // Function to fetch transactions
+    fun fetchTransactions() {
+        isLoading = true
+        hasError = false
+    }
     
     // Fetch recent transactions with safety checks
-    LaunchedEffect(Unit) {
+    LaunchedEffect(retryCount) {
         try {
             // Add a longer delay to ensure database is fully initialized
             kotlinx.coroutines.delay(500)
@@ -147,7 +156,7 @@ fun RecentTransactionsSection(
                 }
             }
         } else if (hasError) {
-            // Error state
+            // Error state with retry button
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -173,10 +182,28 @@ fun RecentTransactionsSection(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Please try again later",
+                        text = "Please check your connection and try again",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { 
+                            retryCount++
+                            onRetry()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Retry",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         } else if (recentTransactions.isEmpty()) {

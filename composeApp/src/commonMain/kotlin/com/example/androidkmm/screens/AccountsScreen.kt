@@ -1039,14 +1039,14 @@ private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹"
 
             // Balance with different styling
             Text(
-                text = if (account.balance.startsWith("+") || account.balance.startsWith("₹") || account.balance.startsWith("$")) {
+                text = if (account.balance.startsWith("+") || account.balance.startsWith(currencySymbol)) {
                     account.balance // Already has currency symbol
                 } else {
                     "$currencySymbol${account.balance}"
                 },
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (account.balance.startsWith("+") || account.balance.startsWith("₹") || account.balance.startsWith("$")) {
+                color = if (account.balance.startsWith("+") || account.balance.startsWith(currencySymbol)) {
                     Color(0xFF4CAF50)
                 } else {
                     Color(0xFFF44336)

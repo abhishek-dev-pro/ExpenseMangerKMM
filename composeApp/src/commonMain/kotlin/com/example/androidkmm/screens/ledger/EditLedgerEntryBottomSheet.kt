@@ -108,19 +108,11 @@ fun EditLedgerEntryBottomSheet(
             if (foundAccount != null) {
                 selectedAccount = foundAccount
             } else {
-                // If account is not found in database, create a temporary account object
-                // This can happen if the account was deleted after the transaction was created
-                val tempAccount = com.example.androidkmm.models.Account(
-                    id = "temp_${transaction.account}",
-                    name = transaction.account,
-                    balance = "₹0.00",
-                    type = "Bank Account",
-                    icon = Icons.Default.Wallet,
-                    color = Color(0xFF4CAF50),
-                    isCustom = false
-                )
-                println("DEBUG: EditLedgerEntryBottomSheet - Account not found, creating temp account: $tempAccount")
-                selectedAccount = tempAccount
+                // If account is not found in database, show error and prevent editing
+                println("ERROR: EditLedgerEntryBottomSheet - Account '${transaction.account}' not found in database")
+                // Don't create temporary account - this can cause data integrity issues
+                // Instead, show error state or disable editing
+                selectedAccount = null
             }
         } else {
             // If no account is specified, try to find "Cash" as default
@@ -168,6 +160,42 @@ fun EditLedgerEntryBottomSheet(
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Show error if account is not found
+                if (selectedAccount == null && !transaction.account.isNullOrBlank()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD32F2F),
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = "Account Not Found",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color(0xFFD32F2F),
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = "The account '${transaction.account}' is no longer available. This transaction cannot be edited.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFFD32F2F),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
                 item {
                     // Header
                     Row(

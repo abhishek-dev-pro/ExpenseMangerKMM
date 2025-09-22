@@ -1683,7 +1683,7 @@ fun AddAccountBottomSheet(
                 .padding(16.dp)
         ) {
             Text(
-                text = "₹",
+                text = currencySymbol,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface

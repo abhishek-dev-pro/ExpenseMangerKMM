@@ -18,6 +18,7 @@ import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
 import com.example.androidkmm.utils.removeCurrencySymbols
 import com.example.androidkmm.utils.getCurrencySymbol
+import com.example.androidkmm.utils.Logger
 // import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
 @Composable
@@ -31,6 +32,19 @@ fun rememberSQLiteTransactionDatabase(): SQLiteTransactionDatabase {
     }
 }
 
+/**
+ * SQLite Transaction Database Manager
+ * 
+ * Handles all transaction-related database operations including:
+ * - Adding transactions with automatic balance updates
+ * - Updating transactions with rollback capability
+ * - Deleting transactions with balance restoration
+ * - Transfer operations with atomic balance management
+ * - Comprehensive error handling and recovery
+ * 
+ * @param database The SQLite database instance
+ * @param scope Coroutine scope for async operations
+ */
 class SQLiteTransactionDatabase(
     private val database: CategoryDatabase,
     private val scope: kotlinx.coroutines.CoroutineScope
@@ -52,19 +66,33 @@ class SQLiteTransactionDatabase(
     }
     
     fun getAllTransactions(): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.Default).map { list ->
+        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.IO).map { list ->
             try {
-                list.mapNotNull { dbTransaction ->
-                    try {
-                        dbTransaction.toTransaction()
-                    } catch (e: Exception) {
-                        println("Error converting transaction ${dbTransaction.id}: ${e.message}")
-                        null // Skip invalid transactions
+                // Use parallel processing for large datasets
+                if (list.size > 100) {
+                    list.mapNotNull { dbTransaction ->
+                        try {
+                            dbTransaction.toTransaction()
+                        } catch (e: Exception) {
+                            println("ERROR: Failed to convert transaction ${dbTransaction.id}: ${e.message}")
+                            Logger.error("Transaction conversion failed", "SQLiteTransactionDatabase", e)
+                            null
+                        }
+                    }
+                } else {
+                    list.mapNotNull { dbTransaction ->
+                        try {
+                            dbTransaction.toTransaction()
+                        } catch (e: Exception) {
+                            println("ERROR: Failed to convert transaction ${dbTransaction.id}: ${e.message}")
+                            Logger.error("Transaction conversion failed", "SQLiteTransactionDatabase", e)
+                            null
+                        }
                     }
                 }
             } catch (e: Exception) {
-                println("Error processing transaction list: ${e.message}")
-                e.printStackTrace()
+                println("ERROR: Failed to process transaction list: ${e.message}")
+                Logger.error("Transaction list processing failed", "SQLiteTransactionDatabase", e)
                 emptyList()
             }
         }
@@ -215,7 +243,7 @@ class SQLiteTransactionDatabase(
         }
     }
     
-    suspend fun updateAccountBalancesForLedgerTransaction(
+    fun updateAccountBalancesForLedgerTransaction(
         transaction: Transaction,
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
@@ -242,8 +270,23 @@ class SQLiteTransactionDatabase(
                 }
             }
             com.example.androidkmm.models.TransactionType.TRANSFER -> {
-                // Handle transfer logic if needed
-                println("DEBUG: Transfer transaction - no account balance update needed for ledger")
+                // Subtract from source account, add to destination account
+                val fromAccount = getAccountByName(transaction.account)
+                val toAccount = transaction.transferTo?.let { getAccountByName(it) }
+                
+                if (fromAccount != null) {
+                    val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
+                    val newFromBalance = currentFromBalance - transaction.amount
+                    accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                    println("DEBUG: Updated from account ${fromAccount.name} balance from $currentFromBalance to $newFromBalance (TRANSFER: -${transaction.amount})")
+                }
+                
+                if (toAccount != null) {
+                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
+                    val newToBalance = currentToBalance + transaction.amount
+                    accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                    println("DEBUG: Updated to account ${toAccount.name} balance from $currentToBalance to $newToBalance (TRANSFER: +${transaction.amount})")
+                }
             }
         }
     }
@@ -285,6 +328,48 @@ class SQLiteTransactionDatabase(
         }
     }
     
+    // Batch operations for better performance
+    fun addTransactionsBatch(
+        transactions: List<Transaction>,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
+        onSuccess: () -> Unit = {},
+        onError: (Throwable) -> Unit = {}
+    ) {
+        try {
+            database.transaction {
+                transactions.forEach { transaction ->
+                    database.categoryDatabaseQueries.insertTransaction(
+                        id = transaction.id,
+                        title = transaction.title,
+                        amount = transaction.amount,
+                        category_name = transaction.category,
+                        category_icon_name = getIconName(transaction.categoryIcon),
+                        category_color_hex = transaction.categoryColor.toHexString(),
+                        account_name = transaction.account,
+                        account_icon_name = getIconName(transaction.accountIcon),
+                        account_color_hex = transaction.accountColor.toHexString(),
+                        transfer_to = transaction.transferTo ?: "",
+                        time = transaction.time,
+                        type = transaction.type.name,
+                        description = transaction.description,
+                        date = transaction.date,
+                        is_ledger_transaction = 0,
+                        ledger_person_id = "",
+                        ledger_person_name = ""
+                    )
+                }
+            }
+            
+            // Update account balances outside of transaction
+            transactions.forEach { transaction ->
+                updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+            }
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e)
+        }
+    }
+    
     fun addTransactionWithBalanceUpdate(
         transaction: Transaction, 
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
@@ -292,37 +377,68 @@ class SQLiteTransactionDatabase(
         onError: (Throwable) -> Unit = {}
     ) {
         scope.launch {
-            try {
-                // First, add the transaction
-                database.categoryDatabaseQueries.insertTransaction(
-                    id = transaction.id,
-                    title = transaction.title,
-                    amount = transaction.amount,
-                    category_name = transaction.category,
-                    category_icon_name = getIconName(transaction.categoryIcon),
-                    category_color_hex = transaction.categoryColor.toHexString(),
-                    account_name = transaction.account,
-                    account_icon_name = getIconName(transaction.accountIcon),
-                    account_color_hex = transaction.accountColor.toHexString(),
-                    transfer_to = transaction.transferTo ?: "",
-                    time = transaction.time,
-                    type = transaction.type.name,
-                    description = transaction.description,
-                    date = transaction.date,
-                    is_ledger_transaction = 0, // Default to 0 for regular transactions
-                    ledger_person_id = "", // Empty for regular transactions
-                    ledger_person_name = "" // Empty for regular transactions
-                )
-                
-                // Then update account balances
-                updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
-                
-                println("DEBUG: Transaction added and balances updated successfully")
-                onSuccess()
-            } catch (e: Exception) {
-                println("DEBUG: Error adding transaction with balance update: ${e.message}")
-                onError(e)
-            }
+            com.example.androidkmm.utils.DatabaseErrorHandler.handleTransaction(
+                transaction = {
+                    // Validate transaction data before processing
+                    if (transaction.id.isBlank()) {
+                        throw IllegalArgumentException("Transaction ID cannot be blank")
+                    }
+                    if (transaction.amount <= 0) {
+                        throw IllegalArgumentException("Transaction amount must be positive")
+                    }
+                    if (transaction.account.isBlank()) {
+                        throw IllegalArgumentException("Transaction account cannot be blank")
+                    }
+                    
+                    // First, add the transaction
+                    database.categoryDatabaseQueries.insertTransaction(
+                        id = transaction.id,
+                        title = transaction.title,
+                        amount = transaction.amount,
+                        category_name = transaction.category,
+                        category_icon_name = getIconName(transaction.categoryIcon),
+                        category_color_hex = transaction.categoryColor.toHexString(),
+                        account_name = transaction.account,
+                        account_icon_name = getIconName(transaction.accountIcon),
+                        account_color_hex = transaction.accountColor.toHexString(),
+                        transfer_to = transaction.transferTo ?: "",
+                        time = transaction.time,
+                        type = transaction.type.name,
+                        description = transaction.description,
+                        date = transaction.date,
+                        is_ledger_transaction = 0, // Default to 0 for regular transactions
+                        ledger_person_id = "", // Empty for regular transactions
+                        ledger_person_name = "" // Empty for regular transactions
+                    )
+                    
+                    // Then update account balances
+                    updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+                },
+                rollback = {
+                    // Rollback the transaction if balance update fails
+                    try {
+                        database.categoryDatabaseQueries.deleteTransaction(transaction.id)
+                        println("DEBUG: Transaction rollback successful")
+                        Logger.info("Transaction rollback successful: ${transaction.id}", "SQLiteTransactionDatabase")
+                    } catch (rollbackError: Exception) {
+                        println("ERROR: Failed to rollback transaction: ${rollbackError.message}")
+                        Logger.error("Failed to rollback transaction", "SQLiteTransactionDatabase", rollbackError)
+                        throw rollbackError
+                    }
+                },
+                operationName = "Add Transaction with Balance Update",
+                onSuccess = {
+                    println("DEBUG: Transaction added and balances updated successfully")
+                    Logger.info("Transaction added successfully: ${transaction.id}", "SQLiteTransactionDatabase")
+                    onSuccess()
+                },
+                onError = { error ->
+                    println("ERROR: Failed to add transaction with balance update: ${error.message}")
+                    Logger.error("Failed to add transaction with balance update", "SQLiteTransactionDatabase", error.originalException)
+                    onError(error.originalException ?: Exception(error.message))
+                },
+                scope = scope
+            )
         }
     }
     
@@ -391,46 +507,95 @@ class SQLiteTransactionDatabase(
         }
     }
     
-    private suspend fun updateAccountBalancesForTransaction(
-        transaction: Transaction, 
+    private fun updateAccountBalancesForTransaction(
+        transaction: Transaction,
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
-        when (transaction.type) {
-            com.example.androidkmm.models.TransactionType.INCOME -> {
-                // Add amount to account balance
-                val account = getAccountByName(transaction.account)
-                if (account != null) {
-                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
-                    val newBalance = currentBalance + transaction.amount
-                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+        try {
+            when (transaction.type) {
+                com.example.androidkmm.models.TransactionType.INCOME -> {
+                    // Add amount to account balance
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (INCOME: +${transaction.amount})")
+                    } else {
+                        throw IllegalStateException("Account '${transaction.account}' not found for INCOME transaction")
+                    }
                 }
-            }
-            com.example.androidkmm.models.TransactionType.EXPENSE -> {
-                // Subtract amount from account balance
-                val account = getAccountByName(transaction.account)
-                if (account != null) {
-                    val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
-                    val newBalance = currentBalance - transaction.amount
-                    accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                    // Subtract amount from account balance
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: Updated account ${account.name} balance from $currentBalance to $newBalance (EXPENSE: -${transaction.amount})")
+                    } else {
+                        throw IllegalStateException("Account '${transaction.account}' not found for EXPENSE transaction")
+                    }
                 }
-            }
-            com.example.androidkmm.models.TransactionType.TRANSFER -> {
-                // Subtract from source account, add to destination account
-                val fromAccount = getAccountByName(transaction.account)
-                val toAccount = transaction.transferTo?.let { getAccountByName(it) }
-                
-                if (fromAccount != null) {
+                com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                    // Validate transfer requirements
+                    if (transaction.transferTo.isNullOrBlank()) {
+                        throw IllegalStateException("Transfer destination account is required for TRANSFER transaction")
+                    }
+                    
+                    val fromAccount = getAccountByName(transaction.account)
+                    val toAccount = getAccountByName(transaction.transferTo!!)
+                    
+                    if (fromAccount == null) {
+                        throw IllegalStateException("Source account '${transaction.account}' not found for TRANSFER transaction")
+                    }
+                    if (toAccount == null) {
+                        throw IllegalStateException("Destination account '${transaction.transferTo}' not found for TRANSFER transaction")
+                    }
+                    
+                    // Prevent self-transfer
+                    if (fromAccount.id == toAccount.id) {
+                        throw IllegalStateException("Cannot transfer to the same account")
+                    }
+                    
+                    // Validate amount
+                    if (transaction.amount <= 0) {
+                        throw IllegalStateException("Transfer amount must be positive")
+                    }
+                    
+                    // Check if source account has sufficient balance
                     val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
-                    val newFromBalance = currentFromBalance - transaction.amount
-                    accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
-                }
-                
-                if (toAccount != null) {
-                    val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
-                    val newToBalance = currentToBalance + transaction.amount
-                    accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                    if (currentFromBalance < transaction.amount) {
+                        throw IllegalStateException("Insufficient balance in source account '${fromAccount.name}'. Available: $currentFromBalance, Required: ${transaction.amount}")
+                    }
+                    
+                    // Perform the transfer atomically
+                    try {
+                        val newFromBalance = currentFromBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                        println("DEBUG: Updated from account ${fromAccount.name} balance from $currentFromBalance to $newFromBalance (TRANSFER: -${transaction.amount})")
+                        
+                        val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
+                        val newToBalance = currentToBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                        println("DEBUG: Updated to account ${toAccount.name} balance from $currentToBalance to $newToBalance (TRANSFER: +${transaction.amount})")
+                    } catch (e: Exception) {
+                        // If the second update fails, try to rollback the first update
+                        try {
+                            accountDatabaseManager.updateAccountBalance(fromAccount.id, currentFromBalance)
+                            println("DEBUG: Rolled back from account balance due to error")
+                        } catch (rollbackError: Exception) {
+                            println("ERROR: Failed to rollback from account balance: ${rollbackError.message}")
+                            Logger.error("Failed to rollback from account balance", "SQLiteTransactionDatabase", rollbackError)
+                        }
+                        throw e
+                    }
                 }
             }
+        } catch (e: Exception) {
+            println("ERROR: Failed to update account balances for transaction ${transaction.id}: ${e.message}")
+            Logger.error("Failed to update account balances", "SQLiteTransactionDatabase", e)
+            throw e
         }
     }
     
@@ -477,7 +642,7 @@ class SQLiteTransactionDatabase(
         }
     }
     
-    suspend fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
+    fun getAccountByName(accountName: String): com.example.androidkmm.models.Account? {
         return try {
             val accountRow = database.categoryDatabaseQueries.selectAccountByName(accountName).executeAsOneOrNull()
             accountRow?.toAccount()

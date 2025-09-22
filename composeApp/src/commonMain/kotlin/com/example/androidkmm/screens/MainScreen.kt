@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.activity.compose.BackHandler
 import com.example.androidkmm.components.*
 import com.example.androidkmm.database.InitializeDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
@@ -21,6 +22,14 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.theme.AppTheme
 import kotlin.time.ExperimentalTime
+
+/**
+ * Navigation state for tracking navigation history
+ */
+data class NavigationState(
+    val screen: String,
+    val timestamp: Long = System.currentTimeMillis()
+)
 
 /**
  * Main screen with bottom navigation and content switching
@@ -37,6 +46,38 @@ fun MainScreen() {
     var showAddExpenseScreen by remember { mutableStateOf(false) }
     var showAddLedgerEntrySheet by remember { mutableStateOf(false) }
     
+    // Navigation stack for proper back navigation
+    var navigationStack by remember { mutableStateOf(listOf<NavigationState>()) }
+    
+    // Handle back navigation
+    fun handleBackNavigation(): Boolean {
+        return when {
+            showAddLedgerEntrySheet -> {
+                showAddLedgerEntrySheet = false
+                true
+            }
+            showAddExpenseScreen -> {
+                showAddExpenseScreen = false
+                true
+            }
+            showCreateGroupScreen -> {
+                showCreateGroupScreen = false
+                true
+            }
+            showAddTransactionSheet -> {
+                showAddTransactionSheet = false
+                defaultTransactionType = null
+                true
+            }
+            navigateToLedgerPerson != null -> {
+                navigateToLedgerPerson = null
+                navigateToLedgerTransaction = null
+                true
+            }
+            else -> false
+        }
+    }
+    
     // Database managers
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
@@ -45,6 +86,11 @@ fun MainScreen() {
     
     // Initialize database
     InitializeDatabase()
+    
+    // Handle back navigation
+    BackHandler {
+        handleBackNavigation()
+    }
 
     AppTheme {
         Scaffold(
