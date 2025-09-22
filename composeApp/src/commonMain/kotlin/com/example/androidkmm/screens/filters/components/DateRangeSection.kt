@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.screens.filters.DateRange
 import com.example.androidkmm.screens.filters.FilterColors
 import com.example.androidkmm.screens.filters.PredefinedDateRange
@@ -90,7 +91,7 @@ fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -142,7 +143,7 @@ fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )

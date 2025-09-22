@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteAccountDatabase
 import com.example.androidkmm.models.Transaction
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 @Composable
 fun EditTransferTransactionScreen(
@@ -164,7 +165,7 @@ fun EditTransferTransactionScreen(
                     .clickable { showFromAccountSheet = true }
                     .background(Color.Black) // Black background
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color(0xFF404040), // Subtle gray border
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -208,7 +209,7 @@ fun EditTransferTransactionScreen(
                     .clickable { showToAccountSheet = true }
                     .background(Color.Black) // Black background
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color(0xFF404040), // Subtle gray border
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -265,7 +266,7 @@ fun EditTransferTransactionScreen(
                             .clickable { showDatePicker = true }
                             .background(Color.Black) // Black background
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = Color(0xFF404040), // Subtle gray border
                                 shape = RoundedCornerShape(12.dp)
                             )
@@ -297,7 +298,7 @@ fun EditTransferTransactionScreen(
                             .clickable { showTimePicker = true }
                             .background(Color.Black) // Black background
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = Color(0xFF404040), // Subtle gray border
                                 shape = RoundedCornerShape(12.dp)
                             )
@@ -368,7 +369,7 @@ fun EditTransferTransactionScreen(
                     .clickable { onDismiss() }
                     .background(Color.Black) // Black background
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color(0xFF404040), // Subtle gray border
                         shape = RoundedCornerShape(12.dp)
                     ),
@@ -401,7 +402,7 @@ fun EditTransferTransactionScreen(
                     }
                     .background(Color.Black) // Black background
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color(0xFF404040), // Subtle gray border
                         shape = RoundedCornerShape(12.dp)
                     ),

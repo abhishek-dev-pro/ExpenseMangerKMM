@@ -34,6 +34,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.TransactionType
@@ -145,7 +146,7 @@ private fun FilterContent(
         Spacer(modifier = Modifier.height(24.dp))
         
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_XXL)
         ) {
             // Transaction Type Section
             item {
@@ -336,7 +337,7 @@ private fun TransactionTypeSection(
         Spacer(modifier = Modifier.height(12.dp))
         
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             // All Transactions
             FilterOptionCard(
@@ -502,8 +503,8 @@ private fun CategoriesSection(
         // Use LazyVerticalGrid for better UX with many categories
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.heightIn(max = 200.dp) // Limit height to prevent bottom sheet from becoming too tall
         ) {
             items(categories) { category ->
@@ -521,7 +522,7 @@ private fun CategoriesSection(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
             ) {
                 // Select All button
                 OutlinedButton(
@@ -688,8 +689,8 @@ private fun AccountsSection(
         // Use LazyVerticalGrid for better UX with many accounts
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.heightIn(max = 120.dp) // Limit height since accounts are usually fewer
         ) {
             items(accounts) { account ->
@@ -707,7 +708,7 @@ private fun AccountsSection(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
             ) {
                 // Select All button
                 OutlinedButton(
@@ -858,7 +859,7 @@ private fun DateRangeSection(
         
         // Predefined Date Ranges
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             items(PredefinedDateRange.values().toList()) { predefinedRange ->
                 DateRangeChip(
@@ -881,7 +882,7 @@ private fun DateRangeSection(
         // Custom Date Range
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             // From Date - Clickable field
             Box(
@@ -893,7 +894,7 @@ private fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -945,7 +946,7 @@ private fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1038,7 +1039,7 @@ private fun AmountRangeSection(
         
         // Predefined Amount Ranges
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             items(PredefinedAmountRange.values().toList()) { predefinedRange ->
                 AmountRangeChip(
@@ -1060,7 +1061,7 @@ private fun AmountRangeSection(
         
         // Custom Amount Range
         Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             // Min Amount
             OutlinedTextField(
@@ -1178,7 +1179,7 @@ private fun ActionButtons(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
     ) {
         // Cancel Button
         OutlinedButton(

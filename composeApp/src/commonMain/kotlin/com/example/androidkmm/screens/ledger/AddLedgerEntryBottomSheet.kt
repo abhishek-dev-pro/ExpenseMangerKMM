@@ -37,6 +37,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -496,7 +497,7 @@ fun AddLedgerEntryBottomSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .border(
-                                    width = 1.dp,
+                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
@@ -549,7 +550,7 @@ fun AddLedgerEntryBottomSheet(
                                 .fillMaxWidth()
                                 .height(100.dp)
                                 .border(
-                                    width = 1.dp,
+                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),

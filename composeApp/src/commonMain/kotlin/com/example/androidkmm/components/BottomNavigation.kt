@@ -7,7 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
-import com.example.androidkmm.design.DesignSystem
+import androidx.compose.ui.unit.dp
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -28,13 +29,13 @@ fun BottomNavigationBar(
                     Icon(
                         imageVector = item.icon, 
                         contentDescription = item.label, 
-                        modifier = Modifier.size(DesignSystem.IconSize.lg)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     ) 
                 },
                 label = { 
                     TextUtils.StandardText(
                         text = item.label,
-                        fontSize = DesignSystem.Typography.tabLabel
+                        fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(

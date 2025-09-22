@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.screens.EditTransferTransactionScreen
@@ -1151,7 +1152,7 @@ private fun EditTransactionContent(
                     .fillMaxWidth()
                     .height(60.dp)
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -1194,7 +1195,7 @@ private fun EditTransactionContent(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     ),
                     border = BorderStroke(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.onSurface
                     ),
                     shape = RoundedCornerShape(16.dp)

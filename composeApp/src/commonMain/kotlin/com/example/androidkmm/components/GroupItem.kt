@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 /**
  * Group item component for displaying group highlights
@@ -30,19 +31,19 @@ fun GroupItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(iOSStyleDesignSystem.Padding.SMALL),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Group icon - same style as transaction category icon
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                     .background(color),
                 contentAlignment = Alignment.Center
             ) {
@@ -50,7 +51,7 @@ fun GroupItem(
                     imageVector = Icons.Default.Group,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
             
@@ -62,14 +63,15 @@ fun GroupItem(
             ) {
                 Text(
                     text = title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = members,
-                    fontSize = 14.sp,
+                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -80,14 +82,15 @@ fun GroupItem(
             ) {
                 Text(
                     text = amount,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold
+                    ),
                     color = if (positive) Color(0xFF00A63E) else Color(0xFFEF4444)
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = chip,
-                    fontSize = 12.sp,
+                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

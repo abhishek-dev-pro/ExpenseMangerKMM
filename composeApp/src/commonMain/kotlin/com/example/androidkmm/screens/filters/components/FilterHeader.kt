@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 /**
  * Header component for the filter bottom sheet
@@ -32,7 +33,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
         // Filter Icon
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
@@ -41,7 +42,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
                 contentDescription = "Filter",
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     .align(Alignment.Center)
             )
         }
@@ -53,14 +54,13 @@ fun FilterHeader(onDismiss: () -> Unit) {
             Text(
                 text = "Filter Transactions",
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                style = iOSStyleDesignSystem.Typography.TITLE_2
             )
             
             Text(
                 text = "Customize your transaction view",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp
+                style = iOSStyleDesignSystem.Typography.CALL_OUT
             )
         }
         
@@ -68,7 +68,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
         IconButton(
             onClick = onDismiss,
             modifier = Modifier
-                .size(40.dp)
+                .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {

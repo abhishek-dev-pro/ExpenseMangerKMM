@@ -71,6 +71,7 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
 
 // Color definitions matching the iOS design
@@ -216,7 +217,7 @@ fun TransactionsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE),
     ) {
         // Fixed Header Section (sticky)
         TransactionHeader(
@@ -291,9 +292,9 @@ fun TransactionsScreen(
         LazyColumn(
                 state = listState,
             modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
+                contentPadding = PaddingValues(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
                 verticalArrangement = Arrangement.spacedBy(
-                    if (filteredTransactions.size > 10) 8.dp else 16.dp
+                    if (filteredTransactions.size > 10) iOSStyleDesignSystem.Padding.SMALL else iOSStyleDesignSystem.Padding.MEDIUM
                 )
         ) {
             items(dayGroups) { dayGroup ->
@@ -375,13 +376,12 @@ private fun ImagePickerDialog(
                 Text(
                     text = "Select Image Source",
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
+                    style = iOSStyleDesignSystem.Typography.TITLE_3
                 )
             },
             text = {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
                 ) {
                     // Camera option
     Row(
@@ -392,21 +392,22 @@ private fun ImagePickerDialog(
                                 onImageSelected("camera_image_path")
                                 showDialog = false
                             }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = iOSStyleDesignSystem.Padding.SMALL),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = "Camera",
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE),
                             tint = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Take Photo",
                             color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            style = iOSStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            )
                         )
                     }
                     
@@ -421,21 +422,22 @@ private fun ImagePickerDialog(
                                 onImageSelected("gallery_image_path")
                                 showDialog = false
                             }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = iOSStyleDesignSystem.Padding.SMALL),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.PhotoLibrary,
                             contentDescription = "Gallery",
-                            modifier = Modifier.size(24.dp),
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE),
                             tint = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "Choose from Gallery",
                             color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
+                            style = iOSStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            )
                         )
                     }
                 }
@@ -461,8 +463,8 @@ private fun TransactionHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 8.dp),
+            .padding(horizontal = iOSStyleDesignSystem.Padding.MEDIUM_LARGE)
+            .padding(top = iOSStyleDesignSystem.Padding.SMALL),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -470,21 +472,19 @@ private fun TransactionHeader(
             Text(
                 text = "Transactions",
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold
+                style = iOSStyleDesignSystem.Typography.LARGE_TITLE
             )
             Text(
                 text = "$transactionCount transactions",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal
+                style = iOSStyleDesignSystem.Typography.BODY
             )
         }
 
         IconButton(
             onClick = onAddClick,
             modifier = Modifier
-                .size(48.dp)
+                .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                 .background(
                     Color.White,
                     CircleShape
@@ -494,7 +494,7 @@ private fun TransactionHeader(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Transaction",
                 tint = Color.Black,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
             )
         }
     }
@@ -525,14 +525,14 @@ private fun MonthNavigation(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = iOSStyleDesignSystem.Padding.XXL, vertical = iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
             onClick = onPreviousMonth,
             modifier = Modifier
-                .size(18.dp)
+                .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                 .clip(CircleShape)
                 .background(Color(0xFF121212)) // background #121212
                 .border(
@@ -545,22 +545,21 @@ private fun MonthNavigation(
                 imageVector = Icons.Default.KeyboardArrowLeft,
                 contentDescription = "Previous Month",
                 tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
             )
         }
 
         Text(
             text = currentMonthYear,
-                            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
+            color = MaterialTheme.colorScheme.onBackground,
+            style = iOSStyleDesignSystem.Typography.TITLE_3
         )
 
         IconButton(
             onClick = if (isNextMonthDisabled) { {} } else onNextMonth,
             enabled = !isNextMonthDisabled,
             modifier = Modifier
-                .size(18.dp)
+                .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                 .clip(CircleShape)
                 .background(Color(0xFF121212)) // background #121212
                 .border(
@@ -577,7 +576,7 @@ private fun MonthNavigation(
                 } else {
                     MaterialTheme.colorScheme.onBackground
                 },
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
             )
         }
     }
@@ -601,20 +600,20 @@ private fun SummaryCard(transactions: List<com.example.androidkmm.models.Transac
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .padding(horizontal = iOSStyleDesignSystem.Padding.XXL, vertical = iOSStyleDesignSystem.Padding.SMALL)
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             SummaryColumn(
@@ -654,12 +653,12 @@ private fun SummaryColumn(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                 .background(iconColor.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center
         ) {
@@ -667,22 +666,22 @@ private fun SummaryColumn(
                 imageVector = icon,
                 contentDescription = label,
                 tint = iconColor,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
             )
         }
 
         Text(
             text = amount,
             color = amountColor,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+            style = iOSStyleDesignSystem.Typography.TITLE_3
         )
 
         Text(
             text = label,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            style = iOSStyleDesignSystem.Typography.CALL_OUT.copy(
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+            )
         )
     }
 }
@@ -695,8 +694,8 @@ private fun SearchAndFilter(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
+        horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -713,11 +712,11 @@ private fun SearchAndFilter(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             },
                 modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -735,20 +734,20 @@ private fun SearchAndFilter(
         IconButton(
             onClick = onFilterClick,
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                 )
         ) {
             Icon(
                 imageVector = Icons.Default.FilterAlt,
                 contentDescription = "Filter",
                 tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
         }
     }
@@ -768,49 +767,40 @@ private fun DayGroupSection(
     var showEditScreen by remember { mutableStateOf(false) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
         // Day Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = iOSStyleDesignSystem.Padding.SMALL),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
                 Text(
                 text = "${dayGroup.displayDate} (${dayGroup.transactions.size})",
                     color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
+                style = iOSStyleDesignSystem.Typography.BODY.copy(
+                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                ),
                 fontStyle = FontStyle.Normal
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                 // Always show income (0 if no income)
                     Text(
                     text = "+$currencySymbol${formatDouble(dayGroup.income, 2)}",
                         color = TransactionColors.income,
-                        fontSize = 16.sp,
-                    fontStyle = FontStyle.Normal,
-                    style = TextStyle(
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.Normal
-                    )
+                        style = iOSStyleDesignSystem.Typography.BODY
                 )
                 // Always show expense (0 if no expense)
                     Text(
                     text = "-$currencySymbol${formatDouble(dayGroup.expense, 2)}",
                         color = TransactionColors.expense,
-                        fontSize = 16.sp,
-                    fontStyle = FontStyle.Normal,
-                    style = androidx.compose.ui.text.TextStyle(
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.Normal
-                    )
-                    )
+                        style = iOSStyleDesignSystem.Typography.BODY
+                )
             }
         }
 
@@ -945,14 +935,14 @@ fun TransactionCard(
             modifier = Modifier
                 .fillMaxWidth()
             .clickable { onClick(transaction) }
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = iOSStyleDesignSystem.Padding.SMALL, vertical = iOSStyleDesignSystem.Padding.XS),
             verticalAlignment = Alignment.CenterVertically
         ) {
         // Category Icon - larger and more prominent
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                     .background(transaction.categoryColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -960,7 +950,7 @@ fun TransactionCard(
                     imageVector = transaction.categoryIcon,
                     contentDescription = transaction.category,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -969,7 +959,7 @@ fun TransactionCard(
             // Transaction Details
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
             ) {
             // For transfers, show clear from/to information
             if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
@@ -980,8 +970,9 @@ fun TransactionCard(
                         "Transfer"
                     },
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    ),
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -990,42 +981,43 @@ fun TransactionCard(
                 Text(
                     text = "${transaction.time} • Transfer",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp,
+                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
                     fontStyle = FontStyle.Normal
                 )
             } else {
                 Text(
                     text = transaction.title,
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    ),
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = transaction.time,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
+                        style = iOSStyleDesignSystem.Typography.CAPTION_1,
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = "•",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
+                        style = iOSStyleDesignSystem.Typography.CAPTION_1,
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = transaction.category,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
+                        style = iOSStyleDesignSystem.Typography.CAPTION_1,
                         fontStyle = FontStyle.Normal
                     )
                 }
@@ -1035,7 +1027,7 @@ fun TransactionCard(
             // Amount and Account
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
             ) {
                 val amountColor = when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> TransactionColors.income
@@ -1052,12 +1044,8 @@ fun TransactionCard(
                 Text(
                     text = amountText,
                     color = amountColor,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Normal,
-                fontStyle = FontStyle.Normal,
-                style = androidx.compose.ui.text.TextStyle(
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold
+                style = iOSStyleDesignSystem.Typography.TITLE_3.copy(
+                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold
                 )
             )
 
@@ -1146,8 +1134,8 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.MEDIUM)
         ) {
             AddTransactionContent(
                 formData = formData,
@@ -1400,7 +1388,7 @@ private fun AddTransactionContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 0.dp)  // Remove top padding completely
-            .padding(horizontal = if (isSmallScreen) 8.dp else 20.dp, vertical = if (isSmallScreen) 1.dp else 8.dp)
+            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL)
             .padding(bottom = if (isSmallScreen) 120.dp else 140.dp),  // Account for bottom nav bar
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
@@ -1436,7 +1424,7 @@ private fun AddTransactionContent(
             // From Account and To Account for transfers
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
@@ -1468,7 +1456,7 @@ private fun AddTransactionContent(
             // Category and Account for income/expense
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
@@ -1525,7 +1513,7 @@ private fun AddTransactionContent(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
         ) {
             DateTimeSelector(
                 modifier = Modifier.weight(1f),
@@ -1598,7 +1586,7 @@ private fun AddTransactionContent(
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF2196F3) // Bright blue color
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
         ) {
             Text(
                 text = "Add Transaction",
@@ -1633,7 +1621,7 @@ private fun TransactionTypeSelector(
         modifier = Modifier
             .fillMaxWidth(0.9f)  // 90% width
             .height(toggleHeight)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
             .background(MaterialTheme.colorScheme.surface)
             .padding(2.dp)
     ) {
@@ -1782,7 +1770,7 @@ private fun CategoryAccountSelector(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
         Text(
             text = title,
@@ -1796,13 +1784,13 @@ private fun CategoryAccountSelector(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(inputHeight),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             border = BorderStroke(
-                width = 1.dp,
+                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             ),
             contentPadding = PaddingValues(12.dp)
@@ -1811,7 +1799,7 @@ private fun CategoryAccountSelector(
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                     tint = iconColor
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1840,7 +1828,7 @@ private fun InputField(
     inputHeight: Dp = 56.dp
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
         Text(
             text = label,
@@ -1857,7 +1845,7 @@ private fun InputField(
                 .height(inputHeight),
             placeholder = { Text(placeholder) },
             isError = errorMessage != null,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = Color(0xFF121212),
@@ -1896,11 +1884,11 @@ private fun DateTimeSelector(
     Button(
         onClick = onClick,
         modifier = modifier.height(inputHeight).border(
-            width = 1.dp, // very thin
+            width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL, // very thin
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), // white with alpha
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
         ),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Black,
             contentColor = Color.White
@@ -1919,7 +1907,7 @@ private fun DateTimeSelector(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
         }
     }
@@ -1937,7 +1925,7 @@ private fun ReceiptUploadSection(
     var selectedImagePath by remember { mutableStateOf<String?>(null) }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
         Text(
             text = "Receipt (Optional)",
@@ -1952,13 +1940,13 @@ private fun ReceiptUploadSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                     .border(
                         width = 0.5.dp, // very thin border
                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                     ),
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -1972,7 +1960,7 @@ private fun ReceiptUploadSection(
                     Icon(
                         imageVector = Icons.Default.Image,
                         contentDescription = "Receipt Image",
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -1996,7 +1984,7 @@ private fun ReceiptUploadSection(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Remove",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                         )
                     }
                 }
@@ -2009,11 +1997,11 @@ Button(
                 .fillMaxWidth()
                 .height(receiptHeight)
                 .border(
-                    width = 2.dp,
+                    width = iOSStyleDesignSystem.Sizes.BORDER_THICK,
                     brush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
                 ),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2026,7 +2014,7 @@ Button(
                 Icon(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = "Upload Receipt",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -2036,7 +2024,7 @@ Button(
                 )
                     Text(
                         text = "Images only",
-                        fontSize = 12.sp,
+                        style = iOSStyleDesignSystem.Typography.CAPTION_1,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -2085,7 +2073,7 @@ fun AccountSelectionBottomSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding(),
             contentPadding = PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.XXS)
         ) {
             item {
                 // Header with close button
@@ -2096,7 +2084,7 @@ fun AccountSelectionBottomSheet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.size(32.dp))
+                    Spacer(modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL))
 
                     Text(
                         text = title,
@@ -2107,13 +2095,13 @@ fun AccountSelectionBottomSheet(
 
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
                             tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                         )
                     }
                 }
@@ -2148,13 +2136,13 @@ fun AccountSelectionBottomSheet(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
                         .padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                         .border(
-                            width = 1.dp,
+                            width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                             color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                         ),
-                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ),
@@ -2165,12 +2153,12 @@ fun AccountSelectionBottomSheet(
                             .fillMaxWidth()
                             .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
                     ) {
                         // Plus icon
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
@@ -2179,14 +2167,14 @@ fun AccountSelectionBottomSheet(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add Account",
                                 tint = Color.White,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                             )
                         }
 
                         // Add Account text
                         Column(
                             modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
                         ) {
                             Text(
                                 text = "Add Account",
@@ -2222,13 +2210,13 @@ private fun AccountCard(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .padding(vertical = 6.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -2239,12 +2227,12 @@ private fun AccountCard(
                 .fillMaxWidth()
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
         ) {
             // Dollar sign icon
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
@@ -2260,7 +2248,7 @@ private fun AccountCard(
             // Account details
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
             ) {
                 Text(
                     text = account.name,
@@ -2271,20 +2259,20 @@ private fun AccountCard(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_TINY)
                 ) {
                     // Green arrow up icon
                     Icon(
                         imageVector = Icons.Default.TrendingUp,
                         contentDescription = null,
                         tint = TransactionColors.income,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
 
                     Text(
                         text = account.balance,
                         color = TransactionColors.income,
-                        fontSize = 16.sp,
+                        style = iOSStyleDesignSystem.Typography.BODY,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -2353,7 +2341,7 @@ fun CategorySelectionBottomSheet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.size(32.dp))
+                    Spacer(modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL))
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
@@ -2375,13 +2363,13 @@ fun CategorySelectionBottomSheet(
 
                     IconButton(
                         onClick = onDismiss,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                         )
                 }
             }
@@ -2393,8 +2381,8 @@ fun CategorySelectionBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 contentPadding = PaddingValues(bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE),
+                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
             ) {
                 items(categories) { category ->
                     CategoryGridCard(
@@ -2433,13 +2421,13 @@ private fun CategoryCard(
         onClick = onClick,
         modifier = modifier
             .height(80.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -2453,7 +2441,7 @@ private fun CategoryCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -2462,7 +2450,7 @@ private fun CategoryCard(
                     imageVector = category.icon,
                     contentDescription = category.name,
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
 
@@ -2489,13 +2477,13 @@ private fun CategoryGridCard(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
             .border(
                 width = if (isAddButton) 1.dp else 0.5.dp,
                 color = if (isAddButton) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
         colors = CardDefaults.cardColors(
             containerColor = if (isAddButton) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
         )
@@ -2509,7 +2497,7 @@ private fun CategoryGridCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -2518,7 +2506,7 @@ private fun CategoryGridCard(
                     imageVector = category.icon,
                     contentDescription = category.name,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -2663,13 +2651,13 @@ private fun AnimatedSummaryCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp,
                 color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -2686,7 +2674,7 @@ private fun AnimatedSummaryCard(
                     Box(
                         modifier = Modifier
                             .size(animatedIconSize.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .background(TransactionColors.incomeBackground),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2694,7 +2682,7 @@ private fun AnimatedSummaryCard(
                             imageVector = Icons.Default.TrendingUp,
                             contentDescription = "Income",
                             tint = TransactionColors.income,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -2721,7 +2709,7 @@ private fun AnimatedSummaryCard(
                     Box(
                         modifier = Modifier
                             .size(animatedIconSize.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .background(TransactionColors.expenseBackground),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2729,7 +2717,7 @@ private fun AnimatedSummaryCard(
                             imageVector = Icons.Default.TrendingDown,
                             contentDescription = "Expenses",
                             tint = TransactionColors.expense,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -2756,7 +2744,7 @@ private fun AnimatedSummaryCard(
                     Box(
                         modifier = Modifier
                             .size(animatedIconSize.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .background((if (total >= 0) TransactionColors.incomeBackground else TransactionColors.expenseBackground)),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2764,7 +2752,7 @@ private fun AnimatedSummaryCard(
                             imageVector = Icons.Default.Money,
                             contentDescription = "Total",
                             tint = (if (total >= 0) TransactionColors.income else TransactionColors.expense),
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -2804,13 +2792,13 @@ private fun CompactSummaryCard(transactions: List<com.example.androidkmm.models.
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp,
                 color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -2903,14 +2891,14 @@ private fun EmptyTransactionState(
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(32.dp)
                     )
-                    .size(120.dp),
+                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_GIANT),
 
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Receipt,
                     contentDescription = "No transactions",
-                    modifier = Modifier.size(80.dp),
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MASSIVE),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -2942,7 +2930,7 @@ private fun EmptyTransactionState(
                     containerColor = Color.White,
                     contentColor = Color.Black
                 ),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
                 modifier = Modifier
                     .height(40.dp)
                     .padding(horizontal = 12.dp)
@@ -2950,7 +2938,7 @@ private fun EmptyTransactionState(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add transaction",
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -3412,7 +3400,7 @@ fun EditTransactionScreen(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
                     tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
         }
@@ -3423,7 +3411,7 @@ fun EditTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             // Transaction Type Toggle - 80% width with larger text
             Row(
@@ -3436,7 +3424,7 @@ fun EditTransactionScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                         .background(Color(0xFF2A2A2A))
                         .padding(2.dp)
                 ) {
@@ -3464,7 +3452,7 @@ fun EditTransactionScreen(
                                 Icon(
                                     imageVector = Icons.Default.TrendingDown,
                                     contentDescription = "Expense",
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
@@ -3496,7 +3484,7 @@ fun EditTransactionScreen(
                                 Icon(
                                     imageVector = Icons.Default.TrendingUp,
                                     contentDescription = "Income",
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
@@ -3547,7 +3535,7 @@ fun EditTransactionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
             ) {
                 // Category
                 Column(modifier = Modifier.weight(1f)) {
@@ -3561,13 +3549,13 @@ fun EditTransactionScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .clickable { showCategorySheet = true }
                             .background(MaterialTheme.colorScheme.surface)
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
                             )
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -3575,7 +3563,7 @@ fun EditTransactionScreen(
                         Icon(
                             imageVector = Icons.Default.Category,
                             contentDescription = "Category",
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -3607,13 +3595,13 @@ fun EditTransactionScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .clickable { showFromAccountSheet = true }
                             .background(MaterialTheme.colorScheme.surface)
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
                             )
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -3621,7 +3609,7 @@ fun EditTransactionScreen(
                         Icon(
                             imageVector = Icons.Default.AccountBalance,
                             contentDescription = "Account",
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -3657,19 +3645,19 @@ fun EditTransactionScreen(
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
                 ) {
                     // Date Picker
                     Row(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .clickable { showDatePicker = true }
                             .background(MaterialTheme.colorScheme.surface)
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
                             )
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -3678,7 +3666,7 @@ fun EditTransactionScreen(
                             imageVector = Icons.Default.CalendarMonth,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -3694,13 +3682,13 @@ fun EditTransactionScreen(
                     Row(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                             .clickable { showTimePicker = true }
                             .background(MaterialTheme.colorScheme.surface)
                             .border(
-                                width = 1.dp,
+                                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                 color = MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
                             )
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -3709,7 +3697,7 @@ fun EditTransactionScreen(
                             imageVector = Icons.Default.AccessTime,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -3784,21 +3772,21 @@ fun EditTransactionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                 // Cancel Button
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                         .background(Color(0xFF2A2A2A))
                         .clickable { onDismiss() },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Cancel",
-                        fontSize = 16.sp,
+                        style = iOSStyleDesignSystem.Typography.BODY,
                         fontWeight = FontWeight.Medium,
                         color = Color.White
                     )
@@ -3809,7 +3797,7 @@ fun EditTransactionScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                         .background(Color.White)
                         .clickable {
                             val updatedTransaction = transaction.copy(
@@ -3838,13 +3826,13 @@ fun EditTransactionScreen(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Save",
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                             tint = Color.Black
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Save Changes",
-                            fontSize = 16.sp,
+                            style = iOSStyleDesignSystem.Typography.BODY,
                             fontWeight = FontWeight.Medium,
                             color = Color.Black
                         )
@@ -4005,14 +3993,14 @@ fun AddCategoryBottomSheetForTransaction(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             items(icons.size) { index ->
                 val icon = icons[index]
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                         .clip(CircleShape)
                         .background(
                             if (selectedIconIndex == index) MaterialTheme.colorScheme.primary
@@ -4028,7 +4016,7 @@ fun AddCategoryBottomSheetForTransaction(
                         imageVector = icon,
                         contentDescription = null,
                         tint = if (selectedIconIndex == index) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     )
                 }
             }
@@ -4053,12 +4041,12 @@ fun AddCategoryBottomSheetForTransaction(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             colors.forEach { color ->
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                         .clip(CircleShape)
                         .background(
                             if (selectedColor == color) color
@@ -4077,7 +4065,7 @@ fun AddCategoryBottomSheetForTransaction(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                         )
                     }
                 }
@@ -4131,11 +4119,11 @@ fun AddCategoryBottomSheetForTransaction(
                 containerColor = if (categoryName.isNotEmpty() && !isLoading) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurfaceVariant,
                 contentColor = if (categoryName.isNotEmpty() && !isLoading) Color.White else Color(0xFF666666)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )

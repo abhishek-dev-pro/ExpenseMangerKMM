@@ -12,6 +12,7 @@ import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
 
@@ -64,21 +65,20 @@ fun MonthlySummaryCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE) // iOS rounded corners
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(DesignSystem.Spacing.lg)
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
         ) {
             Text(
                 text = "Monthly Summary",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
+                style = iOSStyleDesignSystem.Typography.HEADLINE,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
+            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -90,13 +90,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Income",
-                        fontSize = 14.sp,
+                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.first)}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = iOSStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -107,13 +106,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Expenses",
-                        fontSize = 14.sp,
+                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.second)}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = iOSStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -124,13 +122,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Net",
-                        fontSize = 14.sp,
+                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.third)}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = iOSStyleDesignSystem.Typography.BODY,
                         color = if (monthlyData.third >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
                 }

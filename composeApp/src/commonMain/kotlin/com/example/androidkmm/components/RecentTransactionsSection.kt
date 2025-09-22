@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
@@ -100,8 +101,7 @@ fun RecentTransactionsSection(
         ) {
             Text(
                 text = "Recent Transactions",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = iOSStyleDesignSystem.Typography.TITLE_3,
                 color = MaterialTheme.colorScheme.onBackground
             )
             
@@ -112,18 +112,19 @@ fun RecentTransactionsSection(
                 },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "View all",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
+                    Text(
+                        text = "View all",
+                        style = iOSStyleDesignSystem.Typography.CALL_OUT.copy(
+                            fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                        ),
+                        color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = "View all",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                 )
             }
         }
@@ -135,23 +136,23 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(iOSStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "Loading transactions...",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Text(
+                            text = "Loading transactions...",
+                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -160,32 +161,33 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(iOSStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "Unable to load transactions",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        Text(
+                            text = "Unable to load transactions",
+                            style = iOSStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
-                        text = "Please check your connection and try again",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
+                        Text(
+                            text = "Please check your connection and try again",
+                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
@@ -196,7 +198,7 @@ fun RecentTransactionsSection(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                     ) {
                         Text(
                             text = "Retry",
@@ -211,31 +213,32 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(iOSStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Receipt,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "No recent transactions",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        Text(
+                            text = "No recent transactions",
+                            style = iOSStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
-                        text = "Your recent transactions will appear here",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Text(
+                            text = "Your recent transactions will appear here",
+                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -265,14 +268,14 @@ currencySymbol: String
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(iOSStyleDesignSystem.Padding.SMALL),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Category icon - more prominent like restaurant example
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
                     .background(transaction.categoryColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -280,7 +283,7 @@ currencySymbol: String
                     imageVector = transaction.categoryIcon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
             
@@ -292,8 +295,9 @@ currencySymbol: String
             ) {
                 Text(
                     text = transaction.title,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -301,7 +305,7 @@ currencySymbol: String
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}",
-                    fontSize = 14.sp,
+                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -312,8 +316,9 @@ currencySymbol: String
             ) {
                 Text(
                     text = formatAmount(transaction.amount, transaction.type, currencySymbol),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold
+                    ),
                     color = when (transaction.type) {
                         TransactionType.INCOME -> Color(0xFF00A63E)
                         TransactionType.EXPENSE -> Color(0xFFEF4444)
@@ -323,7 +328,7 @@ currencySymbol: String
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = transaction.time,
-                    fontSize = 12.sp,
+                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

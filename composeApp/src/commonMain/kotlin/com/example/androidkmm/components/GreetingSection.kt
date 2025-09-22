@@ -11,8 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.GreetingUtils
 import com.example.androidkmm.utils.TextUtils
 
@@ -37,20 +38,20 @@ fun GreetingSection() {
             TextUtils.StandardText(
                 text = "Hi $userName 👋",
                 color = Color.White,
-                fontSize = DesignSystem.Typography.title3,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Normal
+                fontSize = iOSStyleDesignSystem.Typography.TITLE_3.fontSize,
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular
             )
             TextUtils.StandardText(
                 text = greeting,
                 color = Color.Gray,
-                fontSize = DesignSystem.Typography.footnote
+                fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize
             )
         }
         Icon(
             imageVector = Icons.Outlined.Notifications,
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.size(DesignSystem.IconSize.lg)
+            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
         )
     }
 }

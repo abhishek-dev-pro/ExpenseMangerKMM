@@ -39,6 +39,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 // Color definitions for AccountsScreen - now using MaterialTheme
 internal val AccountsGreenSuccess = Color(0xFF4CAF50)
@@ -80,33 +81,32 @@ fun AccountsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
                     Text(
                         text = "Manage Accounts",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = iOSStyleDesignSystem.Typography.TITLE_1,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "Add, edit, or manage your financial accounts",
-                        fontSize = 14.sp,
+                        style = iOSStyleDesignSystem.Typography.CALL_OUT,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 IconButton(
                     onClick = onBackClick,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
                         tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     )
                 }
             }
@@ -142,9 +142,9 @@ fun AccountsScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        contentPadding = PaddingValues(bottom = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL),
+                        contentPadding = PaddingValues(bottom = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL),
+                        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.MEDIUM)
                     ) {
                         if (accounts.isEmpty()) {
                             item {
@@ -250,13 +250,13 @@ private fun AccountCard(
             .fillMaxWidth()
             .clickable { onEditClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -266,7 +266,7 @@ private fun AccountCard(
                 // Account Icon
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                         .clip(CircleShape)
                         .background(getAccountTypeColor(account.type)),
                     contentAlignment = Alignment.Center
@@ -275,7 +275,7 @@ private fun AccountCard(
                         imageVector = getAccountTypeIcon(account.type),
                         contentDescription = account.type,
                         tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     )
                 }
 
@@ -285,13 +285,12 @@ private fun AccountCard(
                 Column {
                     Text(
                         text = account.name,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        style = iOSStyleDesignSystem.Typography.HEADLINE,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = account.type,
-                        fontSize = 14.sp,
+                        style = iOSStyleDesignSystem.Typography.CALL_OUT,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -306,13 +305,12 @@ private fun AccountCard(
                 ) {
                     Text(
                         text = "$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        style = iOSStyleDesignSystem.Typography.HEADLINE,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = "Balance",
-                        fontSize = 12.sp,
+                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -321,13 +319,13 @@ private fun AccountCard(
 
                 IconButton(
                     onClick = onDeleteClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
                         tint = AccountsRedError,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }
             }
@@ -342,49 +340,48 @@ private fun EmptyAccountsState(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 32.dp),
+            .padding(vertical = iOSStyleDesignSystem.Padding.XXL),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(32.dp),
+                .padding(iOSStyleDesignSystem.Padding.XXL),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = Icons.Default.AccountBalance,
                 contentDescription = "No Accounts",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_HUGE)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
 
             Text(
                 text = "No Accounts Yet",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
+                style = iOSStyleDesignSystem.Typography.TITLE_2,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.SMALL))
 
             Text(
                 text = "Add your first account to start tracking your finances",
-                fontSize = 14.sp,
+                style = iOSStyleDesignSystem.Typography.CALL_OUT,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.LARGE))
 
             Button(
                 onClick = onAddAccount,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AccountsBluePrimary
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -439,7 +436,7 @@ fun AddAccountBottomSheet(
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
                 .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
@@ -466,8 +463,8 @@ fun AddAccountBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             item {
                 AccountsAccountTypeCard(
@@ -530,7 +527,7 @@ fun AddAccountBottomSheet(
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
                 .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
                     Text(
@@ -645,7 +642,7 @@ private fun EditAccountBottomSheet(
                     RoundedCornerShape(12.dp)
                 )
                 .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
                     Text(
@@ -672,8 +669,8 @@ private fun EditAccountBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             item {
                 AccountsAccountTypeCard(
@@ -736,7 +733,7 @@ private fun EditAccountBottomSheet(
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
                 .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
                     Text(
@@ -810,7 +807,7 @@ private fun AccountsAccountTypeCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
@@ -850,7 +847,7 @@ private fun BankSelectionCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -899,13 +896,13 @@ private fun NewAccountCard(
             .fillMaxWidth()
             .clickable { onEditClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -956,26 +953,26 @@ private fun NewAccountCard(
             ) {
                 IconButton(
                     onClick = onEditClick,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }
 
                 if (showDeleteButton) {
                     IconButton(
                         onClick = onDeleteClick,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Delete",
                             tint = AccountsRedError,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                     }
                 }
@@ -1015,7 +1012,7 @@ private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹"
                         imageVector = Icons.Default.AttachMoney,
                         contentDescription = account.type,
                         tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }
 
@@ -1065,13 +1062,13 @@ private fun AddNewAccountButton(
             .fillMaxWidth()
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -1079,7 +1076,7 @@ private fun AddNewAccountButton(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -1099,7 +1096,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
             .fillMaxSize()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         contentPadding = PaddingValues(bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
     ) {
         item {
             // Financial Overview Section
@@ -1114,7 +1111,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
 
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(

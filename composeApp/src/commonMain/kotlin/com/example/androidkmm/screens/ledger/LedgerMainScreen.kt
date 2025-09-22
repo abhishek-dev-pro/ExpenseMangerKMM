@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import androidx.compose.runtime.collectAsState
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -333,7 +334,7 @@ fun LedgerMainScreen(
                     .weight(1f)
                     .height(48.dp)
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color.White.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(16.dp)
                     )
@@ -348,7 +349,7 @@ fun LedgerMainScreen(
                         .height(48.dp)
                         .width(100.dp)
                         .border(
-                            width = 1.dp,
+                            width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                             color = Color.White.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(16.dp)
                         ),

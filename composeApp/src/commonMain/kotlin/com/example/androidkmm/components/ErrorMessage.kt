@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 /**
  * Standardized error message component
@@ -37,18 +37,18 @@ fun ErrorMessage(
                     ErrorType.WARNING -> Color(0xFFFFF3E0)
                     ErrorType.INFO -> Color(0xFFE3F2FD)
                 },
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             )
             .border(
-                width = 1.dp,
+                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = when (type) {
                     ErrorType.ERROR -> Color(0xFFD32F2F)
                     ErrorType.WARNING -> Color(0xFFFF9800)
                     ErrorType.INFO -> Color(0xFF2196F3)
                 },
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             )
-            .padding(12.dp),
+            .padding(iOSStyleDesignSystem.Padding.MEDIUM),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -63,10 +63,10 @@ fun ErrorMessage(
                 ErrorType.WARNING -> Color(0xFFFF9800)
                 ErrorType.INFO -> Color(0xFF2196F3)
             },
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
         )
         
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(iOSStyleDesignSystem.Padding.SMALL))
         
         Text(
             text = message,
@@ -75,8 +75,9 @@ fun ErrorMessage(
                 ErrorType.WARNING -> Color(0xFFE65100)
                 ErrorType.INFO -> Color(0xFF1976D2)
             },
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
+            style = iOSStyleDesignSystem.Typography.CAPTION_1.copy(
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+            )
         )
     }
 }
@@ -101,9 +102,10 @@ fun FieldErrorMessage(
     Text(
         text = message,
         color = Color(0xFFD32F2F),
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Medium,
-        modifier = modifier.padding(start = 4.dp, top = 4.dp)
+        style = iOSStyleDesignSystem.Typography.CAPTION_1.copy(
+            fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+        ),
+        modifier = modifier.padding(start = iOSStyleDesignSystem.Padding.XS, top = iOSStyleDesignSystem.Padding.XS)
     )
 }
 
@@ -120,25 +122,26 @@ fun InlineErrorMessage(
             .fillMaxWidth()
             .background(
                 color = Color(0xFFFFEBEE),
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.SMALL)
             )
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = iOSStyleDesignSystem.Padding.SMALL, vertical = iOSStyleDesignSystem.Padding.XS),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Error,
             contentDescription = null,
             tint = Color(0xFFD32F2F),
-            modifier = Modifier.size(12.dp)
+            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_TINY)
         )
         
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(iOSStyleDesignSystem.Padding.XS))
         
         Text(
             text = message,
             color = Color(0xFFD32F2F),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium
+            style = iOSStyleDesignSystem.Typography.CAPTION_2.copy(
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+            )
         )
     }
 }
@@ -156,30 +159,31 @@ fun SuccessMessage(
             .fillMaxWidth()
             .background(
                 color = Color(0xFFE8F5E8),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             )
             .border(
-                width = 1.dp,
+                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = Color(0xFF4CAF50),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             )
-            .padding(12.dp),
+            .padding(iOSStyleDesignSystem.Padding.MEDIUM),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
             tint = Color(0xFF4CAF50),
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
         )
         
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(iOSStyleDesignSystem.Padding.SMALL))
         
         Text(
             text = message,
             color = Color(0xFF2E7D32),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium
+            style = iOSStyleDesignSystem.Typography.CAPTION_1.copy(
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+            )
         )
     }
 }
@@ -195,21 +199,22 @@ fun ValidationSummary(
     if (errors.isNotEmpty()) {
         Column(
             modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.XS)
         ) {
             Text(
                 text = "Please fix the following errors:",
                 color = Color(0xFFD32F2F),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                style = iOSStyleDesignSystem.Typography.CALL_OUT.copy(
+                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold
+                )
             )
             
             errors.forEach { (field, message) ->
                 Text(
                     text = "• $message",
                     color = Color(0xFFD32F2F),
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 8.dp)
+                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
+                    modifier = Modifier.padding(start = iOSStyleDesignSystem.Padding.SMALL)
                 )
             }
         }

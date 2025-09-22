@@ -44,41 +44,58 @@ object SecurityUtils {
     }
     
     /**
-     * Encrypt sensitive data
+     * Encrypt sensitive data using AES-256-GCM
      */
-    fun encryptData(data: String): String {
-        // TODO: Implement proper encryption
-        // For now, return base64 encoded data
-        return data.encodeToByteArray().joinToString("") { "%02x".format(it) }
-    }
-    
-    /**
-     * Decrypt sensitive data
-     */
-    fun decryptData(encryptedData: String): String {
-        // TODO: Implement proper decryption
-        // For now, return decoded data
+    suspend fun encryptData(data: String, key: javax.crypto.SecretKey): String {
         return try {
-            encryptedData.chunked(2).map { it.toInt(16).toByte() }.toByteArray().decodeToString()
+            EncryptionUtils.encryptData(data, key)
         } catch (e: Exception) {
-            Logger.error("Failed to decrypt data", "SecurityUtils", e)
-            ""
+            Logger.error("Data encryption failed", "SecurityUtils", e)
+            throw SecurityException("Failed to encrypt sensitive data", e)
         }
     }
     
     /**
-     * Hash password
+     * Decrypt sensitive data using AES-256-GCM
      */
-    fun hashPassword(password: String): String {
-        // TODO: Implement proper password hashing (bcrypt, scrypt, etc.)
-        return password.hashCode().toString()
+    suspend fun decryptData(encryptedData: String, key: javax.crypto.SecretKey): String {
+        return try {
+            EncryptionUtils.decryptData(encryptedData, key)
+        } catch (e: Exception) {
+            Logger.error("Data decryption failed", "SecurityUtils", e)
+            throw SecurityException("Failed to decrypt sensitive data", e)
+        }
     }
     
     /**
-     * Verify password
+     * Hash password using PBKDF2 with salt
      */
-    fun verifyPassword(password: String, hashedPassword: String): Boolean {
-        return hashPassword(password) == hashedPassword
+    fun hashPassword(password: String, salt: ByteArray): String {
+        return try {
+            EncryptionUtils.hashPassword(password, salt)
+        } catch (e: Exception) {
+            Logger.error("Password hashing failed", "SecurityUtils", e)
+            throw SecurityException("Failed to hash password", e)
+        }
+    }
+    
+    /**
+     * Verify password against hash
+     */
+    fun verifyPassword(password: String, hash: String, salt: ByteArray): Boolean {
+        return try {
+            EncryptionUtils.verifyPassword(password, hash, salt)
+        } catch (e: Exception) {
+            Logger.error("Password verification failed", "SecurityUtils", e)
+            false
+        }
+    }
+    
+    /**
+     * Verify password using hash comparison
+     */
+    fun verifyPasswordHash(password: String, hashedPassword: String, salt: ByteArray): Boolean {
+        return hashPassword(password, salt) == hashedPassword
     }
     
     /**

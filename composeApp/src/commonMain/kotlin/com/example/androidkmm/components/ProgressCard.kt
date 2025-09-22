@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -22,22 +22,22 @@ fun ProgressCard(
             .fillMaxWidth()
             .background(
                 Color(0xFFDAFFF2),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             )
-            .padding(DesignSystem.Spacing.cardPadding)
+            .padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
     ) {
         Column {
             TextUtils.StandardText(
                 text = title,
                 color = Color.Black,
-                fontSize = DesignSystem.Typography.cardTitle,
-                fontWeight = FontWeight.Bold
+                fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold
             )
-            Spacer(Modifier.height(DesignSystem.Spacing.xs))
+            Spacer(Modifier.height(iOSStyleDesignSystem.Padding.XS))
             TextUtils.StandardText(
                 text = subtitle,
                 color = Color.DarkGray,
-                fontSize = DesignSystem.Typography.cardSubtitle,
+                fontSize = iOSStyleDesignSystem.Typography.CALL_OUT.fontSize,
                 maxLines = 2
             )
         }

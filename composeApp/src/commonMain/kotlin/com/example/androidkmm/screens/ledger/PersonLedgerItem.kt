@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.formatDouble
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import androidx.compose.runtime.collectAsState
@@ -36,27 +36,27 @@ fun PersonLedgerItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1A1A1A)
         ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .background(
                         person.avatarColor,
                         CircleShape
@@ -70,8 +70,9 @@ fun PersonLedgerItem(
                         "?"
                     },
                     color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    )
                 )
             }
 
@@ -83,13 +84,14 @@ fun PersonLedgerItem(
             ) {
                 Text(
                     text = person.name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    ),
                     color = LedgerTheme.textPrimary()
                 )
                 Text(
                     text = "${person.lastTransactionDate} • ${person.transactionCount} entr${if (person.transactionCount > 1) "ies" else "y"}",
-                    fontSize = 14.sp,
+                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
                     color = LedgerTheme.textSecondary()
                 )
             }
@@ -118,7 +120,7 @@ fun PersonLedgerItem(
                         person.balance > 0 -> "you will give"
                         else -> "you will get"
                     },
-                    fontSize = 12.sp,
+                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
                     color = LedgerTheme.textSecondary()
                 )
             }
@@ -129,7 +131,7 @@ fun PersonLedgerItem(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "View details",
                 tint = LedgerTheme.textSecondary(),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
         }
     }

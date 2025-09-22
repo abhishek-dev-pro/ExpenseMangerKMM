@@ -24,6 +24,7 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.screens.ledger.TransactionType
 import androidx.compose.runtime.collectAsState
 import kotlin.math.abs
@@ -244,7 +245,7 @@ fun PersonLedgerDetailScreen(
                     .weight(1f)
                     .height(56.dp)
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (selectedTransactionType == "sent") 
                             Color(0xFF2196F3) 
                         else 
@@ -288,7 +289,7 @@ fun PersonLedgerDetailScreen(
                     .weight(1f)
                     .height(56.dp)
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (selectedTransactionType == "received") 
                             Color(0xFF4CAF50) 
                         else 

@@ -19,6 +19,7 @@ import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 import com.example.androidkmm.utils.removeCurrencySymbols
 import com.example.androidkmm.utils.Logger
@@ -162,18 +163,18 @@ fun BalanceCard(
                 brush = Brush.linearGradient(
                     listOf(Color(0xFF4C2EFF), Color(0xFF9F3DFF))
                 ),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(DesignSystem.CornerRadius.xl)
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp) // iOS rounded corners
             )
-            .padding(DesignSystem.Spacing.cardPadding)
+            .padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
     ) {
         Column {
             TextUtils.StandardText(
                 text = "Total Balance",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = DesignSystem.Typography.balanceLabel,
-                fontWeight = FontWeight.Normal
+                fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize,
+                fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular
             )
-            Spacer(Modifier.height(DesignSystem.Spacing.xl))
+            Spacer(Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
             if (isLoading.value) {
                 // Show loading indicator
                 Row(
@@ -181,7 +182,7 @@ fun BalanceCard(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     androidx.compose.material3.CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
@@ -189,22 +190,22 @@ fun BalanceCard(
                     TextUtils.StandardText(
                         text = "Loading...",
                         color = Color.White.copy(alpha = 0.8f),
-                        fontSize = DesignSystem.Typography.balanceAmount,
-                        fontWeight = FontWeight.ExtraLight
+                        fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
+                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.light
                     )
                 }
             } else {
                 TextUtils.StandardText(
                     text = if (isBalanceVisible) displayBalance else "••••••",
                     color = Color.White,
-                    fontSize = DesignSystem.Typography.balanceAmount,
-                    fontWeight = FontWeight.ExtraLight
+                    fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
+                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.light
                 )
-                Spacer(Modifier.height(DesignSystem.Spacing.xs))
+                Spacer(Modifier.height(iOSStyleDesignSystem.Padding.XS))
                 TextUtils.StandardText(
                     text = if (isBalanceVisible) displayMonthlyChange else "•••••• in ledger",
                     color = Color(0xFF9FFFA5),
-                    fontSize = DesignSystem.Typography.balanceSubtext
+                    fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize
                 )
             }
         }

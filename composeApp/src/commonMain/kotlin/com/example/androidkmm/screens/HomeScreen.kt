@@ -27,7 +27,7 @@ import com.example.androidkmm.components.ProgressCard
 import com.example.androidkmm.components.QuickActions
 import com.example.androidkmm.components.RecentTransactionsSection
 import com.example.androidkmm.components.SectionHeader
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.data.GroupData
 import com.example.androidkmm.utils.CardUtils
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
@@ -53,10 +53,10 @@ fun HomeScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = DesignSystem.Spacing.safeAreaPadding),
-        verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.lg)
+            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.MEDIUM)
     ) {
-        item { Spacer(Modifier.height(DesignSystem.Spacing.lg)) }
+        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SCREEN_VERTICAL)) }
 
         item { GreetingSection() }
         item { BalanceCard() }
@@ -74,7 +74,7 @@ fun HomeScreenContent(
 //        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
 //        item { ProgressCard() }
 
-        item { Spacer(Modifier.height(DesignSystem.Spacing.bottomNavHeight)) }
+        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SECTION_SPACING)) }
     }
 }
 
@@ -138,8 +138,7 @@ private fun GroupHighlights(
     ) {
         Text(
             text = "Group Highlights",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = iOSStyleDesignSystem.Typography.HEADLINE,
             color = MaterialTheme.colorScheme.onBackground
         )
         
@@ -151,45 +150,43 @@ private fun GroupHighlights(
         ) {
             Text(
                 text = "View all",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Medium
+                style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "View all",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
             )
         }
     }
     
-    Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
     
     if (groupHighlights.isEmpty()) {
         // Show empty state
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
+                    .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "No groups yet",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
+                    style = iOSStyleDesignSystem.Typography.HEADLINE,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
                 Text(
                     text = "Create your first group to start splitting expenses",
-                    fontSize = 14.sp,
+                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -197,7 +194,7 @@ private fun GroupHighlights(
     } else {
         // Group list - use Column with consistent spacing
         Column(
-            verticalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.xs)
+            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL)
         ) {
             groupHighlights.forEach { group ->
                 GroupItem(

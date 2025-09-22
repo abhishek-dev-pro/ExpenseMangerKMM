@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import kotlin.time.ExperimentalTime
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.TimeZone
+import com.example.androidkmm.design.iOSStyleDesignSystem
 
 @OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
 @Composable
@@ -145,7 +146,7 @@ fun AddExpenseScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (validationErrors.containsKey("amount")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -198,7 +199,7 @@ fun AddExpenseScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (validationErrors.containsKey("title")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -239,7 +240,7 @@ fun AddExpenseScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (validationErrors.containsKey("category")) Color.Red else Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -255,7 +256,7 @@ fun AddExpenseScreen(
                         if (selectedCategory != null) {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                                     .clip(CircleShape)
                                     .background(selectedCategory!!.color),
                                 contentAlignment = Alignment.Center
@@ -264,7 +265,7 @@ fun AddExpenseScreen(
                                     imageVector = selectedCategory!!.icon,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                 )
                             }
                             Spacer(Modifier.width(12.dp))
@@ -317,7 +318,7 @@ fun AddExpenseScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -333,7 +334,7 @@ fun AddExpenseScreen(
                         if (selectedAccount != null) {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_XL)
                                     .clip(CircleShape)
                                     .background(selectedAccount!!.color),
                                 contentAlignment = Alignment.Center
@@ -342,7 +343,7 @@ fun AddExpenseScreen(
                                     imageVector = selectedAccount!!.icon,
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                 )
                             }
                             Spacer(Modifier.width(12.dp))
@@ -394,7 +395,7 @@ fun AddExpenseScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color.White.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(12.dp)
                     )

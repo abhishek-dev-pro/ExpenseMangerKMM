@@ -37,6 +37,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.utils.removeCurrencySymbols
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlin.time.Clock
@@ -158,7 +159,7 @@ fun EditLedgerEntryBottomSheet(
                     .background(LedgerTheme.backgroundColor())
                     .navigationBarsPadding(),
                 contentPadding = PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_XXL)
             ) {
                 // Show error if account is not found
                 if (selectedAccount == null && !transaction.account.isNullOrBlank()) {
@@ -176,7 +177,7 @@ fun EditLedgerEntryBottomSheet(
                                     imageVector = Icons.Default.Warning,
                                     contentDescription = null,
                                     tint = Color(0xFFD32F2F),
-                                    modifier = Modifier.size(48.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 Text(
@@ -215,7 +216,7 @@ fun EditLedgerEntryBottomSheet(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
                                 tint = LedgerTheme.textSecondary(),
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                             )
                         }
                     }
@@ -264,7 +265,7 @@ fun EditLedgerEntryBottomSheet(
                                 .fillMaxWidth()
                                 .height(56.dp)
                                 .border(
-                                    width = 1.dp,
+                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
@@ -309,7 +310,7 @@ fun EditLedgerEntryBottomSheet(
                                 .fillMaxWidth()
                                 .height(56.dp)
                                 .border(
-                                    width = 1.dp,
+                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
@@ -322,7 +323,7 @@ fun EditLedgerEntryBottomSheet(
                     // Date and Time Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
                     ) {
                         // Date Field
                         Column(modifier = Modifier.weight(1f)) {
@@ -351,7 +352,7 @@ fun EditLedgerEntryBottomSheet(
                                         imageVector = Icons.Default.CalendarToday,
                                         contentDescription = null,
                                         tint = LedgerTheme.textSecondary(),
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
@@ -390,7 +391,7 @@ fun EditLedgerEntryBottomSheet(
                                         imageVector = Icons.Default.AccessTime,
                                         contentDescription = null,
                                         tint = LedgerTheme.textSecondary(),
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
@@ -437,7 +438,7 @@ fun EditLedgerEntryBottomSheet(
                                         imageVector = Icons.Default.Wallet,
                                         contentDescription = null,
                                         tint = LedgerTheme.textSecondary(),
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
@@ -450,7 +451,7 @@ fun EditLedgerEntryBottomSheet(
                                     imageVector = Icons.Default.ArrowDropDown,
                                     contentDescription = null,
                                     tint = LedgerTheme.textSecondary(),
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                                 )
                             }
                         }

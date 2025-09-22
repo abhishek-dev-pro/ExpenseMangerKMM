@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.CardUtils
 import com.example.androidkmm.utils.TextUtils
 
@@ -25,11 +25,11 @@ fun QuickActions(
         TextUtils.StandardText(
             text = "Quick Actions",
             color = Color.White,
-            fontSize = DesignSystem.Typography.footnote,
-            fontWeight = FontWeight.ExtraLight
+            fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize,
+            fontWeight = iOSStyleDesignSystem.iOSFontWeights.ultraLight
         )
         Row(
-            horizontalArrangement = Arrangement.spacedBy(DesignSystem.Spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL),
             modifier = Modifier.fillMaxWidth()
         ) {
             actions.forEach { action ->
@@ -71,12 +71,12 @@ private fun QuickActionCard(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(DesignSystem.IconSize.sm)
+                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
-            Spacer(Modifier.width(DesignSystem.Spacing.xs))
+            Spacer(Modifier.width(iOSStyleDesignSystem.Padding.XS))
             TextUtils.StandardText(
                 text = text,
-                fontSize = DesignSystem.Typography.buttonText,
+                fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
                 color = color
             )
         }

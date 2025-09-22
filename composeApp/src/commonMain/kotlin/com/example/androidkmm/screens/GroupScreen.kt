@@ -63,6 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.SQLiteGroupDatabase
@@ -588,7 +589,7 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
             .padding(vertical = 2.dp)
             .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
             .border(
-                width = 1.dp,
+                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = Color.White.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
             ),
@@ -734,7 +735,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (groupName.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 
@@ -830,7 +831,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (memberName.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 
@@ -867,7 +868,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = 1.dp,
+                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (email.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 
