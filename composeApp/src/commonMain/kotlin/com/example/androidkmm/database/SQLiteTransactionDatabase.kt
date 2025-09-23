@@ -436,17 +436,19 @@ class SQLiteTransactionDatabase(
     
     fun updateTransactionWithBalanceUpdate(
         oldTransaction: Transaction,
-        newTransaction: Transaction, 
+        newTransaction: Transaction,
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
         onSuccess: () -> Unit = {}, 
         onError: (Throwable) -> Unit = {}
     ) {
         scope.launch {
             try {
-                // First, reverse the old transaction's balance changes
-                reverseAccountBalancesForTransaction(oldTransaction, accountDatabaseManager)
+                println("DEBUG: === TRANSACTION EDIT DEBUG (FIXED APPROACH) ===")
+                println("DEBUG: Old transaction - ID: ${oldTransaction.id}, Amount: ${oldTransaction.amount}, Type: ${oldTransaction.type}, Account: ${oldTransaction.account}")
+                println("DEBUG: New transaction - ID: ${newTransaction.id}, Amount: ${newTransaction.amount}, Type: ${newTransaction.type}, Account: ${newTransaction.account}")
                 
-                // Then update the transaction
+                // Step 1: Update the transaction in database first
+                println("DEBUG: Step 1 - Updating transaction in database...")
                 database.categoryDatabaseQueries.updateTransaction(
                     title = newTransaction.title,
                     amount = newTransaction.amount,
@@ -464,10 +466,12 @@ class SQLiteTransactionDatabase(
                     id = newTransaction.id
                 )
                 
-                // Then apply the new transaction's balance changes
-                updateAccountBalancesForTransaction(newTransaction, accountDatabaseManager)
+                // Step 2: Recalculate account balances from scratch to avoid double counting
+                println("DEBUG: Step 2 - Recalculating account balances from scratch...")
+                recalculateAccountBalancesFromTransactions(accountDatabaseManager)
                 
-                println("DEBUG: Transaction updated and balances updated successfully")
+                println("DEBUG: Transaction updated and balances recalculated successfully")
+                println("DEBUG: === END TRANSACTION EDIT DEBUG ===")
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error updating transaction with balance update: ${e.message}")
@@ -595,6 +599,7 @@ class SQLiteTransactionDatabase(
         transaction: Transaction, 
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
+        println("DEBUG: Reversing transaction - ID: ${transaction.id}, Amount: ${transaction.amount}, Type: ${transaction.type}, Account: ${transaction.account}")
         when (transaction.type) {
             com.example.androidkmm.models.TransactionType.INCOME -> {
                 // Subtract amount from account balance (reverse income)
@@ -603,6 +608,7 @@ class SQLiteTransactionDatabase(
                     val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: REVERSE INCOME - Account: ${account.name}, Balance: $currentBalance -> $newBalance (reversed +${transaction.amount})")
                 }
             }
             com.example.androidkmm.models.TransactionType.EXPENSE -> {
@@ -612,6 +618,7 @@ class SQLiteTransactionDatabase(
                     val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: REVERSE EXPENSE - Account: ${account.name}, Balance: $currentBalance -> $newBalance (reversed -${transaction.amount})")
                 }
             }
             com.example.androidkmm.models.TransactionType.TRANSFER -> {
@@ -623,12 +630,14 @@ class SQLiteTransactionDatabase(
                     val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                    println("DEBUG: REVERSE TRANSFER FROM - Account: ${fromAccount.name}, Balance: $currentFromBalance -> $newFromBalance (reversed -${transaction.amount})")
                 }
                 
                 if (toAccount != null) {
                     val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                    println("DEBUG: REVERSE TRANSFER TO - Account: ${toAccount.name}, Balance: $currentToBalance -> $newToBalance (reversed +${transaction.amount})")
                 }
             }
         }
@@ -641,6 +650,64 @@ class SQLiteTransactionDatabase(
         } catch (e: Exception) {
             println("DEBUG: Error getting account by name: ${e.message}")
             null
+        }
+    }
+    
+    private suspend fun recalculateAccountBalancesFromTransactions(
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        try {
+            println("DEBUG: Recalculating all account balances from transactions...")
+            
+            // Get all transactions
+            val allTransactions = database.categoryDatabaseQueries.selectAllTransactions().executeAsList()
+            println("DEBUG: Found ${allTransactions.size} transactions to recalculate")
+            
+            // Get all accounts
+            val allAccounts = database.categoryDatabaseQueries.selectAllAccounts().executeAsList()
+            println("DEBUG: Found ${allAccounts.size} accounts to recalculate")
+            
+            // Reset all account balances to 0
+            allAccounts.forEach { accountRow ->
+                accountDatabaseManager.updateAccountBalance(accountRow.id, 0.0)
+                println("DEBUG: Reset account ${accountRow.name} balance to 0.0")
+            }
+            
+            // Recalculate each account balance from transactions
+            allAccounts.forEach { accountRow ->
+                val accountTransactions = allTransactions.filter { transaction ->
+                    transaction.account_name == accountRow.name
+                }
+                
+                var balance = 0.0
+                accountTransactions.forEach { transaction ->
+                    when (transaction.type) {
+                        "INCOME" -> balance += transaction.amount
+                        "EXPENSE" -> balance -= transaction.amount
+                        "TRANSFER" -> {
+                            // For transfers, subtract from source account
+                            balance -= transaction.amount
+                        }
+                    }
+                }
+                
+                // Also handle transfers TO this account
+                val transfersToThisAccount = allTransactions.filter { transaction ->
+                    transaction.type == "TRANSFER" && transaction.transfer_to == accountRow.name
+                }
+                
+                transfersToThisAccount.forEach { transaction ->
+                    balance += transaction.amount
+                }
+                
+                accountDatabaseManager.updateAccountBalance(accountRow.id, balance)
+                println("DEBUG: Recalculated account ${accountRow.name} balance to $balance")
+            }
+            
+            println("DEBUG: All account balances recalculated successfully")
+        } catch (e: Exception) {
+            println("ERROR: Failed to recalculate account balances: ${e.message}")
+            throw e
         }
     }
     
