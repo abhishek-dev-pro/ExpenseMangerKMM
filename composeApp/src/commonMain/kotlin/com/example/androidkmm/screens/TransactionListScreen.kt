@@ -486,7 +486,7 @@ private fun TransactionHeader(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Transaction",
                 tint = Color.Black,
-                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                modifier = Modifier.size(28.dp)
             )
         }
     }

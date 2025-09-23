@@ -168,7 +168,7 @@ fun BalanceCard(
             TextUtils.StandardText(
                 text = "Total Balance",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
                 fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
             )
             Spacer(Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))

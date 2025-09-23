@@ -158,7 +158,7 @@ fun LedgerMainScreen(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
                     tint = Color.Black,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -302,9 +302,9 @@ fun LedgerMainScreen(
                     Text(
                         text = "Search people",
                         color = LedgerTheme.textSecondary(),
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         maxLines = 1,
-                        modifier = Modifier.padding(vertical = 1.dp)
+                        modifier = Modifier.padding(vertical = 0.5.dp)
                     )
                 },
                 leadingIcon = {
@@ -430,7 +430,7 @@ fun LedgerMainScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // People Header
         Row(
@@ -472,71 +472,145 @@ fun LedgerMainScreen(
 
         // People List or Empty State
         if (people.isEmpty()) {
-            // Empty State
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 48.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Receipt Icon
-                Icon(
-                    imageVector = Icons.Default.Receipt,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(80.dp)
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // "No ledger entries yet" text
-                Text(
-                    text = "No ledger entries yet",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // "No ledger entries found for this month" text
-                Text(
-                    text = "No ledger entries found for this month",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.7f)
-                )
-                
-                Spacer(modifier = Modifier.height(32.dp))
-                
-                // Add Ledger Entry Button
-                Button(
-                    onClick = { showAddBottomSheet = true },
+            // Check if this is a search with no results or truly empty
+            val isSearching = searchText.isNotBlank() || selectedFilter != "All"
+            
+            if (isSearching) {
+                // No results found for search/filter
+                Column(
                     modifier = Modifier
-                        .width(240.dp)
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    // Search Icon
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(80.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // "No results found" text
+                    Text(
+                        text = "No results found",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // "Try adjusting your search" text
+                    Text(
+                        text = "Try adjusting your search or filter",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(32.dp))
+                    
+                    // Add Ledger Entry Button
+                    Button(
+                        onClick = { showAddBottomSheet = true },
+                        modifier = Modifier
+                            .width(240.dp)
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Add Ledger Entry",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Add Ledger Entry",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Empty State (no people at all)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Receipt Icon
+                    Icon(
+                        imageVector = Icons.Default.Receipt,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(80.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    // "No ledger entries yet" text
+                    Text(
+                        text = "No ledger entries yet",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // "No ledger entries found for this month" text
+                    Text(
+                        text = "No ledger entries found for this month",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(32.dp))
+                    
+                    // Add Ledger Entry Button
+                    Button(
+                        onClick = { showAddBottomSheet = true },
+                        modifier = Modifier
+                            .width(240.dp)
+                            .height(48.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Add Ledger Entry",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.Black
+                            )
+                        }
                     }
                 }
             }

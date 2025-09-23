@@ -25,11 +25,11 @@ fun QuickActions(
         Text(
             text = "Quick Actions",
             color = Color.White,
-            fontSize = 20.sp, // Slightly larger title
+            fontSize = 18.sp, // Slightly larger title
             fontWeight = FontWeight.Bold, // Bolder title
             modifier = Modifier.padding(bottom = 4.dp)
         )
-        Spacer(modifier = Modifier.height(16.dp)) // More spacing after title
+        Spacer(modifier = Modifier.height(8.dp)) // Reduced spacing after title
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp), // Better spacing between buttons
             modifier = Modifier.fillMaxWidth()
@@ -44,6 +44,7 @@ fun QuickActions(
                 )
             }
         }
+        Spacer(modifier = Modifier.height(4.dp))
     }
 }
 
