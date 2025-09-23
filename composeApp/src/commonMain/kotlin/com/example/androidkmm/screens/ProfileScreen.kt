@@ -44,7 +44,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
-import com.example.androidkmm.utils.getCurrencySymbol
+import com.example.androidkmm.utils.CurrencyUtils.getCurrencySymbol
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab

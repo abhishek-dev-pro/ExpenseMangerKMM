@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import androidx.compose.runtime.collectAsState
 
 // Account Selection Bottom Sheet - Exact replica from TransactionListScreen.kt
@@ -125,13 +125,13 @@ private fun AccountCard(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
             .padding(vertical = 6.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1A1A1A)
         ),

@@ -33,7 +33,6 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.Account
@@ -395,13 +394,13 @@ private fun FilterOptionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -588,13 +587,13 @@ private fun CategoryChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -774,13 +773,13 @@ private fun AccountChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -1000,13 +999,13 @@ private fun DateRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -1151,13 +1150,13 @@ private fun AmountRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )

@@ -36,7 +36,6 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -267,16 +266,16 @@ fun AddLedgerEntryBottomSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(top = 4.dp)
-                                        .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                                         .border(
                                             width = 0.5.dp, // very thin border
                                             color = Color.White.copy(alpha = 0.2f), // subtle white
-                                            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                                         ),
                                     colors = CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                                     ),
-                                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                                 ) {
                                     Column {
                                         suggestions.take(5).forEach { suggestion ->
@@ -341,17 +340,17 @@ fun AddLedgerEntryBottomSheet(
                                     .weight(1f)
                                     .wrapContentHeight()
                                     .clickable { currentTransactionType = TransactionType.SENT }
-                                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                                     .border(
                                         width = 0.5.dp, // very thin border
                                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                                     ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.SENT) BorderStroke(2.dp, LedgerTheme.greenAmount) else null,
-                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -399,17 +398,17 @@ fun AddLedgerEntryBottomSheet(
                                     .weight(1f)
                                     .wrapContentHeight()
                                     .clickable { currentTransactionType = TransactionType.RECEIVED }
-                                    .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                                     .border(
                                         width = 0.5.dp, // very thin border
                                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                                        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                                     ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.RECEIVED) Color(0xFF2A1919) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.RECEIVED) BorderStroke(2.dp, LedgerTheme.redAmount) else null,
-                                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                             ) {
                                 Column(
                                     modifier = Modifier

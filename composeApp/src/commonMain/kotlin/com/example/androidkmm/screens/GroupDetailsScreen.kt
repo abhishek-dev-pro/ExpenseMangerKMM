@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
 import com.example.androidkmm.models.GroupExpense
-import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -306,16 +306,16 @@ private fun ExpenseItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1A1A1A)
         ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -467,16 +467,16 @@ private fun BalanceItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF1A1A1A)
         ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier

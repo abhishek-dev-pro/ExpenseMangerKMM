@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.utils.formatDouble
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 
@@ -37,16 +37,16 @@ fun TransactionItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = if (isHighlighted) 2.dp else 0.5.dp, // thicker border when highlighted
                 color = if (isHighlighted) Color(0xFFE0E0E0) else Color.White.copy(alpha = 0.2f), // dark white border when highlighted
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (isHighlighted) Color(0xFF000000) else Color(0xFF1A1A1A)
         ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Column(
             modifier = Modifier

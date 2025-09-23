@@ -30,9 +30,9 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.Transaction
-import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 
 // Import FilterOptions from FilterTransactionsBottomSheet
 import FilterOptions
@@ -390,13 +390,13 @@ private fun SearchTransactionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -573,13 +573,13 @@ private fun FilterSummary(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
-            shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(

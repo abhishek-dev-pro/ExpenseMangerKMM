@@ -16,8 +16,8 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
-import com.example.androidkmm.utils.removeCurrencySymbols
-import com.example.androidkmm.utils.getCurrencySymbol
+import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
+import com.example.androidkmm.utils.CurrencyUtils.getCurrencySymbol
 import com.example.androidkmm.utils.Logger
 // import com.example.androidkmm.utils.formatDouble // Not needed for String.format
 
@@ -377,8 +377,7 @@ class SQLiteTransactionDatabase(
         onError: (Throwable) -> Unit = {}
     ) {
         scope.launch {
-            com.example.androidkmm.utils.DatabaseErrorHandler.handleTransaction(
-                transaction = {
+            try {
                     // Validate transaction data before processing
                     if (transaction.id.isBlank()) {
                         throw IllegalArgumentException("Transaction ID cannot be blank")
@@ -413,32 +412,25 @@ class SQLiteTransactionDatabase(
                     
                     // Then update account balances
                     updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
-                },
-                rollback = {
-                    // Rollback the transaction if balance update fails
-                    try {
-                        database.categoryDatabaseQueries.deleteTransaction(transaction.id)
-                        println("DEBUG: Transaction rollback successful")
-                        Logger.info("Transaction rollback successful: ${transaction.id}", "SQLiteTransactionDatabase")
-                    } catch (rollbackError: Exception) {
-                        println("ERROR: Failed to rollback transaction: ${rollbackError.message}")
-                        Logger.error("Failed to rollback transaction", "SQLiteTransactionDatabase", rollbackError)
-                        throw rollbackError
-                    }
-                },
-                operationName = "Add Transaction with Balance Update",
-                onSuccess = {
-                    println("DEBUG: Transaction added and balances updated successfully")
-                    Logger.info("Transaction added successfully: ${transaction.id}", "SQLiteTransactionDatabase")
-                    onSuccess()
-                },
-                onError = { error ->
-                    println("ERROR: Failed to add transaction with balance update: ${error.message}")
-                    Logger.error("Failed to add transaction with balance update", "SQLiteTransactionDatabase", error.originalException)
-                    onError(error.originalException ?: Exception(error.message))
-                },
-                scope = scope
-            )
+                
+                println("DEBUG: Transaction added and balances updated successfully")
+                Logger.info("Transaction added successfully: ${transaction.id}", "SQLiteTransactionDatabase")
+                onSuccess()
+            } catch (error: Exception) {
+                // Rollback the transaction if balance update fails
+                try {
+                    database.categoryDatabaseQueries.deleteTransaction(transaction.id)
+                    println("DEBUG: Transaction rollback successful")
+                    Logger.info("Transaction rollback successful: ${transaction.id}", "SQLiteTransactionDatabase")
+                } catch (rollbackError: Exception) {
+                    println("ERROR: Failed to rollback transaction: ${rollbackError.message}")
+                    Logger.error("Failed to rollback transaction", "SQLiteTransactionDatabase", rollbackError)
+                }
+                
+                println("ERROR: Failed to add transaction with balance update: ${error.message}")
+                Logger.error("Failed to add transaction with balance update", "SQLiteTransactionDatabase", error)
+                onError(error)
+            }
         }
     }
     

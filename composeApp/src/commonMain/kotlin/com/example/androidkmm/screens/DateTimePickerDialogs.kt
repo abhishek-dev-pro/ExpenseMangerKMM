@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Clock
@@ -55,16 +55,16 @@ fun DatePickerDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -200,16 +200,16 @@ fun TimePickerDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -406,16 +406,16 @@ fun CategoryPickerDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF1A1A1A)
             ),
-            shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)

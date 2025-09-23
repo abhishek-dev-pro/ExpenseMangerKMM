@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.window.DialogProperties
-import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import com.example.androidkmm.screens.EditTransferTransactionScreen
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -70,7 +70,6 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
 
@@ -1294,20 +1293,15 @@ private fun AddTransactionContent(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Use responsive design system
-    val responsiveDimensions = com.example.androidkmm.utils.ResponsiveDesign.getResponsiveDimensions()
-    val isSmallScreen = com.example.androidkmm.utils.ResponsiveDesign.isSmallScreen()
-    val isMediumScreen = com.example.androidkmm.utils.ResponsiveDesign.isMediumScreen()
-    
-    // Extract dimensions for easier access
-    val spacing = responsiveDimensions.spacing
-    val titleFontSize = responsiveDimensions.titleFontSize
-    val labelFontSize = responsiveDimensions.labelFontSize
-    val inputHeight = responsiveDimensions.inputHeight
-    val receiptHeight = responsiveDimensions.receiptHeight
-    val buttonHeight = responsiveDimensions.buttonHeight
-    val buttonPadding = responsiveDimensions.buttonPadding
-    val amountFontSize = responsiveDimensions.amountFontSize
+    // Use iOS design system
+    val spacing = iOSStyleDesignSystem.Padding.MEDIUM
+    val titleFontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize
+    val labelFontSize = iOSStyleDesignSystem.Typography.BODY.fontSize
+    val inputHeight = iOSStyleDesignSystem.Sizes.BUTTON_HEIGHT
+    val receiptHeight = iOSStyleDesignSystem.Sizes.ICON_SIZE_GIANT
+    val buttonHeight = iOSStyleDesignSystem.Sizes.BUTTON_HEIGHT
+    val buttonPadding = iOSStyleDesignSystem.Padding.MEDIUM
+    val amountFontSize = iOSStyleDesignSystem.Typography.TITLE_1.fontSize
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     
@@ -1389,7 +1383,7 @@ private fun AddTransactionContent(
             .fillMaxWidth()
             .padding(top = 0.dp)  // Remove top padding completely
             .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL)
-            .padding(bottom = if (isSmallScreen) 120.dp else 140.dp),  // Account for bottom nav bar
+            .padding(bottom = if (false) 120.dp else 140.dp),  // Account for bottom nav bar
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         // Transaction Type Selector
@@ -1401,9 +1395,7 @@ private fun AddTransactionContent(
                     type = type,
                     category = null
                 ))
-            },
-            isSmallScreen = isSmallScreen,
-            isMediumScreen = isMediumScreen
+            }
         )
 
         // Amount Input
@@ -1412,11 +1404,7 @@ private fun AddTransactionContent(
             onAmountChange = { amount ->
                 onFormDataChange(formData.copy(amount = amount))
             },
-            errorMessage = validationErrors["amount"],
-            isSmallScreen = isSmallScreen,
-            isMediumScreen = isMediumScreen,
-            titleFontSize = titleFontSize,
-            amountFontSize = amountFontSize
+            errorMessage = validationErrors["amount"]
         )
 
         // Account Selection - different for transfer vs others
@@ -1433,8 +1421,6 @@ private fun AddTransactionContent(
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
-                                isSmallScreen = isSmallScreen,
-                                isMediumScreen = isMediumScreen,
                                 labelFontSize = labelFontSize,
                                 inputHeight = inputHeight
                             )
@@ -1446,8 +1432,6 @@ private fun AddTransactionContent(
                                 icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowToAccountSheet,
-                                isSmallScreen = isSmallScreen,
-                                isMediumScreen = isMediumScreen,
                                 labelFontSize = labelFontSize,
                                 inputHeight = inputHeight
                             )
@@ -1465,8 +1449,6 @@ private fun AddTransactionContent(
                                 icon = formData.category?.icon ?: Icons.Default.Category,
                                 iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowCategorySheet,
-                                isSmallScreen = isSmallScreen,
-                                isMediumScreen = isMediumScreen,
                                 labelFontSize = labelFontSize,
                                 inputHeight = inputHeight
                             )
@@ -1478,8 +1460,6 @@ private fun AddTransactionContent(
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
-                                isSmallScreen = isSmallScreen,
-                                isMediumScreen = isMediumScreen,
                                 labelFontSize = labelFontSize,
                                 inputHeight = inputHeight
                             )
@@ -1497,8 +1477,6 @@ private fun AddTransactionContent(
             },
             placeholder = "e.g., Lunch at Subway",
             errorMessage = validationErrors["title"],
-            isSmallScreen = isSmallScreen,
-            isMediumScreen = isMediumScreen,
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
         )
@@ -1535,8 +1513,6 @@ private fun AddTransactionContent(
                 icon = Icons.Default.CalendarMonth,
                 isSelected = true,
                 onClick = onShowDatePicker,
-                isSmallScreen = isSmallScreen,
-                isMediumScreen = isMediumScreen,
                 inputHeight = inputHeight
             )
 
@@ -1546,8 +1522,6 @@ private fun AddTransactionContent(
                 icon = Icons.Default.AccessTime,
                 isSelected = true,
                 onClick = onShowTimePicker,
-                isSmallScreen = isSmallScreen,
-                isMediumScreen = isMediumScreen,
                 inputHeight = inputHeight
             )
         }
@@ -1563,16 +1537,12 @@ private fun AddTransactionContent(
             },
             placeholder = "e.g., we ate two each",
             errorMessage = validationErrors["description"],
-            isSmallScreen = isSmallScreen,
-            isMediumScreen = isMediumScreen,
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
         )
 
         // Receipt Upload
         ReceiptUploadSection(
-            isSmallScreen = isSmallScreen,
-            isMediumScreen = isMediumScreen,
             receiptHeight = receiptHeight,
             labelFontSize = labelFontSize
         )
@@ -1603,7 +1573,7 @@ private fun TransactionTypeSelector(
     selectedType: TransactionType,
     onTypeSelected: (TransactionType) -> Unit,
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false
+    isMediumScreen: Boolean = true
 ) {
     val toggleHeight = when {
         isSmallScreen -> 32.dp  // Much shorter
@@ -1668,10 +1638,10 @@ private fun TransactionTypeSelector(
                         Icon(
                             imageVector = icon,
                             contentDescription = text,
-                            modifier = Modifier.size(if (isSmallScreen) 14.dp else 16.dp),
+                            modifier = Modifier.size(if (false) 14.dp else 16.dp),
                             tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(if (isSmallScreen) 4.dp else 6.dp))
+                        Spacer(modifier = Modifier.width(if (false) 4.dp else 6.dp))
                         Text(
                             text = text,
                             fontSize = toggleFontSize,
@@ -1691,7 +1661,7 @@ private fun AmountInputSection(
     onAmountChange: (String) -> Unit,
     errorMessage: String? = null,
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false,
+    isMediumScreen: Boolean = true,
     titleFontSize: TextUnit = 18.sp,
     amountFontSize: TextUnit = 20.sp
 ) {
@@ -1764,7 +1734,7 @@ private fun CategoryAccountSelector(
     iconColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     onClick: () -> Unit,
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false,
+    isMediumScreen: Boolean = true,
     labelFontSize: TextUnit = 14.sp,
     inputHeight: Dp = 56.dp
 ) {
@@ -1823,7 +1793,7 @@ private fun InputField(
     placeholder: String,
     errorMessage: String? = null,
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false,
+    isMediumScreen: Boolean = true,
     labelFontSize: TextUnit = 14.sp,
     inputHeight: Dp = 56.dp
 ) {
@@ -1878,7 +1848,7 @@ private fun DateTimeSelector(
     isSelected: Boolean,
     onClick: () -> Unit,
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false,
+    isMediumScreen: Boolean = true,
     inputHeight: Dp = 40.dp
 ) {
     Button(
@@ -1917,7 +1887,7 @@ private fun DateTimeSelector(
 private fun ReceiptUploadSection(
     onReceiptSelected: (String) -> Unit = {},
     isSmallScreen: Boolean = false,
-    isMediumScreen: Boolean = false,
+    isMediumScreen: Boolean = true,
     receiptHeight: Dp = 80.dp,
     labelFontSize: TextUnit = 14.sp
 ) {

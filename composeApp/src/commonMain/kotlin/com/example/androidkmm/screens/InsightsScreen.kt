@@ -32,7 +32,7 @@ import com.example.androidkmm.design.iOSStyleDesignSystem
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import com.example.androidkmm.utils.getCurrencySymbol
+import com.example.androidkmm.utils.CurrencyUtils.getCurrencySymbol
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 

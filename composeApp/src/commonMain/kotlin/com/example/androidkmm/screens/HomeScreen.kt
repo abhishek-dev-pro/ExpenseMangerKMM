@@ -56,7 +56,6 @@ fun HomeScreenContent(
             .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
         verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.MEDIUM)
     ) {
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SCREEN_VERTICAL)) }
 
         item { GreetingSection() }
         item { BalanceCard() }
@@ -65,7 +64,7 @@ fun HomeScreenContent(
                 onActionClick = { action ->
                     when (action) {
                         "Ledger" -> onNavigateToLedger()
-                        "Transaction" -> onNavigateToAddTransaction()
+                        "Transaction" -> onNavigateToAddExpense()
                     }
                 }
             )

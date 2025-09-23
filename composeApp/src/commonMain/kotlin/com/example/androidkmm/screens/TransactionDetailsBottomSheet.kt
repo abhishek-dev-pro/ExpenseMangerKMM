@@ -28,8 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.androidkmm.utils.formatDouble
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings

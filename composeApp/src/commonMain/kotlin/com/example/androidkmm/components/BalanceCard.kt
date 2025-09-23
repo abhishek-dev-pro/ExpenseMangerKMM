@@ -18,10 +18,9 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
-import com.example.androidkmm.utils.removeCurrencySymbols
+import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 import com.example.androidkmm.utils.Logger
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.dp
@@ -218,7 +217,7 @@ fun BalanceCard(
                 contentDescription = if (isBalanceVisible) "Hide balance" else "Show balance",
                 tint = Color.White,
                 modifier = Modifier
-                    .size(DesignSystem.IconSize.md)
+                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     .clickable { isBalanceVisible = !isBalanceVisible }
             )
         }

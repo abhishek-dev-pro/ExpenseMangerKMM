@@ -14,25 +14,14 @@ fun App() {
     AppTheme {
         val settingsDatabase = rememberSQLiteSettingsDatabase()
         val appSettings by settingsDatabase.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
-        
-        // Debug logging
-        println("App Debug - userName: '${appSettings.userName}', userEmail: '${appSettings.userEmail}'")
-        println("App Debug - userName.isNotBlank(): ${appSettings.userName.isNotBlank()}")
-        println("App Debug - userName != 'User': ${appSettings.userName != "User"}")
-        println("App Debug - userName length: ${appSettings.userName.length}")
-        println("App Debug - userName isEmpty: ${appSettings.userName.isEmpty()}")
+
         
         // Check if user has completed setup (name is not empty and not default "User")
         val isUserSetupComplete = appSettings.userName.isNotBlank() && appSettings.userName != "User"
         
-        println("App Debug - isUserSetupComplete: $isUserSetupComplete")
-        println("App Debug - App recomposition triggered")
-        
         if (isUserSetupComplete) {
-            println("App Debug - Showing MainScreen")
             MainScreen()
         } else {
-            println("App Debug - Showing UserSetupScreen")
             UserSetupScreen(
                 settingsDatabase = settingsDatabase, // Pass the same database instance
                 onSetupComplete = {

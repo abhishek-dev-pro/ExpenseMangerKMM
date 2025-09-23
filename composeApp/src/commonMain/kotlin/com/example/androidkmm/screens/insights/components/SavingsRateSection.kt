@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
 
@@ -59,12 +59,12 @@ fun SavingsRateSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(DesignSystem.Spacing.lg)
+                .padding(iOSStyleDesignSystem.Padding.LARGE)
         ) {
             Text(
                 text = "Savings Rate",
@@ -73,7 +73,7 @@ fun SavingsRateSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(DesignSystem.Spacing.md))
+            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
             
             // Savings rate display
             Box(

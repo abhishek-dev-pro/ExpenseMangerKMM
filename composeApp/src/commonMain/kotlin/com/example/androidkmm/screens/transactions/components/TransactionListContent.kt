@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.DayGroup
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 

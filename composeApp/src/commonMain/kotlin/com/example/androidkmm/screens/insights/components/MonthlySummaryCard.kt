@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate

@@ -62,14 +62,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.DesignSystem
 import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.SQLiteGroupDatabase
 import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
-import com.example.androidkmm.utils.formatDouble
+import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -353,11 +352,11 @@ fun GroupCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ).padding(16.dp),
 
     ) {
@@ -388,8 +387,8 @@ fun GroupCard(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Normal,
-                        fontSize = DesignSystem.Typography.balanceLabel,
-                        lineHeight = DesignSystem.Typography.cardTitle,
+                        fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                        lineHeight = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -397,8 +396,8 @@ fun GroupCard(
                         text = "${members.size} members • ${formatDateForGroup(group.createdAt)}",
                         color = Color.Gray,
                         fontStyle = FontStyle.Normal,
-                        fontSize = DesignSystem.Typography.caption1,
-                        lineHeight = DesignSystem.Typography.caption1, // tight spacing
+                        fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                        lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize, // tight spacing
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -446,14 +445,14 @@ fun GroupCard(
                     text = "Total spent",
                     color = Color.Gray,
                     fontSize = 12.sp,
-                    lineHeight = DesignSystem.Typography.caption1,
+                    lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
                 )
                 Text(
                     text = "$${formatDouble(group.totalSpent)}",
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    lineHeight = DesignSystem.Typography.caption1,
+                    lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
                 )
             }
         }
@@ -513,16 +512,16 @@ fun MemberItem(name: String, email: String = "", isAdmin: Boolean, onRemove: () 
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (isAdmin) Color(0xFF181818) else Color.Black
         ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
@@ -587,13 +586,13 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = Color.White.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = Color.Black
         )

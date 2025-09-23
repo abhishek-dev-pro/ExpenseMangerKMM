@@ -19,7 +19,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.DesignSystem
+import com.example.androidkmm.design.iOSStyleDesignSystem
 import com.example.androidkmm.screens.filters.AmountRange
 import com.example.androidkmm.screens.filters.FilterColors
 import com.example.androidkmm.screens.filters.PredefinedAmountRange
@@ -179,13 +179,13 @@ private fun AmountRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(DesignSystem.CornerRadius.md))
+            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp,
                 color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(DesignSystem.CornerRadius.md)
+                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(DesignSystem.CornerRadius.md),
+        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
