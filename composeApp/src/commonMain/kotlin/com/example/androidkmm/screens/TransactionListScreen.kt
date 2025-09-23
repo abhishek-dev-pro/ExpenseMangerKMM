@@ -1129,7 +1129,8 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+                .padding(bottom = 16.dp), // Add bottom padding for better scrolling
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
         ) {
             AddTransactionContent(
@@ -1386,7 +1387,8 @@ private fun AddTransactionContent(
     // Simple Column layout without LazyColumn
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .wrapContentHeight(), // Ensure content wraps properly
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         // Transaction Type Selector
@@ -3779,19 +3781,34 @@ fun EditTransactionScreen(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+                
+                val interactionSource = remember { MutableInteractionSource() }
+                val isFocused by interactionSource.collectIsFocusedAsState()
+                
                 OutlinedTextField(
                     value = description,
                     onValueChange = { 
                         val limitedDescription = if (it.length <= 75) it else it.take(75)
                         description = limitedDescription
                     },
-                    placeholder = { Text("we ate two each") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 56.dp),
+                    interactionSource = interactionSource,
+                    placeholder = { 
+                        if (!isFocused && description.isEmpty()) {
+                            Text("Provide description here")
+                        }
+                    },
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.outline,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        cursorColor = MaterialTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                        focusedContainerColor = Color(0xFF2A2A2A), // Grey when typing
+                        unfocusedContainerColor = Color.Black, // Black when empty
+                        focusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when typing
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when empty
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
             }
             
