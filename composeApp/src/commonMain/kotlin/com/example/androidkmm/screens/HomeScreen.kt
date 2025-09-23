@@ -57,7 +57,7 @@ fun HomeScreenContent(
                         }
                         "Transaction" -> {
                             println("HomeScreen: Navigating to Add Expense")
-                            onNavigateToAddExpense()
+                            onNavigateToAddTransaction()
                         }
                         else -> {
                             println("HomeScreen: Unknown action: $action")

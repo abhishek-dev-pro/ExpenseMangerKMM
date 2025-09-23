@@ -47,6 +47,8 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogProperties
@@ -1085,8 +1087,8 @@ fun AddTransactionScreen(
             type = defaultTransactionType?.let { 
                 when (it) {
                     com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionType.EXPENSE
-                    com.example.androidkmm.models.TransactionType.INCOME -> TransactionType.INCOME
-                    com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.TRANSFER
+                    TransactionType.INCOME -> TransactionType.INCOME
+                    TransactionType.TRANSFER -> TransactionType.TRANSFER
                 }
             } ?: TransactionType.EXPENSE
         )
@@ -1116,7 +1118,7 @@ fun AddTransactionScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background
-            )
+            ),
         )
         
         // Scrollable content - using Column with verticalScroll instead of LazyColumn
@@ -1124,7 +1126,7 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
+                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
         ) {
             AddTransactionContent(
@@ -1284,12 +1286,12 @@ private fun AddTransactionContent(
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Use iOS design system
+    // Use iOS design system with reduced spacing for more compact form
     val spacing = AppStyleDesignSystem.Padding.MEDIUM
     val titleFontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize
     val labelFontSize = AppStyleDesignSystem.Typography.BODY.fontSize
-    val inputHeight = AppStyleDesignSystem.Sizes.BUTTON_HEIGHT
-    val receiptHeight = AppStyleDesignSystem.Sizes.ICON_SIZE_GIANT
+    val inputHeight = AppStyleDesignSystem.Sizes.INPUT_HEIGHT
+    val receiptHeight = AppStyleDesignSystem.Sizes.ICON_SIZE_MASSIVE
     val buttonHeight = AppStyleDesignSystem.Sizes.BUTTON_HEIGHT
     val buttonPadding = AppStyleDesignSystem.Padding.MEDIUM
     val amountFontSize = AppStyleDesignSystem.Typography.TITLE_1.fontSize
@@ -1371,10 +1373,7 @@ private fun AddTransactionContent(
     // Simple Column layout without LazyColumn
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 0.dp)  // Remove top padding completely
-            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = AppStyleDesignSystem.Padding.SCREEN_VERTICAL)
-            .padding(bottom = if (false) 120.dp else 140.dp),  // Account for bottom nav bar
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         // Transaction Type Selector
@@ -1389,6 +1388,7 @@ private fun AddTransactionContent(
             }
         )
 
+        Spacer(Modifier.height(48.dp))
         // Amount Input
         AmountInputSection(
             amount = formData.amount,
@@ -1397,13 +1397,14 @@ private fun AddTransactionContent(
             },
             errorMessage = validationErrors["amount"]
         )
+        Spacer(Modifier.height(32.dp))
 
         // Account Selection - different for transfer vs others
         if (formData.type == TransactionType.TRANSFER) {
             // From Account and To Account for transfers
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
@@ -1431,7 +1432,7 @@ private fun AddTransactionContent(
             // Category and Account for income/expense
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
@@ -1532,11 +1533,11 @@ private fun AddTransactionContent(
             inputHeight = inputHeight
         )
 
-        // Receipt Upload
-        ReceiptUploadSection(
-            receiptHeight = receiptHeight,
-            labelFontSize = labelFontSize
-        )
+//        // Receipt Upload
+//        ReceiptUploadSection(
+//            receiptHeight = receiptHeight,
+//            labelFontSize = labelFontSize
+//        )
 
         // Save Button - Always visible with prominent styling
         Button(
@@ -1545,7 +1546,7 @@ private fun AddTransactionContent(
                 .fillMaxWidth()
                 .height(buttonHeight),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF2196F3) // Bright blue color
+                containerColor = if(isFormReady()) Color(0xFF2196F3)  else Color.Gray// Bright blue color
             ),
             shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
         ) {
@@ -1578,68 +1579,50 @@ private fun TransactionTypeSelector(
         else -> 16.sp
     }
     
-    Box(
+    // Use a simpler approach with proper sliding
+    Row(
         modifier = Modifier
-            .fillMaxWidth(0.9f)  // 90% width
             .height(toggleHeight)
             .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE))
             .background(MaterialTheme.colorScheme.surface)
             .padding(2.dp)
     ) {
-        // Sliding background for selected item
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(1f / 3f)  // 1/3 width for each option
-                .offset(
-                    x = when (selectedType) {
-                        TransactionType.EXPENSE -> 0.dp
-                        TransactionType.INCOME -> (toggleHeight * 1.1f)  // Move to middle position
-                        TransactionType.TRANSFER -> (toggleHeight * 2.2f)  // Move to right position
-                    }
-                )
-                .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF2196F3))
-        )
-        
-        // Toggle options
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            TransactionType.values().forEach { type ->
-                val isSelected = selectedType == type
-                val (icon, text) = when (type) {
-                    TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
-                    TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
-                    TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
-                }
+        TransactionType.values().forEach { type ->
+            val isSelected = selectedType == type
+            val (icon, text) = when (type) {
+                TransactionType.EXPENSE -> Icons.Default.TrendingDown to "Expense"
+                TransactionType.INCOME -> Icons.Default.TrendingUp to "Income"
+                TransactionType.TRANSFER -> Icons.Default.SwapHoriz to "Transfer"
+            }
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clickable { onTypeSelected(type) },
-                    contentAlignment = Alignment.Center
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clickable { onTypeSelected(type) }
+                    .background(
+                        if (isSelected) Color(0xFF2196F3) else Color.Transparent,
+                        RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = text,
-                            modifier = Modifier.size(if (false) 14.dp else 16.dp),
-                            tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(if (false) 4.dp else 6.dp))
-                        Text(
-                            text = text,
-                            fontSize = toggleFontSize,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = text,
+                        modifier = Modifier.size(if (false) 14.dp else 16.dp),
+                        tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(if (false) 4.dp else 6.dp))
+                    Text(
+                        text = text,
+                        fontSize = toggleFontSize,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -1654,7 +1637,7 @@ private fun AmountInputSection(
     isSmallScreen: Boolean = false,
     isMediumScreen: Boolean = true,
     titleFontSize: TextUnit = 18.sp,
-    amountFontSize: TextUnit = 20.sp
+    amountFontSize: TextUnit = 54.sp
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -1803,7 +1786,7 @@ private fun InputField(
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(inputHeight),
+                .defaultMinSize(minHeight = inputHeight),
             placeholder = { Text(placeholder) },
             isError = errorMessage != null,
             shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
@@ -1818,7 +1801,7 @@ private fun InputField(
                 errorContainerColor = MaterialTheme.colorScheme.surface
             )
         )
-        
+
         // Error message
         if (errorMessage != null) {
             Text(
@@ -2114,7 +2097,7 @@ fun AccountSelectionBottomSheet(
                             .fillMaxWidth()
                             .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
                     ) {
                         // Plus icon
                         Box(
@@ -2342,7 +2325,7 @@ fun CategorySelectionBottomSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp),
                 contentPadding = PaddingValues(bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE),
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
                 verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
             ) {
                 items(categories) { category ->
@@ -3496,7 +3479,7 @@ fun EditTransactionScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                 // Category
                 Column(modifier = Modifier.weight(1f)) {
