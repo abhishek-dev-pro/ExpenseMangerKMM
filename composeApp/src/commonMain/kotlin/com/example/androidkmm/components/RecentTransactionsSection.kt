@@ -50,7 +50,9 @@ fun RecentTransactionsSection(
         }
     }
     
-    val isLoading = allTransactions.isEmpty()
+    // Only show loading if we're actively fetching and have no data yet
+    // For a fresh app start, empty list should show empty state, not loading
+    val isLoading = false
     
     // Process transactions reactively
     val recentTransactions = remember(allTransactions) {
