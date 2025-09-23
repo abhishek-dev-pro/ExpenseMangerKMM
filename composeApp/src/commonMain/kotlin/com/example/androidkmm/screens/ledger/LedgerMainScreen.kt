@@ -298,7 +298,7 @@ fun LedgerMainScreen(
                     Text(
                         text = "Search people",
                         color = LedgerTheme.textSecondary(),
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         maxLines = 1,
                         modifier = Modifier.padding(vertical = 1.dp)
                     )
@@ -325,21 +325,20 @@ fun LedgerMainScreen(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp)
                     .border(
                         width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color.White.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(16.dp)
                     )
             )
-            
+
             // Filter Dropdown
             var expanded by remember { mutableStateOf(false) }
             Box {
                 OutlinedButton(
                     onClick = { expanded = true },
                     modifier = Modifier
-                        .height(48.dp)
+                        .height(56.dp)
                         .width(100.dp)
                         .border(
                             width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
@@ -372,7 +371,7 @@ fun LedgerMainScreen(
                         )
                     }
                 }
-                
+
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
