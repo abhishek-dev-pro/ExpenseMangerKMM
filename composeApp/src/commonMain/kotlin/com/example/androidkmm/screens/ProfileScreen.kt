@@ -2813,7 +2813,9 @@ fun CategoriesScreen(
 
 @Composable
 fun CarryForwardToggle() {
-    var isCarryForwardEnabled by remember { mutableStateOf(true) }
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val scope = rememberCoroutineScope()
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -2858,8 +2860,14 @@ fun CarryForwardToggle() {
             }
 
             Switch(
-                checked = isCarryForwardEnabled,
-                onCheckedChange = { isCarryForwardEnabled = it },
+                checked = appSettings.carryForwardEnabled,
+                onCheckedChange = { enabled ->
+                    println("CarryForwardToggle - Toggle clicked: $enabled")
+                    scope.launch {
+                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
+                        println("CarryForwardToggle - Updated carry forward to: $enabled")
+                    }
+                },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.primary,
                     checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
