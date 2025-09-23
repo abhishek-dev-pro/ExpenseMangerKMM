@@ -3314,10 +3314,30 @@ fun EditTransactionScreen(
     }
     var selectedCategoryName by remember { mutableStateOf(transaction.category) }
     var selectedAccountName by remember { mutableStateOf(transaction.account) }
+    
+    // Store original category to restore when switching back
+    var originalCategory by remember { mutableStateOf(transaction.category) }
+    var hasStoredOriginalCategory by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    
+    // Track the original transaction type to restore category when switching back
+    val originalTransactionType = remember {
+        when (transaction.type) {
+            com.example.androidkmm.models.TransactionType.INCOME -> TransactionType.INCOME
+            com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionType.EXPENSE
+            com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.EXPENSE
+        }
+    }
+    
+    // Restore original category when switching back to original type
+    LaunchedEffect(selectedType) {
+        if (selectedType == originalTransactionType && originalCategory.isNotEmpty() && selectedCategoryName.isEmpty()) {
+            selectedCategoryName = originalCategory
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -3378,7 +3398,17 @@ fun EditTransactionScreen(
                         // Expense Toggle
                         val isExpenseSelected = selectedType == TransactionType.EXPENSE
                         Button(
-                            onClick = { selectedType = TransactionType.EXPENSE },
+                            onClick = { 
+                                if (selectedType != TransactionType.EXPENSE) {
+                                    // Store original category only once when first switching away from original type
+                                    if (!hasStoredOriginalCategory && selectedType == originalTransactionType) {
+                                        originalCategory = selectedCategoryName
+                                        hasStoredOriginalCategory = true
+                                    }
+                                    selectedType = TransactionType.EXPENSE
+                                    selectedCategoryName = "" // Clear category when switching
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(18.dp)),
@@ -3410,7 +3440,17 @@ fun EditTransactionScreen(
                         // Income Toggle
                         val isIncomeSelected = selectedType == TransactionType.INCOME
                         Button(
-                            onClick = { selectedType = TransactionType.INCOME },
+                            onClick = { 
+                                if (selectedType != TransactionType.INCOME) {
+                                    // Store original category only once when first switching away from original type
+                                    if (!hasStoredOriginalCategory && selectedType == originalTransactionType) {
+                                        originalCategory = selectedCategoryName
+                                        hasStoredOriginalCategory = true
+                                    }
+                                    selectedType = TransactionType.INCOME
+                                    selectedCategoryName = "" // Clear category when switching
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(18.dp)),
