@@ -378,47 +378,60 @@ class SQLiteTransactionDatabase(
     ) {
         scope.launch {
             try {
-                    // Validate transaction data before processing
-                    if (transaction.id.isBlank()) {
-                        throw IllegalArgumentException("Transaction ID cannot be blank")
-                    }
-                    if (transaction.amount <= 0) {
-                        throw IllegalArgumentException("Transaction amount must be positive")
-                    }
-                    if (transaction.account.isBlank()) {
-                        throw IllegalArgumentException("Transaction account cannot be blank")
-                    }
-                    
-                    // First, add the transaction
-                    database.categoryDatabaseQueries.insertTransaction(
-                        id = transaction.id,
-                        title = transaction.title,
-                        amount = transaction.amount,
-                        category_name = transaction.category,
-                        category_icon_name = getIconName(transaction.categoryIcon),
-                        category_color_hex = transaction.categoryColor.toHexString(),
-                        account_name = transaction.account,
-                        account_icon_name = getIconName(transaction.accountIcon),
-                        account_color_hex = transaction.accountColor.toHexString(),
-                        transfer_to = transaction.transferTo ?: "",
-                        time = transaction.time,
-                        type = transaction.type.name,
-                        description = transaction.description,
-                        date = transaction.date,
-                        is_ledger_transaction = 0, // Default to 0 for regular transactions
-                        ledger_person_id = "", // Empty for regular transactions
-                        ledger_person_name = "" // Empty for regular transactions
-                    )
-                    
-                    // Then update account balances
-                    updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+                println("DEBUG: addTransactionWithBalanceUpdate called for transaction: ${transaction.title}")
+                println("DEBUG: Transaction type: ${transaction.type}, Amount: ${transaction.amount}")
+                println("DEBUG: From account: ${transaction.account}, To account: ${transaction.transferTo}")
+                
+                // Validate transaction data before processing
+                if (transaction.id.isBlank()) {
+                    throw IllegalArgumentException("Transaction ID cannot be blank")
+                }
+                if (transaction.amount <= 0) {
+                    throw IllegalArgumentException("Transaction amount must be positive")
+                }
+                if (transaction.account.isBlank()) {
+                    throw IllegalArgumentException("Transaction account cannot be blank")
+                }
+                
+                // First, add the transaction
+                println("DEBUG: Inserting transaction into database...")
+                database.categoryDatabaseQueries.insertTransaction(
+                    id = transaction.id,
+                    title = transaction.title,
+                    amount = transaction.amount,
+                    category_name = transaction.category,
+                    category_icon_name = getIconName(transaction.categoryIcon),
+                    category_color_hex = transaction.categoryColor.toHexString(),
+                    account_name = transaction.account,
+                    account_icon_name = getIconName(transaction.accountIcon),
+                    account_color_hex = transaction.accountColor.toHexString(),
+                    transfer_to = transaction.transferTo ?: "",
+                    time = transaction.time,
+                    type = transaction.type.name,
+                    description = transaction.description,
+                    date = transaction.date,
+                    is_ledger_transaction = 0, // Default to 0 for regular transactions
+                    ledger_person_id = "", // Empty for regular transactions
+                    ledger_person_name = "" // Empty for regular transactions
+                )
+                println("DEBUG: Transaction inserted successfully")
+                
+                // Then update account balances
+                println("DEBUG: Updating account balances...")
+                updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+                println("DEBUG: Account balances updated successfully")
                 
                 println("DEBUG: Transaction added and balances updated successfully")
                 Logger.info("Transaction added successfully: ${transaction.id}", "SQLiteTransactionDatabase")
                 onSuccess()
             } catch (error: Exception) {
+                println("DEBUG: Exception caught in addTransactionWithBalanceUpdate: ${error.message}")
+                println("DEBUG: Exception type: ${error.javaClass.simpleName}")
+                error.printStackTrace()
+                
                 // Rollback the transaction if balance update fails
                 try {
+                    println("DEBUG: Attempting to rollback transaction...")
                     database.categoryDatabaseQueries.deleteTransaction(transaction.id)
                     println("DEBUG: Transaction rollback successful")
                     Logger.info("Transaction rollback successful: ${transaction.id}", "SQLiteTransactionDatabase")
@@ -429,7 +442,9 @@ class SQLiteTransactionDatabase(
                 
                 println("ERROR: Failed to add transaction with balance update: ${error.message}")
                 Logger.error("Failed to add transaction with balance update", "SQLiteTransactionDatabase", error)
+                println("DEBUG: Calling onError callback...")
                 onError(error)
+                println("DEBUG: onError callback called")
             }
         }
     }
@@ -508,8 +523,11 @@ class SQLiteTransactionDatabase(
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
         try {
+            println("DEBUG: updateAccountBalancesForTransaction called for transaction type: ${transaction.type}")
+            
             when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> {
+                    println("DEBUG: Processing INCOME transaction")
                     // Add amount to account balance
                     val account = getAccountByName(transaction.account)
                     if (account != null) {
@@ -522,6 +540,7 @@ class SQLiteTransactionDatabase(
                     }
                 }
                 com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                    println("DEBUG: Processing EXPENSE transaction")
                     // Subtract amount from account balance
                     val account = getAccountByName(transaction.account)
                     if (account != null) {
@@ -534,6 +553,9 @@ class SQLiteTransactionDatabase(
                     }
                 }
                 com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                    println("DEBUG: Processing TRANSFER transaction")
+                    println("DEBUG: From account: ${transaction.account}, To account: ${transaction.transferTo}")
+                    
                     // Validate transfer requirements
                     if (transaction.transferTo.isNullOrBlank()) {
                         throw IllegalStateException("Transfer destination account is required for TRANSFER transaction")
@@ -541,6 +563,8 @@ class SQLiteTransactionDatabase(
                     
                     val fromAccount = getAccountByName(transaction.account)
                     val toAccount = getAccountByName(transaction.transferTo!!)
+                    
+                    println("DEBUG: From account found: ${fromAccount != null}, To account found: ${toAccount != null}")
                     
                     if (fromAccount == null) {
                         throw IllegalStateException("Source account '${transaction.account}' not found for TRANSFER transaction")
@@ -561,21 +585,27 @@ class SQLiteTransactionDatabase(
                     
                     // Check if source account has sufficient balance
                     val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
+                    println("DEBUG: Current from account balance: $currentFromBalance, Required amount: ${transaction.amount}")
+                    
                     if (currentFromBalance < transaction.amount) {
+                        println("DEBUG: Insufficient balance detected - throwing exception")
                         throw IllegalStateException("Insufficient balance in source account '${fromAccount.name}'. Available: $currentFromBalance, Required: ${transaction.amount}")
                     }
                     
                     // Perform the transfer atomically
                     try {
+                        println("DEBUG: Performing transfer - updating from account balance")
                         val newFromBalance = currentFromBalance - transaction.amount
                         accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                         println("DEBUG: Updated from account ${fromAccount.name} balance from $currentFromBalance to $newFromBalance (TRANSFER: -${transaction.amount})")
                         
+                        println("DEBUG: Performing transfer - updating to account balance")
                         val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                         val newToBalance = currentToBalance + transaction.amount
                         accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                         println("DEBUG: Updated to account ${toAccount.name} balance from $currentToBalance to $newToBalance (TRANSFER: +${transaction.amount})")
                     } catch (e: Exception) {
+                        println("DEBUG: Error during transfer - attempting rollback")
                         // If the second update fails, try to rollback the first update
                         try {
                             accountDatabaseManager.updateAccountBalance(fromAccount.id, currentFromBalance)
@@ -588,8 +618,11 @@ class SQLiteTransactionDatabase(
                     }
                 }
             }
+            println("DEBUG: updateAccountBalancesForTransaction completed successfully")
         } catch (e: Exception) {
             println("ERROR: Failed to update account balances for transaction ${transaction.id}: ${e.message}")
+            println("ERROR: Exception type: ${e.javaClass.simpleName}")
+            e.printStackTrace()
             Logger.error("Failed to update account balances", "SQLiteTransactionDatabase", e)
             throw e
         }

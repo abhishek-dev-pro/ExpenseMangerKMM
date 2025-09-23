@@ -52,3 +52,9 @@ data class TransactionCategory(
     val icon: ImageVector,
     val color: Color
 )
+
+data class InsufficientBalanceInfo(
+    val accountName: String,
+    val currentBalance: Double,
+    val requiredAmount: Double
+)

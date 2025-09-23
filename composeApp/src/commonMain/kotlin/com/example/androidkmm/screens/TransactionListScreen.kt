@@ -80,7 +80,7 @@ object TransactionColors {
 
 // Data classes for the form (using models from TransactionModels.kt)
 
-
+// Data class for insufficient balance dialog
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -181,6 +181,10 @@ fun TransactionsScreen(
 
     var showAddSheet by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
+    
+    // Insufficient balance dialog state
+    var showInsufficientBalanceDialog by remember { mutableStateOf(false) }
+    var insufficientBalanceInfo by remember { mutableStateOf<com.example.androidkmm.models.InsufficientBalanceInfo?>(null) }
     
     // Track scroll state for showing compact summary
     val listState = rememberLazyListState()
@@ -316,10 +320,15 @@ fun TransactionsScreen(
         AddTransactionScreen(
             onDismiss = { showAddSheet = false },
             onSave = { transactionFormData ->
+                println("DEBUG: onSave called with transactionFormData: $transactionFormData")
                 // Convert TransactionFormData to Transaction and save to database
                 val transaction = com.example.androidkmm.models.Transaction(
                     id = "${Clock.System.now().epochSeconds}",
-                    title = transactionFormData.title,
+                    title = if (transactionFormData.type == TransactionType.TRANSFER && transactionFormData.title.isBlank()) {
+                        "Transfer from ${transactionFormData.account?.name ?: ""} to ${transactionFormData.toAccount?.name ?: ""}"
+                    } else {
+                        transactionFormData.title
+                    },
                     amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
                     category = if (transactionFormData.type == TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),
                     categoryIcon = if (transactionFormData.type == TransactionType.TRANSFER) Icons.Default.SwapHoriz else (transactionFormData.category?.icon ?: Icons.Default.Category),
@@ -334,14 +343,162 @@ fun TransactionsScreen(
                     accountColor = transactionFormData.account?.color ?: Color.Blue
                 )
                 
+                println("DEBUG: Calling addTransactionWithBalanceUpdate")
                 transactionDatabaseManager.addTransactionWithBalanceUpdate(
                     transaction = transaction,
-                    accountDatabaseManager = accountDatabaseManager
+                    accountDatabaseManager = accountDatabaseManager,
+                    onSuccess = {
+                        println("DEBUG: Transaction added successfully")
+                        showAddSheet = false
+                    },
+                    onError = { error ->
+                        println("DEBUG: TransactionListScreen - onError callback called")
+                        println("DEBUG: TransactionListScreen - Error message: ${error.message}")
+                        println("DEBUG: TransactionListScreen - Error type: ${error.javaClass.simpleName}")
+                        error.printStackTrace()
+                        
+                        // Check if it's an insufficient balance error
+                        if (error.message?.startsWith("Insufficient balance in source account") == true) {
+                            println("DEBUG: TransactionListScreen - Insufficient balance detected, showing dialog")
+                            val parts = error.message!!.split("Available: ", ", Required: ")
+                            if (parts.size >= 3) {
+                                val accountName = error.message!!.substringAfter("source account '").substringBefore("'")
+                                val currentBalance = parts[1].toDoubleOrNull() ?: 0.0
+                                val requiredAmount = parts[2].toDoubleOrNull() ?: 0.0
+
+                                // Show insufficient balance dialog
+                                println("DEBUG: TransactionListScreen - Setting showInsufficientBalanceDialog = true")
+                                showInsufficientBalanceDialog = true
+                                insufficientBalanceInfo = com.example.androidkmm.models.InsufficientBalanceInfo(
+                                    accountName = accountName,
+                                    currentBalance = currentBalance,
+                                    requiredAmount = requiredAmount
+                                )
+                                println("DEBUG: TransactionListScreen - Dialog state set - showInsufficientBalanceDialog: $showInsufficientBalanceDialog, insufficientBalanceInfo: $insufficientBalanceInfo")
+                            }
+                        } else {
+                            println("DEBUG: TransactionListScreen - Error is not insufficient balance error")
+                        }
+                    }
                 )
-                showAddSheet = false
             },
             categoryDatabaseManager = categoryDatabaseManager,
             accountDatabaseManager = accountDatabaseManager
+        )
+    }
+    
+    // Insufficient Balance Dialog
+    if (showInsufficientBalanceDialog && insufficientBalanceInfo != null) {
+        println("DEBUG: TransactionListScreen - Rendering insufficient balance dialog")
+        println("DEBUG: TransactionListScreen - Dialog state - showInsufficientBalanceDialog: $showInsufficientBalanceDialog")
+        println("DEBUG: TransactionListScreen - Dialog state - insufficientBalanceInfo: $insufficientBalanceInfo")
+        AlertDialog(
+            onDismissRequest = {
+                showInsufficientBalanceDialog = false
+                insufficientBalanceInfo = null
+            },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "Cannot Complete Transfer",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "The source account '${insufficientBalanceInfo!!.accountName}' has a negative balance and cannot be used for transfers.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 22.sp
+                    )
+                    
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "To fix this:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "1.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Add money to ${insufficientBalanceInfo!!.accountName} first",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "2.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Transfer money TO ${insufficientBalanceInfo!!.accountName} from another account",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showInsufficientBalanceDialog = false
+                        insufficientBalanceInfo = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Got it",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         )
     }
     
@@ -966,6 +1123,7 @@ fun TransactionCard(
                     },
                     color = MaterialTheme.colorScheme.onBackground,
                     style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontSize = 16.sp,
                         fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     fontStyle = FontStyle.Normal,
@@ -976,7 +1134,9 @@ fun TransactionCard(
                 Text(
                     text = "${transaction.time} • Transfer",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT.copy(
+                        fontSize = 14.sp
+                    ),
                     fontStyle = FontStyle.Normal
                 )
             } else {
@@ -984,6 +1144,7 @@ fun TransactionCard(
                     text = transaction.title,
                     color = MaterialTheme.colorScheme.onBackground,
                     style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontSize = 16.sp,
                         fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     fontStyle = FontStyle.Normal,
@@ -998,21 +1159,27 @@ fun TransactionCard(
                     Text(
                         text = transaction.time,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = "•",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = transaction.category,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
                 }
@@ -1049,7 +1216,7 @@ fun TransactionCard(
                 Text(
                     text = transaction.account,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
