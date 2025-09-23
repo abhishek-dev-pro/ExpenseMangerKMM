@@ -22,6 +22,7 @@ import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
 import androidx.compose.runtime.collectAsState
@@ -41,6 +42,7 @@ fun PersonLedgerDetailScreen(
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val coroutineScope = rememberCoroutineScope()
     
     // Get currency symbol from settings
@@ -401,31 +403,51 @@ fun PersonLedgerDetailScreen(
                     },
                     onDelete = {
                         coroutineScope.launch {
-                            // Delete the ledger transaction and update person balance
-                            ledgerDatabaseManager.deleteLedgerTransactionAndUpdatePerson(
-                                transactionId = transaction.id,
-                                personId = person.id
-                            )
-                            
-                            // Also delete the corresponding main transaction
-                            val mainTransactionId = "main_${transaction.id}"
-                            transactionDatabaseManager.deleteTransaction(
-                                transaction = com.example.androidkmm.models.Transaction(
-                                    id = mainTransactionId,
-                                    title = "",
-                                    amount = 0.0,
+                            try {
+                                // Create a transaction object to reverse the account balance
+                                val transactionToReverse = com.example.androidkmm.models.Transaction(
+                                    id = "main_${transaction.id}",
+                                    title = transaction.description,
+                                    amount = transaction.amount,
                                     category = "",
                                     categoryIcon = Icons.Default.Category,
                                     categoryColor = Color.Transparent,
-                                    account = "",
+                                    account = transaction.account ?: "Cash", // Use the account from the ledger transaction
                                     accountIcon = Icons.Default.Wallet,
                                     accountColor = Color.Transparent,
-                                    time = "",
-                                    type = com.example.androidkmm.models.TransactionType.EXPENSE,
-                                    description = "",
-                                    date = ""
+                                    time = transaction.time,
+                                    type = if (transaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) 
+                                        com.example.androidkmm.models.TransactionType.EXPENSE 
+                                    else 
+                                        com.example.androidkmm.models.TransactionType.INCOME,
+                                    description = transaction.description,
+                                    date = transaction.date
                                 )
-                            )
+                                
+                                // Use the account database manager from the top level
+                                
+                                // Reverse the account balance changes
+                                transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
+                                    transaction = transactionToReverse,
+                                    accountDatabaseManager = accountDatabaseManager,
+                                    onSuccess = {
+                                        println("DEBUG: Account balance reversed successfully for transaction ${transaction.id}")
+                                    },
+                                    onError = { error ->
+                                        println("DEBUG: Error reversing account balance: ${error.message}")
+                                    }
+                                )
+                                
+                                // Delete the ledger transaction and update person balance
+                                ledgerDatabaseManager.deleteLedgerTransactionAndUpdatePerson(
+                                    transactionId = transaction.id,
+                                    personId = person.id
+                                )
+                                
+                                println("DEBUG: Ledger transaction deleted successfully")
+                            } catch (e: Exception) {
+                                println("DEBUG: Error deleting ledger transaction: ${e.message}")
+                            }
                         }
                     }
                 )
