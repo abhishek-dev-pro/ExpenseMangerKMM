@@ -151,8 +151,8 @@ fun AddLedgerEntryBottomSheet(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding(),
-            contentPadding = PaddingValues(AppStyleDesignSystem.Padding.XXS),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
                 item {
                     // Header
@@ -167,8 +167,8 @@ fun AddLedgerEntryBottomSheet(
                                 person != null && currentTransactionType == TransactionType.RECEIVED -> "You Received Money"
                                 else -> "Add Ledger Entry"
                             },
-                            fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
-                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
                             color = LedgerTheme.textPrimary()
                         )
 
@@ -210,12 +210,12 @@ fun AddLedgerEntryBottomSheet(
                         // Person's Name
                         Text(
                             text = "Person's Name",
-                            fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
                             color = LedgerTheme.textPrimary()
                         )
 
-                        Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Column {
                             TextField(
@@ -315,16 +315,16 @@ fun AddLedgerEntryBottomSheet(
                         // Transaction Type
                         Text(
                             text = "Transaction Type",
-                            fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                            fontWeight = FontWeight.Medium,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
                             color = LedgerTheme.textPrimary()
                         )
 
-                        Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             // You Sent Button
                             Card(
@@ -449,12 +449,12 @@ fun AddLedgerEntryBottomSheet(
                     // Amount
                     Text(
                         text = "Amount",
-                        fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = LedgerTheme.textPrimary()
                     )
 
-                    Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Column {
                         TextField(
@@ -511,12 +511,12 @@ fun AddLedgerEntryBottomSheet(
                     // Description
                     Text(
                         text = "Description (Optional)",
-                        fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = LedgerTheme.textPrimary()
                     )
 
-                    Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Column {
                         TextField(
@@ -564,16 +564,16 @@ fun AddLedgerEntryBottomSheet(
                     // Date & Time
                     Text(
                         text = "Date & Time",
-                        fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = LedgerTheme.textPrimary()
                     )
 
-                    Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         // Date Picker
                         Button(
@@ -634,12 +634,12 @@ fun AddLedgerEntryBottomSheet(
                     // Account
                     Text(
                         text = "Account",
-                        fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
                         color = LedgerTheme.textPrimary()
                     )
 
-                    Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Column {
                         Button(
@@ -856,8 +856,8 @@ fun AddLedgerEntryBottomSheet(
                                 else -> "Add Entry"
                             },
                             color = if (isFormValid) Color.White else LedgerTheme.textSecondary(),
-                            fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
-                            fontWeight = FontWeight.SemiBold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
