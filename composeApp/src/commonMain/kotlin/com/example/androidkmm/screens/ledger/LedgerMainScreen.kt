@@ -174,7 +174,7 @@ fun LedgerMainScreen(
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .height(100.dp)
+                    .height(120.dp) // Slightly increased height from 100dp to 120dp
                     .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                     .border(
                         width = 0.5.dp, // very thin border
@@ -190,7 +190,7 @@ fun LedgerMainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.Top
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -208,6 +208,8 @@ fun LedgerMainScreen(
                             color = LedgerTheme.textSecondary()
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Column {
                         Text(
@@ -229,7 +231,7 @@ fun LedgerMainScreen(
             Card(
                 modifier = Modifier
                     .weight(1f)
-                    .height(100.dp)
+                    .height(120.dp) // Slightly increased height from 100dp to 120dp
                     .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                     .border(
                         width = 0.5.dp, // very thin border
@@ -245,7 +247,7 @@ fun LedgerMainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.Top
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -263,6 +265,8 @@ fun LedgerMainScreen(
                             color = LedgerTheme.textSecondary()
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Column {
                         Text(

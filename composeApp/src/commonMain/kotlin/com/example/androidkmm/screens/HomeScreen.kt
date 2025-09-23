@@ -35,7 +35,8 @@ fun HomeScreenContent(
     onNavigateToAddIncome: () -> Unit = {},
     onNavigateToGroups: () -> Unit = {},
     onNavigateToLedger: () -> Unit = {},
-    onNavigateToAddTransaction: () -> Unit = {}
+    onNavigateToAddTransaction: () -> Unit = {},
+    refreshTrigger: Int = 0
 ) {
     LazyColumn(
         modifier = Modifier
@@ -66,7 +67,7 @@ fun HomeScreenContent(
                 }
             )
         }
-        item { RecentTransactionsSection(onViewAllClick = onNavigateToTransactions) }
+        item { RecentTransactionsSection(onViewAllClick = onNavigateToTransactions, refreshTrigger = refreshTrigger) }
 //        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
 //        item { ProgressCard() }
 

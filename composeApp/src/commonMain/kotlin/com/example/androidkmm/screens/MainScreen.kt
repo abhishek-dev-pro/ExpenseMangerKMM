@@ -47,6 +47,9 @@ fun MainScreen() {
     var showAddExpenseScreen by remember { mutableStateOf(false) }
     var showAddLedgerEntrySheet by remember { mutableStateOf(false) }
     
+    // Refresh trigger for home screen components
+    var homeScreenRefreshTrigger by remember { mutableStateOf(0) }
+    
     // Navigation stack for proper back navigation
     var navigationStack by remember { mutableStateOf(listOf<NavigationState>()) }
     
@@ -150,7 +153,8 @@ fun MainScreen() {
                         onNavigateToAddTransaction = {
                             println("MainScreen: Navigating to add transaction")
                             showAddTransactionSheet = true
-                        }
+                        },
+                        refreshTrigger = homeScreenRefreshTrigger
                     )
                     1 -> TransactionsScreen(
                         onNavigateToLedger = { personName, transactionId ->
@@ -201,6 +205,9 @@ fun MainScreen() {
                     onDismiss = { 
                         showAddTransactionSheet = false
                         defaultTransactionType = null
+                        // Trigger refresh when returning to home screen
+                        homeScreenRefreshTrigger++
+                        println("DEBUG: MainScreen - Triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
                     },
                     onSave = { transactionFormData: com.example.androidkmm.models.TransactionFormData ->
                         // Convert TransactionFormData to Transaction and save to database
@@ -227,6 +234,9 @@ fun MainScreen() {
                         )
                         showAddTransactionSheet = false
                         defaultTransactionType = null
+                        // Trigger refresh when transaction is saved
+                        homeScreenRefreshTrigger++
+                        println("DEBUG: MainScreen - Transaction saved, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
                     },
                     categoryDatabaseManager = categoryDatabaseManager,
                     accountDatabaseManager = accountDatabaseManager,
@@ -244,6 +254,9 @@ fun MainScreen() {
                     AddLedgerEntryBottomSheet(
                         onDismiss = { 
                             showAddLedgerEntrySheet = false
+                            // Trigger refresh when returning to home screen
+                            homeScreenRefreshTrigger++
+                            println("DEBUG: MainScreen - Ledger entry dismissed, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
                         }
                     )
                 }
