@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -65,6 +67,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.components.AddAccountBottomSheet
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -1264,7 +1267,8 @@ fun AddTransactionScreen(
                             println("Error adding account: ${error.message}")
                         }
                     )
-                }
+                },
+                accountDatabaseManager = accountDatabaseManager
             )
         }
     }
@@ -1298,6 +1302,9 @@ private fun AddTransactionContent(
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
     
+    // Track if user has attempted to submit
+    var hasAttemptedSubmit by remember { mutableStateOf(false) }
+    
     // Validation function using standardized validation
     fun validateForm(): Boolean {
         val validationResult = when (formData.type) {
@@ -1328,7 +1335,12 @@ private fun AddTransactionContent(
             }
         }
         
-        validationErrors = validationResult.errors
+        // Only show validation errors after user has attempted to submit
+        if (hasAttemptedSubmit) {
+            validationErrors = validationResult.errors
+        } else {
+            validationErrors = emptyMap()
+        }
         return validationResult.isValid
     }
     
@@ -1359,6 +1371,7 @@ private fun AddTransactionContent(
     
     // Save function with validation
     fun handleSave() {
+        hasAttemptedSubmit = true
         if (validateForm()) {
             // Capitalize first letter of title and description before saving
             val capitalizedFormData = formData.copy(
@@ -1442,7 +1455,9 @@ private fun AddTransactionContent(
                                 iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowCategorySheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("category"),
+                                errorMessage = validationErrors["category"]
                             )
 
                             CategoryAccountSelector(
@@ -1453,7 +1468,9 @@ private fun AddTransactionContent(
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("account"),
+                                errorMessage = validationErrors["account"]
                             )
             }
         }
@@ -1467,7 +1484,7 @@ private fun AddTransactionContent(
                 val limitedTitle = if (title.length <= 30) title else title.take(30)
                 onFormDataChange(formData.copy(title = limitedTitle))
             },
-            placeholder = "e.g., Lunch at Subway",
+            placeholder = "Provide title here",
             errorMessage = validationErrors["title"],
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
@@ -1527,7 +1544,7 @@ private fun AddTransactionContent(
                 val limitedDescription = if (description.length <= 75) description else description.take(75)
                 onFormDataChange(formData.copy(description = limitedDescription))
             },
-            placeholder = "e.g., we ate two each",
+            placeholder = "Provide description here",
             errorMessage = validationErrors["description"],
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
@@ -1639,6 +1656,9 @@ private fun AmountInputSection(
     titleFontSize: TextUnit = 18.sp,
     amountFontSize: TextUnit = 54.sp
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -1650,7 +1670,9 @@ private fun AmountInputSection(
                 val filteredValue = newValue.filter { char: Char -> char.isDigit() || char == '.' }
                 // Ensure only one decimal point
                 val decimalCount = filteredValue.count { char: Char -> char == '.' }
-                if (decimalCount <= 1) {
+                // Limit to maximum 10 digits (excluding decimal point)
+                val digitsOnly = filteredValue.filter { char: Char -> char.isDigit() }
+                if (decimalCount <= 1 && digitsOnly.length <= 10) {
                     onAmountChange(filteredValue)
                 }
             },
@@ -1662,12 +1684,14 @@ private fun AmountInputSection(
                 color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            interactionSource = interactionSource,
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (amount.isEmpty()) {
+                    if (amount.isEmpty() && !isFocused) {
                         Text(
                             text = "0.00",
                             fontSize = amountFontSize,
@@ -1710,7 +1734,9 @@ private fun CategoryAccountSelector(
     isSmallScreen: Boolean = false,
     isMediumScreen: Boolean = true,
     labelFontSize: TextUnit = 14.sp,
-    inputHeight: Dp = 56.dp
+    inputHeight: Dp = 56.dp,
+    isError: Boolean = false,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = modifier,
@@ -1735,7 +1761,7 @@ private fun CategoryAccountSelector(
             ),
             border = BorderStroke(
                 width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                color = if (isError) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             ),
             contentPadding = PaddingValues(12.dp)
         ) {
@@ -1756,6 +1782,16 @@ private fun CategoryAccountSelector(
                 )
             }
         }
+        
+        // Error message
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
     }
 }
 
@@ -1771,6 +1807,9 @@ private fun InputField(
     labelFontSize: TextUnit = 14.sp,
     inputHeight: Dp = 56.dp
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    
     Column(
         verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
@@ -1787,18 +1826,23 @@ private fun InputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = inputHeight),
-            placeholder = { Text(placeholder) },
+            interactionSource = interactionSource,
+            placeholder = { 
+                if (!isFocused && value.isEmpty()) {
+                    Text(placeholder)
+                }
+            },
             isError = errorMessage != null,
             shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = Color(0xFF121212),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
+                focusedContainerColor = Color(0xFF2A2A2A), // Grey when typing
+                unfocusedContainerColor = Color.Black, // Black when empty
+                focusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when typing
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when empty
                 focusedTextColor = MaterialTheme.colorScheme.onBackground,
                 unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                 errorBorderColor = Color.Red,
-                errorContainerColor = MaterialTheme.colorScheme.surface
+                errorContainerColor = Color.Black
             )
         )
 
@@ -2173,19 +2217,19 @@ private fun AccountCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
         ) {
-            // Dollar sign icon
+            // Account type icon
             Box(
                 modifier = Modifier
                     .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface),
+                    .background(getAccountTypeColor(account.type)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = getAccountTypeIcon(account.type),
+                    contentDescription = account.type,
+                    tint = Color.White,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -4121,5 +4165,27 @@ fun AddCategoryBottomSheetForTransaction(
         }
     }
 }
+
+// Helper functions for account type icons and colors
+private fun getAccountTypeIcon(type: String): ImageVector {
+    return when (type) {
+        "Bank Account" -> Icons.Default.AccountBalance
+        "Credit/Debit Card" -> Icons.Default.CreditCard
+        "Cash" -> Icons.Default.Money
+        "Digital Wallet" -> Icons.Default.PhoneAndroid
+        else -> Icons.Default.AccountBalance
+    }
+}
+
+private fun getAccountTypeColor(type: String): Color {
+    return when (type) {
+        "Bank Account" -> Color(0xFF2196F3) // Blue
+        "Credit/Debit Card" -> Color(0xFF4CAF50) // Green
+        "Cash" -> Color(0xFFFF9800) // Orange
+        "Digital Wallet" -> Color(0xFF9C27B0) // Purple
+        else -> Color(0xFF2196F3)
+    }
+}
+
 
 
