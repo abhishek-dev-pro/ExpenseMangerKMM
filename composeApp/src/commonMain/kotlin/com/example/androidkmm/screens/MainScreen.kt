@@ -93,12 +93,28 @@ fun MainScreen() {
         handleBackNavigation()
     }
 
+    // Handle tab selection with dialog/sheet management
+    fun handleTabSelection(newTab: Int) {
+        if (newTab != selectedTab) {
+            // Close all dialogs/sheets when switching to a different tab
+            showAddLedgerEntrySheet = false
+            showAddExpenseScreen = false
+            showCreateGroupScreen = false
+            showAddTransactionSheet = false
+            defaultTransactionType = null
+            navigateToLedgerPerson = null
+            navigateToLedgerTransaction = null
+            selectedTab = newTab
+        }
+        // If clicking the same tab, do nothing (don't close dialogs/sheets)
+    }
+
     AppTheme {
         Scaffold(
             bottomBar = {
                 BottomNavigationBar(
                     selected = selectedTab,
-                    onSelect = { selectedTab = it }
+                    onSelect = { handleTabSelection(it) }
                 )
             },
             containerColor = MaterialTheme.colorScheme.background
