@@ -166,7 +166,8 @@ fun AccountsScreen(
                                             }
                                         }
                                     },
-                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true)
+                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true),
+                                    currencySymbol = currencySymbol
                                 )
                             }
                         }
@@ -240,7 +241,8 @@ fun AccountsScreen(
 private fun AccountCard(
     account: Account,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    currencySymbol: String
 ) {
     Card(
         modifier = Modifier
@@ -301,7 +303,7 @@ private fun AccountCard(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
                         style = AppStyleDesignSystem.Typography.HEADLINE,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -407,8 +409,8 @@ fun AddAccountBottomSheet(
     var selectedAccountType by remember { mutableStateOf("Bank Account") }
     var initialBalance by remember { mutableStateOf("") }
 
-    // Validation logic
-    val isFormValid = accountName.isNotEmpty() || selectedAccountType.isNotEmpty()
+    // Validation logic - button should be enabled when account name is filled
+    val isFormValid = accountName.isNotEmpty()
 
     Column(
         modifier = Modifier
@@ -427,12 +429,20 @@ fun AddAccountBottomSheet(
 
         BasicTextField(
             value = accountName,
-            onValueChange = { accountName = it },
+            onValueChange = { newValue ->
+                // Limit to 24 characters and capitalize first letter
+                val capitalizedValue = if (newValue.isNotEmpty()) {
+                    newValue.take(24).replaceFirstChar { it.uppercase() }
+                } else {
+                    newValue
+                }
+                accountName = capitalizedValue
+            },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -517,13 +527,19 @@ fun AddAccountBottomSheet(
 
         BasicTextField(
             value = initialBalance,
-            onValueChange = { initialBalance = it },
+            onValueChange = { newValue ->
+                // Limit to 10 digits (including decimal point)
+                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                if (filteredValue.length <= 10) {
+                    initialBalance = filteredValue
+                }
+            },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
@@ -544,7 +560,7 @@ fun AddAccountBottomSheet(
             onClick = {
                 val account = Account(
                     id = System.currentTimeMillis().toString(),
-                    name = accountName.ifEmpty { selectedAccountType },
+                    name = accountName,
                     balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
@@ -587,27 +603,18 @@ private fun EditAccountBottomSheet(
 ) {
     var accountName by remember { mutableStateOf(account.name) }
     var selectedAccountType by remember { mutableStateOf(account.type) }
-    var selectedBank by remember { mutableStateOf("HDFC Bank") }
-    var customBankName by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf(account.balance) }
     
     // Check if this is a Cash account
     val isCashAccount = account.name.equals("Cash", ignoreCase = true)
     
     // Track if any changes have been made
-    val hasChanges = remember(accountName, selectedAccountType, selectedBank, initialBalance) {
+    val hasChanges = remember(accountName, selectedAccountType, initialBalance) {
         accountName != account.name ||
         selectedAccountType != account.type ||
-        initialBalance != account.balance ||
-        (selectedAccountType == "Bank Account" && selectedBank != "HDFC Bank")
+        initialBalance != account.balance
     }
 
-    val bankOptions = listOf(
-        "HDFC Bank", "State Bank of India (SBI)",
-        "ICICI Bank", "Axis Bank",
-        "Bank of Baroda", "Punjab National Bank",
-        "Kotak Mahindra Bank", "Yes Bank", "Other"
-    )
 
     Column(
         modifier = Modifier
@@ -638,7 +645,7 @@ private fun EditAccountBottomSheet(
                     if (isCashAccount) Color(0xFF2A2A2A) else Color.Black, 
                     RoundedCornerShape(12.dp)
                 )
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -723,13 +730,19 @@ private fun EditAccountBottomSheet(
 
         BasicTextField(
             value = initialBalance,
-            onValueChange = { initialBalance = it },
+            onValueChange = { newValue ->
+                // Limit to 10 digits (including decimal point)
+                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                if (filteredValue.length <= 10) {
+                    initialBalance = filteredValue
+                }
+            },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
@@ -749,9 +762,7 @@ private fun EditAccountBottomSheet(
         Button(
             onClick = {
                 val updatedAccount = account.copy(
-                    name = accountName.ifEmpty {
-                        if (selectedAccountType == "Bank Account") selectedBank else selectedAccountType
-                    },
+                    name = accountName.ifEmpty { selectedAccountType },
                     balance = initialBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
@@ -865,19 +876,19 @@ private fun getAccountTypeIcon(type: String): ImageVector {
     return when (type) {
         "Bank Account" -> Icons.Default.AccountBalance
         "Credit/Debit Card" -> Icons.Default.CreditCard
-        "Cash" -> Icons.Default.AttachMoney
-        "Digital Wallet" -> Icons.Default.Wallet
+        "Cash" -> Icons.Default.Money
+        "Digital Wallet" -> Icons.Default.PhoneAndroid
         else -> Icons.Default.AccountBalance
     }
 }
 
 private fun getAccountTypeColor(type: String): Color {
     return when (type) {
-        "Bank Account" -> Color(0xFF4285F4)
-        "Credit/Debit Card" -> Color(0xFF34A853)
-        "Cash" -> Color(0xFFFF6D01)
-        "Digital Wallet" -> Color(0xFF9C27B0)
-        else -> Color(0xFF4285F4)
+        "Bank Account" -> Color(0xFF2196F3) // Blue
+        "Credit/Debit Card" -> Color(0xFF4CAF50) // Green
+        "Cash" -> Color(0xFFFF9800) // Orange
+        "Digital Wallet" -> Color(0xFF9C27B0) // Purple
+        else -> Color(0xFF2196F3)
     }
 }
 
@@ -886,7 +897,8 @@ private fun NewAccountCard(
     account: Account,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    showDeleteButton: Boolean = true
+    showDeleteButton: Boolean = true,
+    currencySymbol: String
 ) {
     Card(
         modifier = Modifier
@@ -908,9 +920,9 @@ private fun NewAccountCard(
             ) {
                 // Account Icon
                 Icon(
-                    imageVector = Icons.Default.AttachMoney,
+                    imageVector = getAccountTypeIcon(account.type),
                     contentDescription = account.type,
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = getAccountTypeColor(account.type),
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -935,7 +947,7 @@ private fun NewAccountCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "+$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                            text = "+$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
                             fontSize = 14.sp,
                             color = AccountsGreenSuccess,
                             fontWeight = FontWeight.Medium
@@ -1006,9 +1018,9 @@ private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹"
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AttachMoney,
+                        imageVector = getAccountTypeIcon(account.type),
                         contentDescription = account.type,
-                        tint = Color(0xFF4CAF50),
+                        tint = getAccountTypeColor(account.type),
                         modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }

@@ -235,7 +235,11 @@ currencySymbol: String
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}",
+                    text = when (transaction.type) {
+                        TransactionType.INCOME -> "Added to ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                        TransactionType.EXPENSE -> "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                        TransactionType.TRANSFER -> "Transferred to ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                    },
                     style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
