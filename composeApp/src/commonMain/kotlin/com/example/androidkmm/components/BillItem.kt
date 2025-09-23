@@ -14,8 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.CardUtils
 
 /**
@@ -33,8 +32,8 @@ fun BillItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = iOSStyleDesignSystem.Padding.MEDIUM,
-                    vertical = iOSStyleDesignSystem.Padding.SMALL
+                    horizontal = AppStyleDesignSystem.Padding.MEDIUM,
+                    vertical = AppStyleDesignSystem.Padding.SMALL
                 ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -42,12 +41,12 @@ fun BillItem(
             // Left side (icon + texts)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f).padding(vertical = iOSStyleDesignSystem.Padding.XS)
+                modifier = Modifier.weight(1f).padding(vertical = AppStyleDesignSystem.Padding.XS)
             ) {
                 // Colored circular icon background
                 Box(
                     modifier = Modifier
-                        .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                        .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                         .background(color, shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
@@ -55,11 +54,11 @@ fun BillItem(
                         imageVector = Icons.Default.DateRange,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     )
                 }
 
-                Spacer(Modifier.width(iOSStyleDesignSystem.Padding.MEDIUM))
+                Spacer(Modifier.width(AppStyleDesignSystem.Padding.MEDIUM))
 
                 Column(
                     modifier = Modifier.weight(1f)
@@ -69,8 +68,8 @@ fun BillItem(
                         color = Color.White,
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Normal,
-                        fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
-                        lineHeight = iOSStyleDesignSystem.Typography.HEADLINE.lineHeight,
+                        fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
+                        lineHeight = AppStyleDesignSystem.Typography.HEADLINE.lineHeight,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -78,8 +77,8 @@ fun BillItem(
                         text = subtitle,
                         color = Color.Gray,
                         fontStyle = FontStyle.Normal,
-                        fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
-                        lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.lineHeight, // tight spacing
+                        fontSize = AppStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                        lineHeight = AppStyleDesignSystem.Typography.CAPTION_1.lineHeight, // tight spacing
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -90,7 +89,7 @@ fun BillItem(
             Text(
                 text = amount,
                 color = Color.Red,
-                fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

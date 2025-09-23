@@ -3,14 +3,11 @@ package com.example.androidkmm.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -25,10 +22,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,8 +31,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -53,16 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.SQLiteGroupDatabase
@@ -70,12 +60,7 @@ import com.example.androidkmm.models.Group
 import com.example.androidkmm.models.GroupMember
 import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -352,11 +337,11 @@ fun GroupCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ).padding(16.dp),
 
     ) {
@@ -387,8 +372,8 @@ fun GroupCard(
                         color = MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Normal,
                         fontStyle = FontStyle.Normal,
-                        fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-                        lineHeight = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
+                        fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+                        lineHeight = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -396,8 +381,8 @@ fun GroupCard(
                         text = "${members.size} members • ${formatDateForGroup(group.createdAt)}",
                         color = Color.Gray,
                         fontStyle = FontStyle.Normal,
-                        fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
-                        lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize, // tight spacing
+                        fontSize = AppStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                        lineHeight = AppStyleDesignSystem.Typography.CAPTION_1.fontSize, // tight spacing
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -445,14 +430,14 @@ fun GroupCard(
                     text = "Total spent",
                     color = Color.Gray,
                     fontSize = 12.sp,
-                    lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                    lineHeight = AppStyleDesignSystem.Typography.CAPTION_1.fontSize,
                 )
                 Text(
                     text = "$${formatDouble(group.totalSpent)}",
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    lineHeight = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                    lineHeight = AppStyleDesignSystem.Typography.CAPTION_1.fontSize,
                 )
             }
         }
@@ -512,16 +497,16 @@ fun MemberItem(name: String, email: String = "", isAdmin: Boolean, onRemove: () 
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         colors = CardDefaults.cardColors(
             containerColor = if (isAdmin) Color(0xFF181818) else Color.Black
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
@@ -586,13 +571,13 @@ fun SuggestedContactItem(name: String, onAdd: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp)
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
-                width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                 color = Color.White.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = Color.Black
         )
@@ -734,7 +719,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (groupName.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 
@@ -830,7 +815,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (memberName.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 
@@ -867,7 +852,7 @@ fun CreateGroupScreen(
                         RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (email.isNotEmpty()) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         else 

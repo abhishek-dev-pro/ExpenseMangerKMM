@@ -3,8 +3,6 @@ package com.example.androidkmm.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,15 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
-import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
-import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.models.Transaction
@@ -101,7 +95,7 @@ fun RecentTransactionsSection(
         ) {
             Text(
                 text = "Recent Transactions",
-                style = iOSStyleDesignSystem.Typography.TITLE_3,
+                style = AppStyleDesignSystem.Typography.TITLE_3,
                 color = MaterialTheme.colorScheme.onBackground
             )
             
@@ -114,8 +108,8 @@ fun RecentTransactionsSection(
             ) {
                     Text(
                         text = "View all",
-                        style = iOSStyleDesignSystem.Typography.CALL_OUT.copy(
-                            fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                        style = AppStyleDesignSystem.Typography.CALL_OUT.copy(
+                            fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                         ),
                         color = MaterialTheme.colorScheme.primary
                 )
@@ -124,7 +118,7 @@ fun RecentTransactionsSection(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = "View all",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                 )
             }
         }
@@ -136,22 +130,22 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(iOSStyleDesignSystem.Padding.XXL),
+                        .padding(AppStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE),
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "Loading transactions...",
-                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -161,31 +155,31 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(iOSStyleDesignSystem.Padding.XXL),
+                        .padding(AppStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Error,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "Unable to load transactions",
-                            style = iOSStyleDesignSystem.Typography.BODY.copy(
-                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            style = AppStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                     )
                         Text(
                             text = "Please check your connection and try again",
-                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                     )
@@ -198,7 +192,7 @@ fun RecentTransactionsSection(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         ),
-                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                     ) {
                         Text(
                             text = "Retry",
@@ -213,31 +207,31 @@ fun RecentTransactionsSection(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(iOSStyleDesignSystem.Padding.XXL),
+                        .padding(AppStyleDesignSystem.Padding.XXL),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Receipt,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "No recent transactions",
-                            style = iOSStyleDesignSystem.Typography.BODY.copy(
-                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            style = AppStyleDesignSystem.Typography.BODY.copy(
+                                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                     )
                         Text(
                             text = "Your recent transactions will appear here",
-                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -268,14 +262,14 @@ currencySymbol: String
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.SMALL),
+                .padding(AppStyleDesignSystem.Padding.SMALL),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Category icon - more prominent like restaurant example
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
-                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE))
                     .background(transaction.categoryColor),
                 contentAlignment = Alignment.Center
             ) {
@@ -283,7 +277,7 @@ currencySymbol: String
                     imageVector = transaction.categoryIcon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
             
@@ -295,8 +289,8 @@ currencySymbol: String
             ) {
                 Text(
                     text = transaction.title,
-                    style = iOSStyleDesignSystem.Typography.BODY.copy(
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -305,7 +299,7 @@ currencySymbol: String
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}",
-                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -316,8 +310,8 @@ currencySymbol: String
             ) {
                 Text(
                     text = formatAmount(transaction.amount, transaction.type, currencySymbol),
-                    style = iOSStyleDesignSystem.Typography.BODY.copy(
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold
+                    style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold
                     ),
                     color = when (transaction.type) {
                         TransactionType.INCOME -> Color(0xFF00A63E)
@@ -328,7 +322,7 @@ currencySymbol: String
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = transaction.time,
-                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
+                    style = AppStyleDesignSystem.Typography.CAPTION_1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

@@ -20,10 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.models.GroupMember
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.foundation.BorderStroke
 
 enum class SplitType {
     EQUAL, PERCENTAGE, FIXED_AMOUNT
@@ -386,7 +385,7 @@ private fun SplitSelectionItem(
                         .size(24.dp)
                         .clip(CircleShape)
                         .border(
-                            width = iOSStyleDesignSystem.Sizes.BORDER_THICK,
+                            width = AppStyleDesignSystem.Sizes.BORDER_THICK,
                             color = Color(0xFFE5E7EB),
                             shape = CircleShape
                         )

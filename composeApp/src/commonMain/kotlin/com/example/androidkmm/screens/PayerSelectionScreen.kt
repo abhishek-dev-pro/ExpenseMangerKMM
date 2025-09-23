@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.models.GroupMember
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,7 +171,7 @@ private fun PayerSelectionItem(
                         .size(24.dp)
                         .clip(CircleShape)
                         .border(
-                            width = iOSStyleDesignSystem.Sizes.BORDER_THICK,
+                            width = AppStyleDesignSystem.Sizes.BORDER_THICK,
                             color = Color(0xFFE5E7EB),
                             shape = CircleShape
                         )

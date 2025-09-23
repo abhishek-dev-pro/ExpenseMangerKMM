@@ -8,35 +8,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.androidkmm.components.BalanceCard
 import com.example.androidkmm.components.GreetingSection
 import com.example.androidkmm.components.GroupItem
-import com.example.androidkmm.components.ProgressCard
 import com.example.androidkmm.components.QuickActions
 import com.example.androidkmm.components.RecentTransactionsSection
-import com.example.androidkmm.components.SectionHeader
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.data.GroupData
-import com.example.androidkmm.utils.CardUtils
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.models.Group
-import com.example.androidkmm.models.GroupMember
-import com.example.androidkmm.models.GroupExpense
-import kotlinx.coroutines.delay
 
 /**
  * Home screen content component
@@ -53,8 +40,8 @@ fun HomeScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
-        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.MEDIUM)
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
     ) {
 
         item { GreetingSection() }
@@ -62,9 +49,19 @@ fun HomeScreenContent(
         item { 
             QuickActions(
                 onActionClick = { action ->
+                    println("HomeScreen: Quick action clicked: $action")
                     when (action) {
-                        "Ledger" -> onNavigateToLedger()
-                        "Transaction" -> onNavigateToAddExpense()
+                        "Ledger" -> {
+                            println("HomeScreen: Navigating to Ledger")
+                            onNavigateToLedger()
+                        }
+                        "Transaction" -> {
+                            println("HomeScreen: Navigating to Add Expense")
+                            onNavigateToAddExpense()
+                        }
+                        else -> {
+                            println("HomeScreen: Unknown action: $action")
+                        }
                     }
                 }
             )
@@ -73,7 +70,7 @@ fun HomeScreenContent(
 //        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
 //        item { ProgressCard() }
 
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SECTION_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.SECTION_SPACING)) }
     }
 }
 
@@ -137,7 +134,7 @@ private fun GroupHighlights(
     ) {
         Text(
             text = "Group Highlights",
-            style = iOSStyleDesignSystem.Typography.HEADLINE,
+            style = AppStyleDesignSystem.Typography.HEADLINE,
             color = MaterialTheme.colorScheme.onBackground
         )
         
@@ -149,7 +146,7 @@ private fun GroupHighlights(
         ) {
             Text(
                 text = "View all",
-                style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                style = AppStyleDesignSystem.Typography.CALL_OUT,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -157,35 +154,35 @@ private fun GroupHighlights(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "View all",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
             )
         }
     }
     
-    Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+    Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
     
     if (groupHighlights.isEmpty()) {
         // Show empty state
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
+                    .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "No groups yet",
-                    style = iOSStyleDesignSystem.Typography.HEADLINE,
+                    style = AppStyleDesignSystem.Typography.HEADLINE,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+                Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
                 Text(
                     text = "Create your first group to start splitting expenses",
-                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -193,7 +190,7 @@ private fun GroupHighlights(
     } else {
         // Group list - use Column with consistent spacing
         Column(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SMALL)
         ) {
             groupHighlights.forEach { group ->
                 GroupItem(

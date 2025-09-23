@@ -10,10 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Header component for the filter bottom sheet
@@ -33,7 +31,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
         // Filter Icon
         Box(
             modifier = Modifier
-                .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
@@ -42,7 +40,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
                 contentDescription = "Filter",
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     .align(Alignment.Center)
             )
         }
@@ -54,13 +52,13 @@ fun FilterHeader(onDismiss: () -> Unit) {
             Text(
                 text = "Filter Transactions",
                 color = MaterialTheme.colorScheme.onSurface,
-                style = iOSStyleDesignSystem.Typography.TITLE_2
+                style = AppStyleDesignSystem.Typography.TITLE_2
             )
             
             Text(
                 text = "Customize your transaction view",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = iOSStyleDesignSystem.Typography.CALL_OUT
+                style = AppStyleDesignSystem.Typography.CALL_OUT
             )
         }
         
@@ -68,7 +66,7 @@ fun FilterHeader(onDismiss: () -> Unit) {
         IconButton(
             onClick = onDismiss,
             modifier = Modifier
-                .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {

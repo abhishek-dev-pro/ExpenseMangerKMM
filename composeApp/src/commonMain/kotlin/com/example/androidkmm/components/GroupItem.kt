@@ -11,10 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Group item component for displaying group highlights
@@ -31,19 +29,19 @@ fun GroupItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.SMALL),
+                .padding(AppStyleDesignSystem.Padding.SMALL),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Group icon - same style as transaction category icon
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
-                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE))
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE))
                     .background(color),
                 contentAlignment = Alignment.Center
             ) {
@@ -51,7 +49,7 @@ fun GroupItem(
                     imageVector = Icons.Default.Group,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
             
@@ -63,15 +61,15 @@ fun GroupItem(
             ) {
                 Text(
                     text = title,
-                    style = iOSStyleDesignSystem.Typography.BODY.copy(
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                    style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = members,
-                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -82,15 +80,15 @@ fun GroupItem(
             ) {
                 Text(
                     text = amount,
-                    style = iOSStyleDesignSystem.Typography.BODY.copy(
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold
+                    style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold
                     ),
                     color = if (positive) Color(0xFF00A63E) else Color(0xFFEF4444)
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = chip,
-                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
+                    style = AppStyleDesignSystem.Typography.CAPTION_1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

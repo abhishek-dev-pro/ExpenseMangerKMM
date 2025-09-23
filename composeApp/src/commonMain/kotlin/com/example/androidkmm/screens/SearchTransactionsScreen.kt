@@ -16,9 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,14 +28,11 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 
 // Import FilterOptions from FilterTransactionsBottomSheet
-import FilterOptions
-import DateRange
-import PredefinedDateRange
 
 // Color definitions matching the search screen design
 object SearchColors {
@@ -390,13 +385,13 @@ private fun SearchTransactionItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -573,13 +568,13 @@ private fun FilterSummary(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
-            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Row(

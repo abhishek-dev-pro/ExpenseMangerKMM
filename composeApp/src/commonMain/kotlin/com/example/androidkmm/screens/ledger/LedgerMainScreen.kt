@@ -12,8 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.Filter
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
@@ -21,19 +19,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import androidx.compose.runtime.collectAsState
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import kotlinx.datetime.Clock as DateTimeClock
 
 // LedgerMainScreen.kt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
@@ -181,16 +175,16 @@ fun LedgerMainScreen(
                 modifier = Modifier
                     .weight(1f)
                     .height(100.dp)
-                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                     .border(
                         width = 0.5.dp, // very thin border
                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                     ),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF0F2419) // Keep green background
                 ),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ) {
                 Column(
                     modifier = Modifier
@@ -236,16 +230,16 @@ fun LedgerMainScreen(
                 modifier = Modifier
                     .weight(1f)
                     .height(100.dp)
-                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                     .border(
                         width = 0.5.dp, // very thin border
                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                     ),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF2A1919) // Keep red background
                 ),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ) {
                 Column(
                     modifier = Modifier
@@ -333,7 +327,7 @@ fun LedgerMainScreen(
                     .weight(1f)
                     .height(48.dp)
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = Color.White.copy(alpha = 0.2f),
                         shape = RoundedCornerShape(16.dp)
                     )
@@ -348,7 +342,7 @@ fun LedgerMainScreen(
                         .height(48.dp)
                         .width(100.dp)
                         .border(
-                            width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                            width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                             color = Color.White.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(16.dp)
                         ),

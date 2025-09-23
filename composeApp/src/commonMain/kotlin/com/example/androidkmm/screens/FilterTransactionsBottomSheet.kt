@@ -20,7 +20,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +32,7 @@ import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.TransactionType
@@ -145,7 +144,7 @@ private fun FilterContent(
         Spacer(modifier = Modifier.height(24.dp))
         
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_XXL)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_XXL)
         ) {
             // Transaction Type Section
             item {
@@ -336,7 +335,7 @@ private fun TransactionTypeSection(
         Spacer(modifier = Modifier.height(12.dp))
         
         Column(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             // All Transactions
             FilterOptionCard(
@@ -394,13 +393,13 @@ private fun FilterOptionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -502,8 +501,8 @@ private fun CategoriesSection(
         // Use LazyVerticalGrid for better UX with many categories
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.heightIn(max = 200.dp) // Limit height to prevent bottom sheet from becoming too tall
         ) {
             items(categories) { category ->
@@ -521,7 +520,7 @@ private fun CategoriesSection(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
             ) {
                 // Select All button
                 OutlinedButton(
@@ -587,13 +586,13 @@ private fun CategoryChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -688,8 +687,8 @@ private fun AccountsSection(
         // Use LazyVerticalGrid for better UX with many accounts
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.heightIn(max = 120.dp) // Limit height since accounts are usually fewer
         ) {
             items(accounts) { account ->
@@ -707,7 +706,7 @@ private fun AccountsSection(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
             ) {
                 // Select All button
                 OutlinedButton(
@@ -773,13 +772,13 @@ private fun AccountChip(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -858,7 +857,7 @@ private fun DateRangeSection(
         
         // Predefined Date Ranges
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             items(PredefinedDateRange.values().toList()) { predefinedRange ->
                 DateRangeChip(
@@ -881,7 +880,7 @@ private fun DateRangeSection(
         // Custom Date Range
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             // From Date - Clickable field
             Box(
@@ -893,7 +892,7 @@ private fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -945,7 +944,7 @@ private fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -999,13 +998,13 @@ private fun DateRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -1038,7 +1037,7 @@ private fun AmountRangeSection(
         
         // Predefined Amount Ranges
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL)
         ) {
             items(PredefinedAmountRange.values().toList()) { predefinedRange ->
                 AmountRangeChip(
@@ -1060,7 +1059,7 @@ private fun AmountRangeSection(
         
         // Custom Amount Range
         Column(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             // Min Amount
             OutlinedTextField(
@@ -1150,13 +1149,13 @@ private fun AmountRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
                 color = Color.White.copy(alpha = 0.2f), // subtle white
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )
@@ -1178,7 +1177,7 @@ private fun ActionButtons(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
     ) {
         // Cancel Button
         OutlinedButton(

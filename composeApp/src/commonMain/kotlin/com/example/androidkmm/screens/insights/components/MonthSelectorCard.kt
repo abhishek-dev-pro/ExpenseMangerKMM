@@ -9,9 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Month selector card for insights overview
@@ -39,12 +38,12 @@ fun MonthSelectorCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.LARGE),
+                .padding(AppStyleDesignSystem.Padding.LARGE),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

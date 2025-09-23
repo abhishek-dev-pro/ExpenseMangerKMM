@@ -48,7 +48,7 @@ import com.example.androidkmm.utils.CurrencyUtils.getCurrencySymbol
 import com.example.androidkmm.models.Category
 import com.example.androidkmm.models.CategoryType
 import com.example.androidkmm.models.CategoryTab
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.theme.AppTheme
@@ -395,19 +395,19 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = iOSStyleDesignSystem.Padding.SCREEN_VERTICAL),
-        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL)
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SMALL)
     ) {
         item {
             // Profile Header Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE),
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(
-                    modifier = Modifier.padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
+                    modifier = Modifier.padding(AppStyleDesignSystem.Padding.CARD_PADDING)
                 ) {
                     // User Info Section
                     Row(
@@ -417,14 +417,14 @@ fun ProfileScreen(
                         // Profile Picture
                         Box(
                             modifier = Modifier
-                                .size(iOSStyleDesignSystem.Sizes.AVATAR_XL)
+                                .size(AppStyleDesignSystem.Sizes.AVATAR_XL)
                                 .clip(CircleShape)
                                 .background(Color(0xFFF0F8FF)), // Light blue tint like in the image
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = initials,
-                                style = iOSStyleDesignSystem.Typography.TITLE_2,
+                                style = AppStyleDesignSystem.Typography.TITLE_2,
                                 color = Color.Black
                             )
                         }
@@ -442,15 +442,15 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = userName,
-                                    style = iOSStyleDesignSystem.Typography.TITLE_1,
+                                    style = AppStyleDesignSystem.Typography.TITLE_1,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
 
-                                Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.XXS))
+                                Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.XXS))
 
                                 Text(
                                     text = userEmail,
-                                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                                    style = AppStyleDesignSystem.Typography.CALL_OUT,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
@@ -479,13 +479,13 @@ fun ProfileScreen(
                                 editEmail = userEmail
                                 showEditDialog = true 
                             },
-                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit Profile",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                             )
                         }
                     }
@@ -593,7 +593,7 @@ fun ProfileScreen(
                     imageVector = Icons.Default.Email,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -642,7 +642,7 @@ fun ProfileScreen(
             },
             text = {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                    verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
                 ) {
                     // Name Input
                     OutlinedTextField(
@@ -761,7 +761,7 @@ fun ProfileScreen(
                     if (isLoading) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                     } else {
                         Text("Save")
@@ -841,7 +841,7 @@ fun MenuCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
@@ -851,7 +851,7 @@ fun MenuCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -988,7 +988,7 @@ fun CategoriesBottomSheet(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
@@ -1020,7 +1020,7 @@ fun CategoryItem(category: Category) {
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1029,7 +1029,7 @@ fun CategoryItem(category: Category) {
                     imageVector = category.icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
 
@@ -1055,7 +1055,7 @@ fun CategoryItem(category: Category) {
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }
                 IconButton(onClick = { }) {
@@ -1063,7 +1063,7 @@ fun CategoryItem(category: Category) {
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
                         tint = Color(0xFFE57373),
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }
             }
@@ -1195,11 +1195,11 @@ private fun IncomeCategoriesContent(
 
         // Default Categories Grid
         Column(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             categories.chunked(3).forEach { rowCategories ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+                    horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     rowCategories.forEach { category ->
@@ -1272,11 +1272,11 @@ private fun ExpenseCategoriesContent(
 
         // Default Categories Grid
         Column(
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             categories.chunked(3).forEach { rowCategories ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+                    horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     rowCategories.forEach { category ->
@@ -1351,7 +1351,7 @@ private fun CategoryCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1360,7 +1360,7 @@ private fun CategoryCard(
                     imageVector = category.icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -1398,7 +1398,7 @@ private fun CustomCategoryItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1407,7 +1407,7 @@ private fun CustomCategoryItem(
                     imageVector = category.icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -1471,7 +1471,7 @@ private fun AddCustomCategoryButton(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -1591,8 +1591,8 @@ fun AddAccountBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {
             item {
                 AccountTypeCard(
@@ -1647,8 +1647,8 @@ fun AddAccountBottomSheet(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
-                verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
+                verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
             ) {
                 items(bankOptions) { bank ->
                     BankCard(
@@ -1772,7 +1772,7 @@ fun AccountTypeCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .background(iconColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -1780,7 +1780,7 @@ fun AccountTypeCard(
                     imageVector = icon,
                     contentDescription = title,
                     tint = Color.White,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -1914,8 +1914,8 @@ fun AddCategoryBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(6),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.height(120.dp)
         ) {
             items(categoryIcons.size) { index ->
@@ -1946,8 +1946,8 @@ fun AddCategoryBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(6),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.height(120.dp)
         ) {
             items(categoryColors) { color ->
@@ -1982,7 +1982,7 @@ fun AddCategoryBottomSheet(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                         .clip(CircleShape)
                         .background(selectedColor),
                     contentAlignment = Alignment.Center
@@ -1991,7 +1991,7 @@ fun AddCategoryBottomSheet(
                         imageVector = selectedIcon,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                     )
                 }
 
@@ -2067,7 +2067,7 @@ fun AddCategoryBottomSheet(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )
@@ -2169,8 +2169,8 @@ fun EditCategoryBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(6),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.height(120.dp)
         ) {
             items(categoryIcons.size) { index ->
@@ -2201,8 +2201,8 @@ fun EditCategoryBottomSheet(
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(6),
-            horizontalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
-            verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL),
             modifier = Modifier.height(120.dp)
         ) {
             items(categoryColors) { color ->
@@ -2265,7 +2265,7 @@ fun EditCategoryBottomSheet(
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                     color = Color.White,
                     strokeWidth = 2.dp
                 )
@@ -2301,7 +2301,7 @@ fun IconSelector(
             imageVector = icon,
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
         )
     }
 }
@@ -2325,7 +2325,7 @@ fun ColorSelector(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Selected",
                 tint = Color.White,
-                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
             )
         }
     }
@@ -2360,7 +2360,7 @@ fun SettingsSection() {
             // Carry Forward Icon
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .background(
                         Color(0xFF2C2C2E),
                         CircleShape
@@ -2371,7 +2371,7 @@ fun SettingsSection() {
                     imageVector = Icons.Default.TrendingUp,
                     contentDescription = "Carry Forward",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
             
@@ -2425,7 +2425,7 @@ fun CustomizeScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
     ) {
         item {
             // Header with back button
@@ -2450,14 +2450,14 @@ fun CustomizeScreen(
                             Color(0xFF2C2C2E),
                             CircleShape
                         )
-                        .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                        .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
 
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     )
                 }
             }
@@ -2500,7 +2500,7 @@ fun DarkModeSetting() {
             // Dark Mode Icon
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .background(
                         MaterialTheme.colorScheme.surfaceVariant,
                         CircleShape
@@ -2511,7 +2511,7 @@ fun DarkModeSetting() {
                     imageVector = Icons.Default.LightMode,
                     contentDescription = "Dark Mode",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
             
@@ -2598,7 +2598,7 @@ fun CurrencySetting() {
             // Currency Icon
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .background(
                         Color(0xFF2C2C2E),
                         CircleShape
@@ -2639,7 +2639,7 @@ fun CurrencySetting() {
                     modifier = Modifier
                         .clickable { showCurrencyDropdown = true }
                         .border(
-                            width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                            width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                             color = MaterialTheme.colorScheme.outline,
                             shape = RoundedCornerShape(8.dp)
                         ),
@@ -2660,7 +2660,7 @@ fun CurrencySetting() {
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = "Dropdown",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                     }
                 }
@@ -2717,7 +2717,7 @@ fun CategoriesScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
     ) {
         // Header with back button
         Row(
@@ -2741,14 +2741,14 @@ fun CategoriesScreen(
                         Color(0xFF2C2C2E),
                         CircleShape
                     )
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
 
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
         }
@@ -2827,7 +2827,7 @@ fun CarryForwardToggle() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
@@ -2837,7 +2837,7 @@ fun CarryForwardToggle() {
                     imageVector = Icons.Default.TrendingUp,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 

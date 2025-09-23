@@ -4,13 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
 
@@ -60,25 +57,25 @@ fun SpendingByCategorySection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.LARGE)
+                .padding(AppStyleDesignSystem.Padding.LARGE)
         ) {
             Text(
                 text = "Spending by Category",
-                style = iOSStyleDesignSystem.Typography.TITLE_3,
+                style = AppStyleDesignSystem.Typography.TITLE_3,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             
             if (categorySpending.isEmpty()) {
                 Text(
                     text = "No spending data for this month",
-                    style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
@@ -86,18 +83,18 @@ fun SpendingByCategorySection(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = iOSStyleDesignSystem.Padding.XS),
+                            .padding(vertical = AppStyleDesignSystem.Padding.XS),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = category,
-                            style = iOSStyleDesignSystem.Typography.CALL_OUT,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "$currencySymbol${String.format("%.2f", amount)}",
-                            style = iOSStyleDesignSystem.Typography.CALL_OUT.copy(
-                                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium
+                            style = AppStyleDesignSystem.Typography.CALL_OUT.copy(
+                                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )

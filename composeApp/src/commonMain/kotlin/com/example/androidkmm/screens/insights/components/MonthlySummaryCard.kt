@@ -5,13 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.LocalDate
 
@@ -64,20 +61,20 @@ fun MonthlySummaryCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE) // iOS rounded corners
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE) // iOS rounded corners
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
+                .padding(AppStyleDesignSystem.Padding.CARD_PADDING)
         ) {
             Text(
                 text = "Monthly Summary",
-                style = iOSStyleDesignSystem.Typography.HEADLINE,
+                style = AppStyleDesignSystem.Typography.HEADLINE,
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -89,12 +86,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Income",
-                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
+                        style = AppStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.first)}",
-                        style = iOSStyleDesignSystem.Typography.BODY,
+                        style = AppStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -105,12 +102,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Expenses",
-                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
+                        style = AppStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.second)}",
-                        style = iOSStyleDesignSystem.Typography.BODY,
+                        style = AppStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -121,12 +118,12 @@ fun MonthlySummaryCard(
                 ) {
                     Text(
                         text = "Net",
-                        style = iOSStyleDesignSystem.Typography.FOOTNOTE,
+                        style = AppStyleDesignSystem.Typography.FOOTNOTE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "$currencySymbol${String.format("%.2f", monthlyData.third)}",
-                        style = iOSStyleDesignSystem.Typography.BODY,
+                        style = AppStyleDesignSystem.Typography.BODY,
                         color = if (monthlyData.third >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
                 }

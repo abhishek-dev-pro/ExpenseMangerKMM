@@ -1,21 +1,16 @@
 package com.example.androidkmm.utils
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Utility functions for creating consistent card components
@@ -40,11 +35,11 @@ object CardUtils {
         Surface(
             modifier = clickableModifier
                 .padding(top = 4.dp)
-                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
-                    width = iOSStyleDesignSystem.Sizes.BORDER_THIN,
+                    width = AppStyleDesignSystem.Sizes.BORDER_THIN,
                     color = Color.White.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             color = Color(0xFF1A1A1A),
             tonalElevation = 2.dp,
@@ -65,11 +60,11 @@ object CardUtils {
         Surface(
             modifier = Modifier
                 .padding(top = 4.dp)
-                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
-                    width = iOSStyleDesignSystem.Sizes.BORDER_THIN, // very thin border
+                    width = AppStyleDesignSystem.Sizes.BORDER_THIN, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             color = Color(0xFF1A1A1A), // slightly lighter black background
             tonalElevation = 2.dp,

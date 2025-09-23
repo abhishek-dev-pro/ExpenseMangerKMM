@@ -28,11 +28,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import com.example.androidkmm.utils.CurrencyUtils.getCurrencySymbol
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 
@@ -82,10 +81,10 @@ fun InsightsScreen(
         Text(
             text = "Financial Insights",
             color = MaterialTheme.colorScheme.onBackground,
-            style = iOSStyleDesignSystem.Typography.TITLE_3,
+            style = AppStyleDesignSystem.Typography.TITLE_3,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = iOSStyleDesignSystem.Padding.LARGE, vertical = iOSStyleDesignSystem.Padding.SMALL)
+                .padding(horizontal = AppStyleDesignSystem.Padding.LARGE, vertical = AppStyleDesignSystem.Padding.SMALL)
         )
         
         // Tab Row
@@ -101,7 +100,7 @@ fun InsightsScreen(
                     text = {
                         Text(
                             text = title,
-                            style = iOSStyleDesignSystem.Typography.BODY.copy(
+                            style = AppStyleDesignSystem.Typography.BODY.copy(
                                 fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal
                             )
                         )
@@ -166,7 +165,7 @@ private fun OverviewTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = 0.dp)
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = 0.dp)
     ) {
         
         // Month Selector
@@ -202,7 +201,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Monthly Summary
         item {
@@ -213,7 +212,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Recent Large Expenses
         item {
@@ -226,7 +225,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Financial Trends Chart
         item {
@@ -237,7 +236,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Spending by Category
         item {
@@ -250,7 +249,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Savings Rate
         item {
@@ -261,7 +260,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
         
         // Smart Insights
         item {
@@ -272,7 +271,7 @@ private fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.LARGE)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.LARGE)) }
     }
 }
 
@@ -303,12 +302,12 @@ private fun MonthSelectorCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = iOSStyleDesignSystem.Padding.LARGE, vertical = iOSStyleDesignSystem.Padding.SMALL),
+                .padding(horizontal = AppStyleDesignSystem.Padding.LARGE, vertical = AppStyleDesignSystem.Padding.SMALL),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -325,12 +324,12 @@ private fun MonthSelectorCard(
             ) {
                 Text(
                     text = "${monthNames[currentMonth - 1]} $currentYear",
-                    style = iOSStyleDesignSystem.Typography.TITLE_3,
+                    style = AppStyleDesignSystem.Typography.TITLE_3,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = if (isAtCurrentMonth) "Current Month" else "Historic Month",
-                    style = iOSStyleDesignSystem.Typography.CAPTION_1,
+                    style = AppStyleDesignSystem.Typography.CAPTION_1,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -642,7 +641,7 @@ private fun FinancialSummaryColumn(
             icon,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
         )
         
         Spacer(Modifier.height(4.dp))
@@ -691,7 +690,7 @@ private fun FinancialSummaryRow(
             icon,
             contentDescription = null,
             tint = color,
-            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
         )
         Spacer(Modifier.width(8.dp))
         Text(
@@ -1014,7 +1013,7 @@ private fun InsightCard(
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
@@ -1026,7 +1025,7 @@ private fun InsightCard(
                 icon,
                 contentDescription = null,
                 tint = iconColor,
-                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
             )
             
             Spacer(Modifier.width(12.dp))
@@ -1066,7 +1065,7 @@ private fun InsightCard(
                 Icons.Default.AttachMoney,
                 contentDescription = null,
                 tint = iconColor.copy(alpha = 0.6f),
-                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
         }
     }
@@ -1171,7 +1170,7 @@ private fun RecentLargeExpensesSection(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ) {
                 Box(
                     modifier = Modifier
@@ -1199,7 +1198,7 @@ private fun ExpenseCard(expense: ExpenseData, currencySymbol: String = "$") {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Row(
             modifier = Modifier
@@ -1210,7 +1209,7 @@ private fun ExpenseCard(expense: ExpenseData, currencySymbol: String = "$") {
             // Icon
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.BUTTON_HEIGHT)
+                    .size(AppStyleDesignSystem.Sizes.BUTTON_HEIGHT)
                     .background(
                         expense.iconColor.copy(alpha = 0.2f),
                         CircleShape
@@ -1221,7 +1220,7 @@ private fun ExpenseCard(expense: ExpenseData, currencySymbol: String = "$") {
                     expense.icon,
                     contentDescription = null,
                     tint = expense.iconColor,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
             
@@ -1276,7 +1275,7 @@ private fun FinancialTrendsSection(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp)
@@ -1315,7 +1314,7 @@ private fun SpendingByCategorySection(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
         ) {
             Column(
                 modifier = Modifier.padding(8.dp)
@@ -1414,7 +1413,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
         ) {
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_GIANT),
+                    .size(AppStyleDesignSystem.Sizes.ICON_SIZE_GIANT),
                 contentAlignment = Alignment.Center
             ) {
                 // Donut chart using Canvas
@@ -1564,7 +1563,7 @@ private fun CategorySpendingItem(
             // Category icon (placeholder)
             Box(
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     .background(
                         MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         CircleShape
@@ -1575,7 +1574,7 @@ private fun CategorySpendingItem(
                     Icons.Default.Category,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                 )
             }
             
@@ -1603,7 +1602,7 @@ private fun CategorySpendingItem(
                 Icons.Default.ArrowForward,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
             )
         }
     }
@@ -1820,7 +1819,7 @@ private fun SpendingTrendLineChart(
                                 color = Color.White,
                                 radius = if (isHovered) 6.dp.toPx() else 4.dp.toPx(),
                                 center = point,
-                                style = Stroke(width = iOSStyleDesignSystem.Sizes.BORDER_THICK.toPx())
+                                style = Stroke(width = AppStyleDesignSystem.Sizes.BORDER_THICK.toPx())
                             )
                         }
                     }
@@ -2054,7 +2053,7 @@ private fun SavingsRateSection(
                         imageVector = if (rate >= 0) Icons.Default.TrendingUp else Icons.Default.TrendingDown,
                         contentDescription = "Savings Rate",
                         tint = if (rate >= 0) Color(0xFF4CAF50) else Color(0xFFF44336), // Green for positive, red for negative
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(

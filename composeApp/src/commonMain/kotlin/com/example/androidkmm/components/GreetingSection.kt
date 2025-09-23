@@ -10,10 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.GreetingUtils
 import com.example.androidkmm.utils.TextUtils
 
@@ -38,20 +36,20 @@ fun GreetingSection() {
             TextUtils.StandardText(
                 text = "Hi $userName 👋",
                 color = Color.White,
-                fontSize = iOSStyleDesignSystem.Typography.TITLE_3.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular
+                fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
             )
             TextUtils.StandardText(
                 text = greeting,
                 color = Color.Gray,
-                fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize
+                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize
             )
         }
         Icon(
             imageVector = Icons.Outlined.Notifications,
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
         )
     }
 }

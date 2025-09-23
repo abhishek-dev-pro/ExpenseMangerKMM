@@ -5,8 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -21,8 +20,8 @@ fun PlaceholderScreen(title: String) {
         TextUtils.StandardText(
             text = title,
             color = Color.White,
-            fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold
+            fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.bold
         )
     }
 }

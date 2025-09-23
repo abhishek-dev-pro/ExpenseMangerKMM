@@ -9,10 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -42,8 +39,8 @@ fun TransactionListHeader(
             title = {
                 TextUtils.StandardText(
                     text = "Transactions",
-                    fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
-                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold,
+                    fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
+                    fontWeight = AppStyleDesignSystem.iOSFontWeights.bold,
                     color = Color.White
                 )
             },
@@ -74,7 +71,7 @@ fun TransactionListHeader(
             onQueryChange = onSearchQueryChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = iOSStyleDesignSystem.Padding.MEDIUM_LARGE)
+                .padding(horizontal = AppStyleDesignSystem.Padding.MEDIUM_LARGE)
         )
         
         // Date Range Selector
@@ -82,7 +79,7 @@ fun TransactionListHeader(
             onDateRangeClick = onDateRangeClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = iOSStyleDesignSystem.Padding.MEDIUM_LARGE, vertical = iOSStyleDesignSystem.Padding.SMALL)
+                .padding(horizontal = AppStyleDesignSystem.Padding.MEDIUM_LARGE, vertical = AppStyleDesignSystem.Padding.SMALL)
         )
     }
 }
@@ -102,7 +99,7 @@ private fun SearchBar(
         placeholder = {
             TextUtils.StandardText(
                 text = "Search transactions...",
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                 color = Color.Gray
             )
         },
@@ -151,14 +148,14 @@ private fun DateRangeSelector(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
+                .padding(AppStyleDesignSystem.Padding.MEDIUM_LARGE),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextUtils.StandardText(
                 text = "This Month",
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium,
                 color = Color.White
             )
             Icon(

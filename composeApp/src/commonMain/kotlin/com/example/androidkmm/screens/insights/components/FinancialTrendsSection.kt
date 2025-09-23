@@ -9,9 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
-import com.example.androidkmm.design.iOSStyleDesignSystem
-import com.example.androidkmm.models.TransactionType
-import kotlinx.datetime.LocalDate
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Financial trends section for insights overview
@@ -32,12 +30,12 @@ fun FinancialTrendsSection(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.LARGE)
+                .padding(AppStyleDesignSystem.Padding.LARGE)
         ) {
             Text(
                 text = "Financial Trends",
@@ -46,7 +44,7 @@ fun FinancialTrendsSection(
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             
             // Placeholder for trends chart
             Box(

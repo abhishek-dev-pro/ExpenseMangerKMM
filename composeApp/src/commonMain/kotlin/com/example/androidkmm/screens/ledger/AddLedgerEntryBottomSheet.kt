@@ -7,9 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
@@ -18,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import java.time.Instant
 import java.time.ZoneId
@@ -36,12 +32,11 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Clock as DateTimeClock
 import kotlin.time.ExperimentalTime
 
 // AddLedgerEntryBottomSheet.kt
@@ -68,9 +63,7 @@ fun AddLedgerEntryBottomSheet(
     val allPeopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
     val allPeople = allPeopleState.value
     
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    // Removed bottom sheet state for full screen display
     var personName by remember { mutableStateOf(person?.name ?: "") }
     var showSuggestions by remember { mutableStateOf(false) }
     var currentTransactionType by remember { mutableStateOf(transactionType) }
@@ -148,20 +141,20 @@ fun AddLedgerEntryBottomSheet(
         "Groceries" to "Shared shopping"
     )
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        content = {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 600.dp)
-                    .background(LedgerTheme.backgroundColor())
-//                    .statusBarsPadding()
-                    .navigationBarsPadding(),
-                contentPadding = PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+    // Full screen layout
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(LedgerTheme.backgroundColor())
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+            contentPadding = PaddingValues(0.dp),
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
+        ) {
                 item {
                     // Header
                     Row(
@@ -175,7 +168,7 @@ fun AddLedgerEntryBottomSheet(
                                 person != null && currentTransactionType == TransactionType.RECEIVED -> "You Received Money"
                                 else -> "Add Ledger Entry"
                             },
-                            fontSize = 20.sp,
+                            fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
                             fontWeight = FontWeight.SemiBold,
                             color = LedgerTheme.textPrimary()
                         )
@@ -266,16 +259,16 @@ fun AddLedgerEntryBottomSheet(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(top = 4.dp)
-                                        .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                                        .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                                         .border(
                                             width = 0.5.dp, // very thin border
                                             color = Color.White.copy(alpha = 0.2f), // subtle white
-                                            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                                         ),
                                     colors = CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                                     ),
-                                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                                 ) {
                                     Column {
                                         suggestions.take(5).forEach { suggestion ->
@@ -340,17 +333,17 @@ fun AddLedgerEntryBottomSheet(
                                     .weight(1f)
                                     .wrapContentHeight()
                                     .clickable { currentTransactionType = TransactionType.SENT }
-                                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                                     .border(
                                         width = 0.5.dp, // very thin border
                                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                                     ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.SENT) Color(0xFF0F2419) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.SENT) BorderStroke(2.dp, LedgerTheme.greenAmount) else null,
-                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -398,17 +391,17 @@ fun AddLedgerEntryBottomSheet(
                                     .weight(1f)
                                     .wrapContentHeight()
                                     .clickable { currentTransactionType = TransactionType.RECEIVED }
-                                    .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                                    .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                                     .border(
                                         width = 0.5.dp, // very thin border
                                         color = Color.White.copy(alpha = 0.2f), // subtle white
-                                        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                                     ),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (currentTransactionType == TransactionType.RECEIVED) Color(0xFF2A1919) else MaterialTheme.colorScheme.surfaceVariant
                                 ),
                                 border = if (currentTransactionType == TransactionType.RECEIVED) BorderStroke(2.dp, LedgerTheme.redAmount) else null,
-                                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -496,7 +489,7 @@ fun AddLedgerEntryBottomSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .border(
-                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                                    width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
@@ -549,7 +542,7 @@ fun AddLedgerEntryBottomSheet(
                                 .fillMaxWidth()
                                 .height(100.dp)
                                 .border(
-                                    width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                                    width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(20.dp)
                                 ),
@@ -871,9 +864,8 @@ fun AddLedgerEntryBottomSheet(
                 }
             }
         }
-    )
-    
-    // Show account selection bottom sheet
+        
+        // Show account selection bottom sheet
     if (showAccountSelection) {
         AccountSelectionBottomSheet(
             onDismiss = { showAccountSelection = false },

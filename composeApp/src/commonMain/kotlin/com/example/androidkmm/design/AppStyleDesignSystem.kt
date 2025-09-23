@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
  * following iOS design principles adapted for Android.
  */
 
-object iOSStyleDesignSystem {
+object AppStyleDesignSystem {
     // iOS-inspired Typography Styles
     object Typography {
         val LARGE_TITLE = TextStyle(
@@ -218,31 +218,31 @@ fun iOSStyleCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = iOSStyleDesignSystem.Padding.CARD_MARGIN),
+            .padding(horizontal = AppStyleDesignSystem.Padding.CARD_MARGIN),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // iOS subtle shadows
     ) {
         Column(
-            modifier = Modifier.padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
+            modifier = Modifier.padding(AppStyleDesignSystem.Padding.CARD_PADDING)
         ) {
             Text(
                 text = title,
-                style = iOSStyleDesignSystem.Typography.HEADLINE,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold // iOS uses semibold frequently
+                style = AppStyleDesignSystem.Typography.HEADLINE,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold // iOS uses semibold frequently
             )
             
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.XS))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.XS))
             
             Text(
                 text = subtitle,
-                style = iOSStyleDesignSystem.Typography.SUBHEAD,
+                style = AppStyleDesignSystem.Typography.SUBHEAD,
                 color = Color.Gray
             )
             
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             
             Text(
                 text = body,
-                style = iOSStyleDesignSystem.Typography.BODY,
+                style = AppStyleDesignSystem.Typography.BODY,
                 lineHeight = 20.sp // Compact iOS line height
             )
         }
@@ -260,16 +260,16 @@ fun iOSStyleButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(iOSStyleDesignSystem.Sizes.BUTTON_HEIGHT), // Compact iOS button height
+            .height(AppStyleDesignSystem.Sizes.BUTTON_HEIGHT), // Compact iOS button height
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isPrimary) iOSStyleDesignSystem.Colors.primary else Color.Transparent // iOS blue
+            containerColor = if (isPrimary) AppStyleDesignSystem.Colors.primary else Color.Transparent // iOS blue
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM) // iOS rounded corners
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM) // iOS rounded corners
     ) {
         Text(
             text = text,
-            style = iOSStyleDesignSystem.Typography.BODY,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold
+            style = AppStyleDesignSystem.Typography.BODY,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold
         )
     }
 }
@@ -285,8 +285,8 @@ fun iOSStyleListItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                horizontal = iOSStyleDesignSystem.Padding.LIST_ITEM_HORIZONTAL,
-                vertical = iOSStyleDesignSystem.Padding.LIST_ITEM_VERTICAL
+                horizontal = AppStyleDesignSystem.Padding.LIST_ITEM_HORIZONTAL,
+                vertical = AppStyleDesignSystem.Padding.LIST_ITEM_VERTICAL
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -295,15 +295,15 @@ fun iOSStyleListItem(
         ) {
             Text(
                 text = title,
-                style = iOSStyleDesignSystem.Typography.BODY,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular
+                style = AppStyleDesignSystem.Typography.BODY,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
             )
             
             subtitle?.let {
-                Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.XXS))
+                Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.XXS))
                 Text(
                     text = it,
-                    style = iOSStyleDesignSystem.Typography.FOOTNOTE,
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE,
                     color = Color.Gray
                 )
             }
@@ -323,18 +323,18 @@ fun iOSStyleScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
     ) {
-        Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.SCREEN_VERTICAL))
+        Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.SCREEN_VERTICAL))
         
         // Large title
         Text(
             text = title,
-            style = iOSStyleDesignSystem.Typography.LARGE_TITLE,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold
+            style = AppStyleDesignSystem.Typography.LARGE_TITLE,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.bold
         )
         
-        Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING))
+        Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING))
         
         content()
     }

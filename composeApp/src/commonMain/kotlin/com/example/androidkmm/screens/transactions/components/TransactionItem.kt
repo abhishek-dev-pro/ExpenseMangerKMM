@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,13 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -43,12 +38,12 @@ fun TransactionItem(
         colors = CardDefaults.cardColors(
             containerColor = Color.Gray
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.LARGE)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.MEDIUM_LARGE),
+                .padding(AppStyleDesignSystem.Padding.MEDIUM_LARGE),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -64,7 +59,7 @@ fun TransactionItem(
                     type = transaction.type
                 )
                 
-                Spacer(modifier = Modifier.width(iOSStyleDesignSystem.Padding.MEDIUM))
+                Spacer(modifier = Modifier.width(AppStyleDesignSystem.Padding.MEDIUM))
                 
                 // Transaction details
                 Column(
@@ -72,21 +67,21 @@ fun TransactionItem(
                 ) {
                     TextUtils.StandardText(
                         text = transaction.title,
-                        fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium,
+                        fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.medium,
                         color = Color.White
                     )
                     
                     TextUtils.StandardText(
                         text = transaction.category,
-                        fontSize = iOSStyleDesignSystem.Typography.CAPTION_1.fontSize,
+                        fontSize = AppStyleDesignSystem.Typography.CAPTION_1.fontSize,
                         color = Color.Gray
                     )
                     
                     if (transaction.description.isNotEmpty()) {
                         TextUtils.StandardText(
                             text = transaction.description,
-                            fontSize = iOSStyleDesignSystem.Typography.CAPTION_2.fontSize,
+                            fontSize = AppStyleDesignSystem.Typography.CAPTION_2.fontSize,
                             color = Color.Gray
                         )
                     }
@@ -104,7 +99,7 @@ fun TransactionItem(
                 
                 TextUtils.StandardText(
                     text = transaction.date,
-                    fontSize = iOSStyleDesignSystem.Typography.CAPTION_2.fontSize,
+                    fontSize = AppStyleDesignSystem.Typography.CAPTION_2.fontSize,
                     color = Color.Gray
                 )
             }
@@ -124,10 +119,10 @@ private fun CategoryIcon(
 ) {
     Box(
         modifier = modifier
-            .size(iOSStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+            .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
             .background(
                 color = color.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -135,7 +130,7 @@ private fun CategoryIcon(
             imageVector = icon,
             contentDescription = "Category",
             tint = color,
-            modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
         )
     }
 }
@@ -157,8 +152,8 @@ private fun AmountDisplay(
     
         TextUtils.StandardText(
             text = "$prefix$${String.format("%.2f", amount)}",
-            fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.bold,
+            fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.bold,
             color = color,
             modifier = modifier
         )
@@ -183,14 +178,14 @@ fun TransactionTypeIndicator(
         colors = CardDefaults.cardColors(
             containerColor = color.copy(alpha = 0.2f)
         ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.SMALL)
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.SMALL)
     ) {
         TextUtils.StandardText(
             text = text,
-            fontSize = iOSStyleDesignSystem.Typography.CAPTION_2.fontSize,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.medium,
+            fontSize = AppStyleDesignSystem.Typography.CAPTION_2.fontSize,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.medium,
             color = color,
-            modifier = Modifier.padding(horizontal = iOSStyleDesignSystem.Padding.SMALL, vertical = iOSStyleDesignSystem.Padding.XS)
+            modifier = Modifier.padding(horizontal = AppStyleDesignSystem.Padding.SMALL, vertical = AppStyleDesignSystem.Padding.XS)
         )
     }
 }

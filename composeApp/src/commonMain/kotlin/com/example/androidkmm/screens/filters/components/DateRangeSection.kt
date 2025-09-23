@@ -1,6 +1,5 @@
 package com.example.androidkmm.screens.filters.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.filters.DateRange
 import com.example.androidkmm.screens.filters.FilterColors
 import com.example.androidkmm.screens.filters.PredefinedDateRange
@@ -90,7 +89,7 @@ fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -142,7 +141,7 @@ fun DateRangeSection(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -205,13 +204,13 @@ private fun DateRangeChip(
     Card(
         modifier = Modifier
             .clickable { onClick() }
-            .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp,
                 color = Color.White.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
             ),
-        shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM),
+        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else FilterColors.unselectedBackground
         )

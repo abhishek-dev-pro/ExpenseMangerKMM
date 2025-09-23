@@ -8,12 +8,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.DayGroup
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -69,8 +66,8 @@ private fun TransactionList(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
-        verticalArrangement = Arrangement.spacedBy(iOSStyleDesignSystem.Padding.SMALL)
+        contentPadding = PaddingValues(AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SMALL)
     ) {
         dayGroups.forEach { dayGroup ->
             item {
@@ -103,7 +100,7 @@ private fun DayGroupHeader(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = iOSStyleDesignSystem.Padding.SMALL),
+            .padding(vertical = AppStyleDesignSystem.Padding.SMALL),
         colors = CardDefaults.cardColors(
             containerColor = Color.Gray
         )
@@ -111,21 +108,21 @@ private fun DayGroupHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(iOSStyleDesignSystem.Padding.CARD_PADDING),
+                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextUtils.StandardText(
                 text = date,
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold,
                 color = Color.White
             )
             
             TextUtils.StandardText(
                 text = "$${String.format("%.2f", totalAmount)}",
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold,
                 color = Color.Gray
             )
         }
@@ -149,10 +146,10 @@ private fun LoadingState(
             CircularProgressIndicator(
                 color = Color.Blue
             )
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             TextUtils.StandardText(
                 text = "Loading transactions...",
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                 color = Color.Gray
             )
         }
@@ -177,17 +174,17 @@ private fun ErrorState(
         ) {
             TextUtils.StandardText(
                 text = "Error loading transactions",
-                fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold,
+                fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold,
                 color = Color.White
             )
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.SMALL))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.SMALL))
             TextUtils.StandardText(
                 text = error,
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                 color = Color.Gray
             )
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
@@ -196,7 +193,7 @@ private fun ErrorState(
             ) {
                 TextUtils.StandardText(
                     text = "Retry",
-                    fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                    fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                     color = Color.White
                 )
             }
@@ -220,14 +217,14 @@ private fun EmptyState(
         ) {
             TextUtils.StandardText(
                 text = "No transactions found",
-                fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.semibold,
+                fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold,
                 color = Color.White
             )
-            Spacer(modifier = Modifier.height(iOSStyleDesignSystem.Padding.SMALL))
+            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.SMALL))
             TextUtils.StandardText(
                 text = "Start by adding your first transaction",
-                fontSize = iOSStyleDesignSystem.Typography.BODY.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                 color = Color.Gray
             )
         }

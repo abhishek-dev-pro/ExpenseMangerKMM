@@ -4,8 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 
 /**
@@ -24,16 +23,16 @@ fun SectionHeader(
         TextUtils.StandardText(
             text = title,
             color = Color.White,
-            fontSize = iOSStyleDesignSystem.Typography.HEADLINE.fontSize,
-            fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular,
+            fontSize = AppStyleDesignSystem.Typography.HEADLINE.fontSize,
+            fontWeight = AppStyleDesignSystem.iOSFontWeights.regular,
             modifier = Modifier.weight(1f)
         )
         if (showViewAll) {
             TextUtils.StandardText(
                 text = "View all >",
                 color = Color.White,
-                fontSize = iOSStyleDesignSystem.Typography.CAPTION_2.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.ultraLight
+                fontSize = AppStyleDesignSystem.Typography.CAPTION_2.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.ultraLight
             )
         }
     }

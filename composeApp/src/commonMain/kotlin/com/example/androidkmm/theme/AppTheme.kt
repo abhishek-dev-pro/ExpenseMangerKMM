@@ -1,6 +1,5 @@
 package com.example.androidkmm.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -8,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 
 // Theme state management
 object AppTheme {
@@ -116,48 +115,48 @@ fun AppTheme(
 // Typography
 val Typography = androidx.compose.material3.Typography(
     displayLarge = androidx.compose.material3.Typography().displayLarge.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     displayMedium = androidx.compose.material3.Typography().displayMedium.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     displaySmall = androidx.compose.material3.Typography().displaySmall.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     headlineMedium = androidx.compose.material3.Typography().headlineMedium.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     titleLarge = androidx.compose.material3.Typography().titleLarge.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     titleMedium = androidx.compose.material3.Typography().titleMedium.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     titleSmall = androidx.compose.material3.Typography().titleSmall.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     bodyLarge = androidx.compose.material3.Typography().bodyLarge.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     bodyMedium = androidx.compose.material3.Typography().bodyMedium.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     bodySmall = androidx.compose.material3.Typography().bodySmall.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     labelLarge = androidx.compose.material3.Typography().labelLarge.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     labelMedium = androidx.compose.material3.Typography().labelMedium.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     ),
     labelSmall = androidx.compose.material3.Typography().labelSmall.copy(
-        fontStyle = androidx.compose.ui.text.font.FontStyle.Normal
+        fontStyle = FontStyle.Normal
     )
 )

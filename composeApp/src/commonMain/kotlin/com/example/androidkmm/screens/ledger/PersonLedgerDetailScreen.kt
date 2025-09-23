@@ -23,8 +23,7 @@ import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
-import com.example.androidkmm.screens.ledger.TransactionType
+import com.example.androidkmm.design.AppStyleDesignSystem
 import androidx.compose.runtime.collectAsState
 import kotlin.math.abs
 import kotlinx.coroutines.launch
@@ -165,16 +164,16 @@ fun PersonLedgerDetailScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .clip(RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM))
+                .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
                     color = Color.White.copy(alpha = 0.2f), // subtle white
-                    shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             colors = CardDefaults.cardColors(
                 containerColor = if (updatedPerson.balance < 0) Color(0xFF0F2419) else Color(0xFF2A1919)
             ),
-            shape = RoundedCornerShape(iOSStyleDesignSystem.CornerRadius.MEDIUM)
+            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
             Column(
                 modifier = Modifier
@@ -244,7 +243,7 @@ fun PersonLedgerDetailScreen(
                     .weight(1f)
                     .height(56.dp)
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (selectedTransactionType == "sent") 
                             Color(0xFF2196F3) 
                         else 
@@ -288,7 +287,7 @@ fun PersonLedgerDetailScreen(
                     .weight(1f)
                     .height(56.dp)
                     .border(
-                        width = iOSStyleDesignSystem.Sizes.BORDER_NORMAL,
+                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                         color = if (selectedTransactionType == "received") 
                             Color(0xFF4CAF50) 
                         else 

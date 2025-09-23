@@ -2,14 +2,12 @@ package com.example.androidkmm.screens.insights.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import com.example.androidkmm.utils.Logger
 import kotlinx.datetime.LocalDate
@@ -69,9 +67,9 @@ fun OverviewTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = iOSStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
     ) {
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SCREEN_VERTICAL)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.SCREEN_VERTICAL)) }
         
         // Month Selector
         item {
@@ -97,7 +95,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Monthly Summary
         item {
@@ -108,7 +106,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Recent Large Expenses
         item {
@@ -120,7 +118,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Financial Trends Chart
         item {
@@ -131,7 +129,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Spending by Category
         item {
@@ -143,7 +141,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Savings Rate
         item {
@@ -154,7 +152,7 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.CONTENT_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.CONTENT_SPACING)) }
         
         // Smart Insights
         item {
@@ -165,6 +163,6 @@ fun OverviewTab(
             )
         }
         
-        item { Spacer(Modifier.height(iOSStyleDesignSystem.Padding.SECTION_SPACING)) }
+        item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.SECTION_SPACING)) }
     }
 }

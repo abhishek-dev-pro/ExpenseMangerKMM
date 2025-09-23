@@ -10,15 +10,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.TextUtils
 import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 import com.example.androidkmm.utils.Logger
@@ -164,16 +162,16 @@ fun BalanceCard(
                 ),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp) // iOS rounded corners
             )
-            .padding(iOSStyleDesignSystem.Padding.CARD_PADDING)
+            .padding(AppStyleDesignSystem.Padding.CARD_PADDING)
     ) {
         Column {
             TextUtils.StandardText(
                 text = "Total Balance",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize,
-                fontWeight = iOSStyleDesignSystem.iOSFontWeights.regular
+                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
+                fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
             )
-            Spacer(Modifier.height(iOSStyleDesignSystem.Padding.MEDIUM))
+            Spacer(Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
             if (isLoading.value) {
                 // Show loading indicator
                 Row(
@@ -181,7 +179,7 @@ fun BalanceCard(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     androidx.compose.material3.CircularProgressIndicator(
-                        modifier = Modifier.size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM),
                         color = Color.White,
                         strokeWidth = 2.dp
                     )
@@ -189,22 +187,22 @@ fun BalanceCard(
                     TextUtils.StandardText(
                         text = "Loading...",
                         color = Color.White.copy(alpha = 0.8f),
-                        fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
-                        fontWeight = iOSStyleDesignSystem.iOSFontWeights.light
+                        fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
+                        fontWeight = AppStyleDesignSystem.iOSFontWeights.light
                     )
                 }
             } else {
                 TextUtils.StandardText(
                     text = if (isBalanceVisible) displayBalance else "••••••",
                     color = Color.White,
-                    fontSize = iOSStyleDesignSystem.Typography.TITLE_2.fontSize,
-                    fontWeight = iOSStyleDesignSystem.iOSFontWeights.light
+                    fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
+                    fontWeight = AppStyleDesignSystem.iOSFontWeights.light
                 )
-                Spacer(Modifier.height(iOSStyleDesignSystem.Padding.XS))
+                Spacer(Modifier.height(AppStyleDesignSystem.Padding.XS))
                 TextUtils.StandardText(
                     text = if (isBalanceVisible) displayMonthlyChange else "•••••• in ledger",
                     color = Color(0xFF9FFFA5),
-                    fontSize = iOSStyleDesignSystem.Typography.FOOTNOTE.fontSize
+                    fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize
                 )
             }
         }
@@ -217,7 +215,7 @@ fun BalanceCard(
                 contentDescription = if (isBalanceVisible) "Hide balance" else "Show balance",
                 tint = Color.White,
                 modifier = Modifier
-                    .size(iOSStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                    .size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     .clickable { isBalanceVisible = !isBalanceVisible }
             )
         }

@@ -21,8 +21,8 @@ object SampleData {
 
 
     val quickActions = listOf(
-        QuickActionData("+ Ledger", Color(0xFF3B82F6), Icons.Default.ShowChart),
-        QuickActionData("+ Transaction", Color(0xFF10B981), Icons.Default.Add),
+        QuickActionData("Ledger", Color(0xFF3B82F6), Icons.Default.ShowChart),
+        QuickActionData("Transaction", Color(0xFF10B981), Icons.Default.Add),
     )
 
     val navigationItems = listOf(

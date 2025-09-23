@@ -7,8 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
-import com.example.androidkmm.design.iOSStyleDesignSystem
+import com.example.androidkmm.design.AppStyleDesignSystem
 
 /**
  * Utility functions for creating consistent text components
@@ -23,7 +22,7 @@ object TextUtils {
         text: String,
         modifier: Modifier = Modifier,
         color: Color = Color.White,
-        fontSize: androidx.compose.ui.unit.TextUnit = iOSStyleDesignSystem.Typography.BODY.fontSize,
+        fontSize: androidx.compose.ui.unit.TextUnit = AppStyleDesignSystem.Typography.BODY.fontSize,
         fontWeight: FontWeight = FontWeight.Normal,
         fontStyle: FontStyle = FontStyle.Normal,
         maxLines: Int = 1

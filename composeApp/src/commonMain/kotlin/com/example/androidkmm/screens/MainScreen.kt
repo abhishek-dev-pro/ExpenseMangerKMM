@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
 import androidx.activity.compose.BackHandler
 import com.example.androidkmm.components.*
 import com.example.androidkmm.database.InitializeDatabase
@@ -217,13 +218,19 @@ fun MainScreen() {
                 )
             }
             
-            // Add Ledger Entry Bottom Sheet
+            // Add Ledger Entry Full Screen
             if (showAddLedgerEntrySheet) {
-                AddLedgerEntryBottomSheet(
-                    onDismiss = { 
-                        showAddLedgerEntrySheet = false
-                    }
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                ) {
+                    AddLedgerEntryBottomSheet(
+                        onDismiss = { 
+                            showAddLedgerEntrySheet = false
+                        }
+                    )
+                }
             }
         }
     }
