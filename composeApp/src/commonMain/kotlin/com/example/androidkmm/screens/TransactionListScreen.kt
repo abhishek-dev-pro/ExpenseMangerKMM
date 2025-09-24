@@ -1407,7 +1407,8 @@ fun AddTransactionScreen(
                 showFromAccountSheet = false
             },
             accountDatabaseManager = accountDatabaseManager,
-            onAddAccount = { showAddAccountSheet = true }
+            onAddAccount = { showAddAccountSheet = true },
+            excludeAccountId = formData.toAccount?.id
         )
     }
 
@@ -1422,7 +1423,8 @@ fun AddTransactionScreen(
                 showToAccountSheet = false
             },
             accountDatabaseManager = accountDatabaseManager,
-            onAddAccount = { showAddAccountSheet = true }
+            onAddAccount = { showAddAccountSheet = true },
+            excludeAccountId = formData.account?.id
         )
     }
 
@@ -2311,7 +2313,8 @@ fun AccountSelectionBottomSheet(
     subtitle: String = "Choose an account for your transaction",
     onAccountSelected: (Account) -> Unit,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
-    onAddAccount: (() -> Unit)? = null
+    onAddAccount: (() -> Unit)? = null,
+    excludeAccountId: String? = null
 ) {
     SharedAccountSelectionBottomSheet(
         onDismiss = onDismiss,
@@ -2319,7 +2322,8 @@ fun AccountSelectionBottomSheet(
         subtitle = subtitle,
         onAccountSelected = onAccountSelected,
         accountDatabaseManager = accountDatabaseManager,
-        onAddAccount = onAddAccount
+        onAddAccount = onAddAccount,
+        excludeAccountId = excludeAccountId
     )
 }
 

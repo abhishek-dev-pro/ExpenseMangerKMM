@@ -31,13 +31,19 @@ fun SharedAccountSelectionBottomSheet(
     subtitle: String = "Choose an account for your transaction",
     onAccountSelected: (Account) -> Unit,
     accountDatabaseManager: SQLiteAccountDatabase,
-    onAddAccount: (() -> Unit)? = null
+    onAddAccount: (() -> Unit)? = null,
+    excludeAccountId: String? = null
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
     val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
-    val accounts = accountsState.value
+    val allAccounts = accountsState.value
+    val accounts = if (excludeAccountId != null) {
+        allAccounts.filter { it.id != excludeAccountId }
+    } else {
+        allAccounts
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
