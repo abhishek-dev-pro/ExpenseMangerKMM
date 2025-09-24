@@ -54,7 +54,7 @@ fun EditLedgerEntryBottomSheet(
     val currencySymbol = appSettings.value.currencySymbol
     
     // Get all accounts for selection
-    val allAccountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
+    val allAccountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
     val allAccounts = allAccountsState.value
     
     val bottomSheetState = rememberModalBottomSheetState(

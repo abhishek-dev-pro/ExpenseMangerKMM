@@ -37,6 +37,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.components.AddAccountBottomSheet
+import com.example.androidkmm.components.AccountDeletionDialog
 import com.example.androidkmm.design.AppStyleDesignSystem
 
 // Color definitions for AccountsScreen - now using MaterialTheme
@@ -58,13 +59,21 @@ fun AccountsScreen(
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
     var selectedTab by remember { mutableStateOf(0) }
     
+    // Dialog state for account deletion warning
+    var showDeletionDialog by remember { mutableStateOf(false) }
+    var accountToDelete by remember { mutableStateOf<Account?>(null) }
+    
     // Database manager
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val scope = rememberCoroutineScope()
     
-    // Flow for accounts from database
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
-    val accounts = accountsState.value
+    // Flow for active accounts from database
+    val activeAccountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
+    val activeAccounts = activeAccountsState.value
+    
+    // Flow for archived accounts from database
+    val archivedAccountsState = accountDatabaseManager.getArchivedAccounts().collectAsState(initial = emptyList<Account>())
+    val archivedAccounts = archivedAccountsState.value
 
         Box(
             modifier = Modifier
@@ -144,14 +153,14 @@ fun AccountsScreen(
                         contentPadding = PaddingValues(bottom = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
                         verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
                     ) {
-                        if (accounts.isEmpty()) {
+                        if (activeAccounts.isEmpty()) {
                             item {
                                 EmptyAccountsState(
                                     onAddAccount = { showAddAccountSheet = true }
                                 )
                             }
                         } else {
-                            items(accounts) { account ->
+                            items(activeAccounts) { account ->
                                 NewAccountCard(
                                     account = account,
                                     onEditClick = {
@@ -162,12 +171,47 @@ fun AccountsScreen(
                                         { /* Cash account cannot be deleted */ }
                                     } else {
                                         {
+                                            // Check if account has transactions before deletion
                                             scope.launch {
-                                                accountDatabaseManager.deleteAccount(account)
+                                                val hasTransactions = accountDatabaseManager.hasAccountTransactions(account.name)
+                                                if (hasTransactions) {
+                                                    // Show dialog warning
+                                                    accountToDelete = account
+                                                    showDeletionDialog = true
+                                                } else {
+                                                    // Safe to delete
+                                                    accountDatabaseManager.deleteAccount(account)
+                                                }
                                             }
                                         }
                                     },
                                     showDeleteButton = !account.name.equals("Cash", ignoreCase = true),
+                                    currencySymbol = currencySymbol
+                                )
+                            }
+                        }
+                        
+                        // Archived Accounts Section
+                        if (archivedAccounts.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Archived Accounts",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                            
+                            items(archivedAccounts) { account ->
+                                ArchivedAccountCard(
+                                    account = account,
+                                    onUnarchiveClick = {
+                                        scope.launch {
+                                            accountDatabaseManager.unarchiveAccount(account.id)
+                                        }
+                                    },
                                     currencySymbol = currencySymbol
                                 )
                             }
@@ -183,7 +227,7 @@ fun AccountsScreen(
                 }
                 1 -> {
                     // Overview Tab
-                    OverviewContent(accounts = accounts, currencySymbol = currencySymbol)
+                    OverviewContent(accounts = activeAccounts, currencySymbol = currencySymbol)
                 }
             }
         }
@@ -235,6 +279,30 @@ fun AccountsScreen(
                 )
             }
         }
+        
+        // Account Deletion Warning Dialog
+        AccountDeletionDialog(
+            isVisible = showDeletionDialog,
+            accountName = accountToDelete?.name ?: "",
+            onDismiss = {
+                showDeletionDialog = false
+                accountToDelete = null
+            },
+            onCancel = {
+                showDeletionDialog = false
+                accountToDelete = null
+            },
+            onArchive = {
+                // Archive the account
+                accountToDelete?.let { account ->
+                    scope.launch {
+                        accountDatabaseManager.archiveAccount(account.id)
+                    }
+                }
+                showDeletionDialog = false
+                accountToDelete = null
+            }
+        )
     }
 }
 
@@ -817,6 +885,100 @@ private fun NewAccountCard(
                             modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchivedAccountCard(
+    account: Account,
+    onUnarchiveClick: () -> Unit,
+    currencySymbol: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Account Icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        account.color.copy(alpha = 0.2f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = account.icon,
+                    contentDescription = account.name,
+                    tint = account.color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Account Details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = account.name,
+                    style = AppStyleDesignSystem.Typography.HEADLINE,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = account.type,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Archived",
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
+
+            // Balance and Actions
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        style = AppStyleDesignSystem.Typography.HEADLINE,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    onClick = onUnarchiveClick,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Restore,
+                        contentDescription = "Unarchive",
+                        tint = AccountsBluePrimary,
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                    )
                 }
             }
         }

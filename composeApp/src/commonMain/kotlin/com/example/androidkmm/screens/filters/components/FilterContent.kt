@@ -36,7 +36,7 @@ fun FilterContent(
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<Category>())
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
     
     // Date picker states
     var showFromDatePicker by remember { mutableStateOf(false) }

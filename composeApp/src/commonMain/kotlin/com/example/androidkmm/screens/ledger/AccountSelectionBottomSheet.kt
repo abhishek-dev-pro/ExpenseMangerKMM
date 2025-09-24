@@ -36,7 +36,7 @@ fun AccountSelectionBottomSheet(
         skipPartiallyExpanded = true
     )
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
+    val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
     val accounts = accountsState.value
 
     ModalBottomSheet(

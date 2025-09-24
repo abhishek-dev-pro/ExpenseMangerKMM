@@ -97,7 +97,7 @@ fun TransactionsScreen(
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     
     val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
-    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val allAccounts = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
     
     // Fix any existing transfer transactions that might not have proper transferTo field
     LaunchedEffect(Unit) {
@@ -2215,7 +2215,7 @@ fun AccountSelectionBottomSheet(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
     val accounts = accountsState.value
 
     ModalBottomSheet(

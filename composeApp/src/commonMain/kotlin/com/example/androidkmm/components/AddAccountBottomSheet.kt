@@ -45,7 +45,7 @@ fun AddAccountBottomSheet(
     var initialBalance by remember { mutableStateOf("") }
 
     // Get all existing accounts for duplicate validation
-    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>()).value
+    val allAccounts = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>()).value
     
     // Check for duplicate account (same name and type)
     val isDuplicateAccount = allAccounts.any { existingAccount ->

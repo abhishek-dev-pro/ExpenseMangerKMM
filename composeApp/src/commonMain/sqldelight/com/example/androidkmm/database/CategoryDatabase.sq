@@ -166,6 +166,7 @@ SELECT * FROM account WHERE is_custom = 1 ORDER BY name ASC;
 selectDefaultAccounts:
 SELECT * FROM account WHERE is_custom = 0 ORDER BY name ASC;
 
+
 insertAccount:
 INSERT INTO account (id, name, balance, icon_name, color_hex, type, is_custom)
 VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -179,6 +180,7 @@ updateAccountBalance:
 UPDATE account 
 SET balance = ?
 WHERE id = ?;
+
 
 deleteAccount:
 DELETE FROM account WHERE id = ?;
@@ -207,6 +209,9 @@ SELECT * FROM transactions WHERE category_name = ? ORDER BY created_at DESC;
 
 selectTransactionsByAccount:
 SELECT * FROM transactions WHERE account_name = ? ORDER BY created_at DESC;
+
+getTransactionCountByAccount:
+SELECT COUNT(*) FROM transactions WHERE account_name = ?;
 
 insertTransaction:
 INSERT INTO transactions (id, title, amount, category_name, category_icon_name, category_color_hex, account_name, account_icon_name, account_color_hex, transfer_to, time, type, description, date, is_ledger_transaction, ledger_person_id, ledger_person_name)
@@ -495,3 +500,20 @@ DELETE FROM category;
 
 deleteAllAccounts:
 DELETE FROM account;
+
+-- Archive functionality using account name prefix
+selectArchivedAccounts:
+SELECT * FROM account WHERE name LIKE '[ARCHIVED]%' ORDER BY name ASC;
+
+selectActiveAccounts:
+SELECT * FROM account WHERE name NOT LIKE '[ARCHIVED]%' ORDER BY is_custom ASC, name ASC;
+
+archiveAccount:
+UPDATE account 
+SET name = '[ARCHIVED]' || name
+WHERE id = ?;
+
+unarchiveAccount:
+UPDATE account 
+SET name = SUBSTR(name, 11)
+WHERE id = ? AND name LIKE '[ARCHIVED]%';

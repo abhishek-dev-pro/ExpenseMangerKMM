@@ -527,7 +527,7 @@ private fun AccountSelectionBottomSheet(
     onAccountSelected: (Account) -> Unit,
     accountDatabaseManager: SQLiteAccountDatabase
 ) {
-    val accounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList())
+    val accounts = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList())
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
