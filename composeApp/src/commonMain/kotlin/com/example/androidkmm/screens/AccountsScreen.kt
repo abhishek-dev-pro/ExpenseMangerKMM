@@ -36,6 +36,8 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.components.AddAccountBottomSheet
+import com.example.androidkmm.components.AccountDeletionDialog
 import com.example.androidkmm.design.AppStyleDesignSystem
 
 // Color definitions for AccountsScreen - now using MaterialTheme
@@ -57,13 +59,21 @@ fun AccountsScreen(
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
     var selectedTab by remember { mutableStateOf(0) }
     
+    // Dialog state for account deletion warning
+    var showDeletionDialog by remember { mutableStateOf(false) }
+    var accountToDelete by remember { mutableStateOf<Account?>(null) }
+    
     // Database manager
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val scope = rememberCoroutineScope()
     
-    // Flow for accounts from database
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
-    val accounts = accountsState.value
+    // Flow for active accounts from database
+    val activeAccountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
+    val activeAccounts = activeAccountsState.value
+    
+    // Flow for archived accounts from database
+    val archivedAccountsState = accountDatabaseManager.getArchivedAccounts().collectAsState(initial = emptyList<Account>())
+    val archivedAccounts = archivedAccountsState.value
 
         Box(
             modifier = Modifier
@@ -143,14 +153,14 @@ fun AccountsScreen(
                         contentPadding = PaddingValues(bottom = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
                         verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
                     ) {
-                        if (accounts.isEmpty()) {
+                        if (activeAccounts.isEmpty()) {
                             item {
                                 EmptyAccountsState(
                                     onAddAccount = { showAddAccountSheet = true }
                                 )
                             }
                         } else {
-                            items(accounts) { account ->
+                            items(activeAccounts) { account ->
                                 NewAccountCard(
                                     account = account,
                                     onEditClick = {
@@ -161,12 +171,48 @@ fun AccountsScreen(
                                         { /* Cash account cannot be deleted */ }
                                     } else {
                                         {
+                                            // Check if account has transactions before deletion
                                             scope.launch {
-                                                accountDatabaseManager.deleteAccount(account)
+                                                val hasTransactions = accountDatabaseManager.hasAccountTransactions(account.name)
+                                                if (hasTransactions) {
+                                                    // Show dialog warning
+                                                    accountToDelete = account
+                                                    showDeletionDialog = true
+                                                } else {
+                                                    // Safe to delete
+                                                    accountDatabaseManager.deleteAccount(account)
+                                                }
                                             }
                                         }
                                     },
-                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true)
+                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true),
+                                    currencySymbol = currencySymbol
+                                )
+                            }
+                        }
+                        
+                        // Archived Accounts Section
+                        if (archivedAccounts.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Archived Accounts",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
+                            
+                            items(archivedAccounts) { account ->
+                                ArchivedAccountCard(
+                                    account = account,
+                                    onUnarchiveClick = {
+                                        scope.launch {
+                                            accountDatabaseManager.unarchiveAccount(account.id)
+                                        }
+                                    },
+                                    currencySymbol = currencySymbol
                                 )
                             }
                         }
@@ -181,7 +227,7 @@ fun AccountsScreen(
                 }
                 1 -> {
                     // Overview Tab
-                    OverviewContent(accounts = accounts, currencySymbol = currencySymbol)
+                    OverviewContent(accounts = activeAccounts, currencySymbol = currencySymbol)
                 }
             }
         }
@@ -233,6 +279,30 @@ fun AccountsScreen(
                 )
             }
         }
+        
+        // Account Deletion Warning Dialog
+        AccountDeletionDialog(
+            isVisible = showDeletionDialog,
+            accountName = accountToDelete?.name ?: "",
+            onDismiss = {
+                showDeletionDialog = false
+                accountToDelete = null
+            },
+            onCancel = {
+                showDeletionDialog = false
+                accountToDelete = null
+            },
+            onArchive = {
+                // Archive the account
+                accountToDelete?.let { account ->
+                    scope.launch {
+                        accountDatabaseManager.archiveAccount(account.id)
+                    }
+                }
+                showDeletionDialog = false
+                accountToDelete = null
+            }
+        )
     }
 }
 
@@ -240,7 +310,8 @@ fun AccountsScreen(
 private fun AccountCard(
     account: Account,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    currencySymbol: String
 ) {
     Card(
         modifier = Modifier
@@ -301,7 +372,7 @@ private fun AccountCard(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
                         style = AppStyleDesignSystem.Typography.HEADLINE,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -396,186 +467,6 @@ private fun EmptyAccountsState(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddAccountBottomSheet(
-    onDismiss: () -> Unit,
-    onAccountAdded: (Account) -> Unit,
-    accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
-) {
-    var accountName by remember { mutableStateOf("") }
-    var selectedAccountType by remember { mutableStateOf("Bank Account") }
-    var initialBalance by remember { mutableStateOf("") }
-
-    // Validation logic
-    val isFormValid = accountName.isNotEmpty() || selectedAccountType.isNotEmpty()
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-    ) {
-        // Account Name Section
-        Text(
-            text = "Account Name",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        BasicTextField(
-            value = accountName,
-            onValueChange = { accountName = it },
-            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
-            decorationBox = { innerTextField ->
-                if (accountName.isEmpty()) {
-                    Text(
-                        text = "e.g. HDFC Savings, Cash Wallet",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp
-                    )
-                }
-                innerTextField()
-            }
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Account Type Section
-        Text(
-            text = "Account Type",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
-        ) {
-            item {
-                AccountsAccountTypeCard(
-                    title = "Bank Account",
-                    icon = Icons.Default.AccountBalance,
-                    iconColor = Color(0xFF4285F4),
-                    isSelected = selectedAccountType == "Bank Account",
-                    onClick = { selectedAccountType = "Bank Account" }
-                )
-            }
-            item {
-                AccountsAccountTypeCard(
-                    title = "Credit/Debit Card",
-                    icon = Icons.Default.CreditCard,
-                    iconColor = Color(0xFF34A853),
-                    isSelected = selectedAccountType == "Credit/Debit Card",
-                    onClick = { selectedAccountType = "Credit/Debit Card" }
-                )
-            }
-            item {
-                AccountsAccountTypeCard(
-                    title = "Cash",
-                    icon = Icons.Default.AttachMoney,
-                    iconColor = Color(0xFFFF6D01),
-                    isSelected = selectedAccountType == "Cash",
-                    onClick = { selectedAccountType = "Cash" }
-                )
-            }
-            item {
-                AccountsAccountTypeCard(
-                    title = "Digital Wallet",
-                    icon = Icons.Default.Wallet,
-                    iconColor = Color(0xFF9C27B0),
-                    isSelected = selectedAccountType == "Digital Wallet",
-                    onClick = { selectedAccountType = "Digital Wallet" }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-
-
-        // Initial Balance Section
-        Text(
-            text = "Initial Balance",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        BasicTextField(
-            value = initialBalance,
-            onValueChange = { initialBalance = it },
-            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
-                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
-            decorationBox = { innerTextField ->
-                if (initialBalance.isEmpty()) {
-                    Text(
-                        text = "Enter amount",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp
-                    )
-                }
-                innerTextField()
-            }
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Add Account Button
-        Button(
-            onClick = {
-                val account = Account(
-                    id = System.currentTimeMillis().toString(),
-                    name = accountName.ifEmpty { selectedAccountType },
-                    balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
-                    icon = when (selectedAccountType) {
-                        "Bank Account" -> Icons.Default.AccountBalance
-                        "Credit/Debit Card" -> Icons.Default.CreditCard
-                        "Cash" -> Icons.Default.AttachMoney
-                        "Digital Wallet" -> Icons.Default.Wallet
-                        else -> Icons.Default.AccountBalance
-                    },
-                    color = getAccountTypeColor(selectedAccountType),
-                    type = selectedAccountType
-                )
-                onAccountAdded(account)
-            },
-            enabled = isFormValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFormValid) Color(0xFF2196F3) else Color(0xFF6C6C6C)
-            )
-        ) {
-            Text(
-                text = "Add Account",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White
-            )
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -587,27 +478,31 @@ private fun EditAccountBottomSheet(
 ) {
     var accountName by remember { mutableStateOf(account.name) }
     var selectedAccountType by remember { mutableStateOf(account.type) }
-    var selectedBank by remember { mutableStateOf("HDFC Bank") }
-    var customBankName by remember { mutableStateOf("") }
     var initialBalance by remember { mutableStateOf(account.balance) }
     
     // Check if this is a Cash account
     val isCashAccount = account.name.equals("Cash", ignoreCase = true)
     
+    // Get all existing accounts for duplicate validation
+    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>()).value
+    
+    // Check for duplicate account (same name and type, excluding current account)
+    val isDuplicateAccount = allAccounts.any { existingAccount ->
+        existingAccount.id != account.id && // Exclude current account
+        existingAccount.name.equals(accountName, ignoreCase = true) && 
+        existingAccount.type == selectedAccountType
+    }
+    
     // Track if any changes have been made
-    val hasChanges = remember(accountName, selectedAccountType, selectedBank, initialBalance) {
+    val hasChanges = remember(accountName, selectedAccountType, initialBalance) {
         accountName != account.name ||
         selectedAccountType != account.type ||
-        initialBalance != account.balance ||
-        (selectedAccountType == "Bank Account" && selectedBank != "HDFC Bank")
+        initialBalance != account.balance
     }
+    
+    // Form is valid if there are changes and no duplicate
+    val isFormValid = hasChanges && !isDuplicateAccount
 
-    val bankOptions = listOf(
-        "HDFC Bank", "State Bank of India (SBI)",
-        "ICICI Bank", "Axis Bank",
-        "Bank of Baroda", "Punjab National Bank",
-        "Kotak Mahindra Bank", "Yes Bank", "Other"
-    )
 
     Column(
         modifier = Modifier
@@ -626,7 +521,7 @@ private fun EditAccountBottomSheet(
 
         BasicTextField(
             value = accountName,
-            onValueChange = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { accountName = it } },
+            onValueChange = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { accountName = it.take(24) } },
             textStyle = TextStyle(
                 color = if (isCashAccount) Color.Gray else Color.White, 
                 fontSize = 16.sp
@@ -638,7 +533,7 @@ private fun EditAccountBottomSheet(
                     if (isCashAccount) Color(0xFF2A2A2A) else Color.Black, 
                     RoundedCornerShape(12.dp)
                 )
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -651,6 +546,16 @@ private fun EditAccountBottomSheet(
                 innerTextField()
             }
         )
+
+        // Show duplicate account warning
+        if (isDuplicateAccount && accountName.isNotEmpty()) {
+            Text(
+                text = "An account with this name and type already exists",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -690,7 +595,7 @@ private fun EditAccountBottomSheet(
             item {
                 AccountsAccountTypeCard(
                     title = "Cash",
-                    icon = Icons.Default.AttachMoney,
+                    icon = Icons.Default.Money,
                     iconColor = if (isCashAccount) Color.Gray else Color(0xFFFF6D01),
                     isSelected = selectedAccountType == "Cash",
                     onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Cash" } }
@@ -723,13 +628,19 @@ private fun EditAccountBottomSheet(
 
         BasicTextField(
             value = initialBalance,
-            onValueChange = { initialBalance = it },
+            onValueChange = { newValue ->
+                // Limit to 10 digits (including decimal point)
+                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                if (filteredValue.length <= 10) {
+                    initialBalance = filteredValue
+                }
+            },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black, RoundedCornerShape(12.dp))
-                .border(1.dp, Color.White, RoundedCornerShape(12.dp))
+                .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
                 if (initialBalance.isEmpty()) {
@@ -748,10 +659,21 @@ private fun EditAccountBottomSheet(
         // Update Account Button
         Button(
             onClick = {
+                // Capitalize first letter of every word when saving
+                val capitalizedAccountName = if (accountName.isNotEmpty()) {
+                    accountName.split(" ").joinToString(" ") { word ->
+                        if (word.isNotEmpty()) {
+                            word.replaceFirstChar { it.uppercase() }
+                        } else {
+                            word
+                        }
+                    }
+                } else {
+                    accountName
+                }
+                
                 val updatedAccount = account.copy(
-                    name = accountName.ifEmpty {
-                        if (selectedAccountType == "Bank Account") selectedBank else selectedAccountType
-                    },
+                    name = capitalizedAccountName.ifEmpty { selectedAccountType },
                     balance = initialBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
@@ -769,8 +691,9 @@ private fun EditAccountBottomSheet(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(12.dp),
+            enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (hasChanges) Color(0xFF4285F4) else Color(0xFF6C6C6C)
+                containerColor = if (isFormValid) Color(0xFF4285F4) else Color(0xFF6C6C6C)
             )
         ) {
             Text(
@@ -865,19 +788,19 @@ private fun getAccountTypeIcon(type: String): ImageVector {
     return when (type) {
         "Bank Account" -> Icons.Default.AccountBalance
         "Credit/Debit Card" -> Icons.Default.CreditCard
-        "Cash" -> Icons.Default.AttachMoney
-        "Digital Wallet" -> Icons.Default.Wallet
+        "Cash" -> Icons.Default.Money
+        "Digital Wallet" -> Icons.Default.PhoneAndroid
         else -> Icons.Default.AccountBalance
     }
 }
 
 private fun getAccountTypeColor(type: String): Color {
     return when (type) {
-        "Bank Account" -> Color(0xFF4285F4)
-        "Credit/Debit Card" -> Color(0xFF34A853)
-        "Cash" -> Color(0xFFFF6D01)
-        "Digital Wallet" -> Color(0xFF9C27B0)
-        else -> Color(0xFF4285F4)
+        "Bank Account" -> Color(0xFF2196F3) // Blue
+        "Credit/Debit Card" -> Color(0xFF4CAF50) // Green
+        "Cash" -> Color(0xFFFF9800) // Orange
+        "Digital Wallet" -> Color(0xFF9C27B0) // Purple
+        else -> Color(0xFF2196F3)
     }
 }
 
@@ -886,7 +809,8 @@ private fun NewAccountCard(
     account: Account,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    showDeleteButton: Boolean = true
+    showDeleteButton: Boolean = true,
+    currencySymbol: String
 ) {
     Card(
         modifier = Modifier
@@ -908,9 +832,9 @@ private fun NewAccountCard(
             ) {
                 // Account Icon
                 Icon(
-                    imageVector = Icons.Default.AttachMoney,
+                    imageVector = getAccountTypeIcon(account.type),
                     contentDescription = account.type,
-                    tint = MaterialTheme.colorScheme.onSurface,
+                    tint = getAccountTypeColor(account.type),
                     modifier = Modifier.size(24.dp)
                 )
 
@@ -924,23 +848,12 @@ private fun NewAccountCard(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.TrendingUp,
-                            contentDescription = "Trend",
-                            tint = AccountsGreenSuccess,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "+$${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
-                            fontSize = 14.sp,
-                            color = AccountsGreenSuccess,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        fontSize = 14.sp,
+                        color = AccountsGreenSuccess,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 
@@ -979,6 +892,100 @@ private fun NewAccountCard(
 }
 
 @Composable
+private fun ArchivedAccountCard(
+    account: Account,
+    onUnarchiveClick: () -> Unit,
+    currencySymbol: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Account Icon
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        account.color.copy(alpha = 0.2f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = account.icon,
+                    contentDescription = account.name,
+                    tint = account.color,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Account Details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = account.name,
+                    style = AppStyleDesignSystem.Typography.HEADLINE,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = account.type,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "Archived",
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
+
+            // Balance and Actions
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        style = AppStyleDesignSystem.Typography.HEADLINE,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(
+                    onClick = onUnarchiveClick,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Restore,
+                        contentDescription = "Unarchive",
+                        tint = AccountsBluePrimary,
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹") {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1006,9 +1013,9 @@ private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹"
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.AttachMoney,
+                        imageVector = getAccountTypeIcon(account.type),
                         contentDescription = account.type,
-                        tint = Color(0xFF4CAF50),
+                        tint = getAccountTypeColor(account.type),
                         modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
                     )
                 }

@@ -28,6 +28,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.*
 import androidx.compose.runtime.collectAsState
 import kotlinx.datetime.toLocalDateTime
+import com.example.androidkmm.components.SharedAccountSelectionBottomSheet
 import com.example.androidkmm.design.AppStyleDesignSystem
 
 @OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
@@ -107,10 +108,10 @@ fun AddExpenseScreen(
             )
         )
 
-        // Content
+        // Content - Make it scrollable with proper constraints
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
@@ -476,7 +477,8 @@ fun AddExpenseScreen(
                 selectedAccount = account
                 showAccountPicker = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = null // No add account functionality in AddExpenseScreen
         )
     }
 }
@@ -525,38 +527,17 @@ private fun CategorySelectionBottomSheet(
 private fun AccountSelectionBottomSheet(
     onDismiss: () -> Unit,
     onAccountSelected: (Account) -> Unit,
-    accountDatabaseManager: SQLiteAccountDatabase
+    accountDatabaseManager: SQLiteAccountDatabase,
+    onAddAccount: (() -> Unit)? = null
 ) {
-    val accounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList())
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        ) {
-            Text(
-                text = "Select Account",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(16.dp))
-            
-            accounts.value.forEach { account ->
-                AccountItem(
-                    account = account,
-                    onClick = { onAccountSelected(account) }
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-            
-            Spacer(Modifier.height(24.dp))
-        }
-    }
+    SharedAccountSelectionBottomSheet(
+        onDismiss = onDismiss,
+        title = "Select Account",
+        subtitle = "Choose an account for your transaction",
+        onAccountSelected = onAccountSelected,
+        accountDatabaseManager = accountDatabaseManager,
+        onAddAccount = onAddAccount
+    )
 }
 
 @Composable

@@ -119,6 +119,19 @@ fun BalanceCard(
             if (validPersons.isEmpty()) {
                 "$currencySymbol.0"
             } else {
+                // Debug: Print all ledger person balances
+                println("DEBUG: All ledger persons:")
+                validPersons.forEach { person ->
+                    println("DEBUG: Person: ${person.name}, Balance: ${person.balance}")
+                }
+                
+                // Debug: Test scenario - simulate user's case
+                println("DEBUG: === TEST SCENARIO ===")
+                println("DEBUG: User says: To Receive = 500, To Send = 1000")
+                println("DEBUG: Expected net: 500 - 1000 = -500")
+                println("DEBUG: But app shows: +500")
+                println("DEBUG: === END TEST SCENARIO ===")
+                
                 // Calculate amounts with proper validation
                 val toReceiveAmount = validPersons
                     .filter { it.balance > 0 }
@@ -128,8 +141,17 @@ fun BalanceCard(
                     .filter { it.balance < 0 }
                     .sumOf { kotlin.math.abs(it.balance) }
                 
-                // Apply formula: to receive - to send
-                val netAmount = toReceiveAmount - toSendAmount
+                println("DEBUG: === CALCULATION BREAKDOWN ===")
+                println("DEBUG: toReceiveAmount (positive balances): $toReceiveAmount")
+                println("DEBUG: toSendAmount (abs of negative balances): $toSendAmount")
+                println("DEBUG: Formula: toSendAmount - toReceiveAmount (FIXED)")
+                println("DEBUG: Calculation: $toSendAmount - $toReceiveAmount")
+                
+                // Apply formula: to send - to receive (FIXED)
+                // Positive means you owe money, negative means you're owed money
+                val netAmount = toSendAmount - toReceiveAmount
+                
+                println("DEBUG: Ledger calculation - toReceive: $toReceiveAmount, toSend: $toSendAmount, net: $netAmount")
                 
                 // Validate the result
                 val finalAmount = if (netAmount.isNaN() || netAmount.isInfinite()) {
@@ -140,8 +162,13 @@ fun BalanceCard(
                     netAmount
                 }
                 
+                println("DEBUG: netAmount: $netAmount, finalAmount: $finalAmount")
+                println("DEBUG: finalAmount >= 0: ${finalAmount >= 0}")
+                
                 val sign = if (finalAmount >= 0) "+" else ""
-                "${sign}$currencySymbol${String.format("%.1f", finalAmount)}"
+                val formattedAmount = "${sign}$currencySymbol${String.format("%.1f", finalAmount)}"
+                println("DEBUG: sign: '$sign', formattedAmount: $formattedAmount")
+                formattedAmount
             }
         } catch (e: Exception) {
             println("ERROR: Exception calculating ledger balance: ${e.message}")
@@ -168,7 +195,7 @@ fun BalanceCard(
             TextUtils.StandardText(
                 text = "Total Balance",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
+                fontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize,
                 fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
             )
             Spacer(Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))

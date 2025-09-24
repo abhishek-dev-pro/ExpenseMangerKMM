@@ -30,59 +30,48 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun RecentTransactionsSection(
     onViewAllClick: () -> Unit,
-    onRetry: () -> Unit = {}
+    onRetry: () -> Unit = {},
+    refreshTrigger: Int = 0
 ) {
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val appSettings by rememberSQLiteSettingsDatabase().getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = appSettings.currencySymbol
     
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
-    var recentTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var hasError by remember { mutableStateOf(false) }
-    var retryCount by remember { mutableStateOf(0) }
     
-    // Function to fetch transactions
-    fun fetchTransactions() {
-        isLoading = true
-        hasError = false
-    }
+    // Use collectAsState with the refresh trigger to force refresh
+    val allTransactions by transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList())
     
-    // Fetch recent transactions with safety checks
-    LaunchedEffect(retryCount) {
-        try {
-            // Add a longer delay to ensure database is fully initialized
-            kotlinx.coroutines.delay(500)
-            
-            // Check if database is ready
-            transactionDatabaseManager.getAllTransactions().collect { allTransactions ->
-                try {
-                    // Sort by date and time (most recent first) and take first 3
-                    recentTransactions = allTransactions
-                        .filter { transaction ->
-                            // Filter out any invalid transactions
-                            transaction.id.isNotEmpty() && 
-                            transaction.title.isNotEmpty() &&
-                            transaction.date.isNotEmpty() &&
-                            transaction.time.isNotEmpty()
-                        }
-                        .sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.time })
-                        .take(3)
-                    isLoading = false
-                } catch (e: Exception) {
-                    println("Error processing transactions: ${e.message}")
-                    recentTransactions = emptyList()
-                    isLoading = false
-                }
-            }
-        } catch (e: Exception) {
-            println("Error fetching recent transactions: ${e.message}")
-            e.printStackTrace()
-            recentTransactions = emptyList()
-            isLoading = false
-            hasError = true
+    // Debug logging
+    LaunchedEffect(allTransactions, refreshTrigger) {
+        println("DEBUG: RecentTransactionsSection - Received ${allTransactions.size} transactions (refresh trigger: $refreshTrigger)")
+        allTransactions.take(5).forEach { transaction ->
+            println("DEBUG: RecentTransactionsSection - Transaction: ${transaction.title} at ${transaction.time}")
         }
     }
+    
+    // Only show loading if we're actively fetching and have no data yet
+    // For a fresh app start, empty list should show empty state, not loading
+    val isLoading = false
+    
+    // Process transactions reactively
+    val recentTransactions = remember(allTransactions) {
+        val filtered = allTransactions
+            .filter { transaction ->
+                // Filter out any invalid transactions
+                transaction.id.isNotEmpty() && 
+                transaction.title.isNotEmpty() &&
+                transaction.date.isNotEmpty() &&
+                transaction.time.isNotEmpty()
+            }
+            .sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.time })
+            .take(3)
+        
+        println("DEBUG: RecentTransactionsSection - Filtered to ${filtered.size} recent transactions")
+        filtered
+    }
+    
+    val hasError = false // Remove error state since we're using reactive state
     
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -148,58 +137,6 @@ fun RecentTransactionsSection(
                             style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-            }
-        } else if (hasError) {
-            // Error state with retry button
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(AppStyleDesignSystem.Padding.XXL),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Error,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Unable to load transactions",
-                            style = AppStyleDesignSystem.Typography.BODY.copy(
-                                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                    )
-                        Text(
-                            text = "Please check your connection and try again",
-                            style = AppStyleDesignSystem.Typography.CALL_OUT,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { 
-                            retryCount++
-                            onRetry()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-                    ) {
-                        Text(
-                            text = "Retry",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
                 }
             }
         } else if (recentTransactions.isEmpty()) {
@@ -298,7 +235,11 @@ currencySymbol: String
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}",
+                    text = when (transaction.type) {
+                        TransactionType.INCOME -> "Added to ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                        TransactionType.EXPENSE -> "Paid by ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                        TransactionType.TRANSFER -> "Transferred to ${transaction.account} • ${formatTransactionDate(transaction.date)}"
+                    },
                     style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

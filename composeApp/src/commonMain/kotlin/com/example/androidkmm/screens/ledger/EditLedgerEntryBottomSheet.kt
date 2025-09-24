@@ -54,7 +54,7 @@ fun EditLedgerEntryBottomSheet(
     val currencySymbol = appSettings.value.currencySymbol
     
     // Get all accounts for selection
-    val allAccountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
+    val allAccountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<com.example.androidkmm.models.Account>())
     val allAccounts = allAccountsState.value
     
     val bottomSheetState = rememberModalBottomSheetState(
@@ -677,10 +677,14 @@ fun EditLedgerEntryBottomSheet(
     if (showAccountSelection) {
         AccountSelectionBottomSheet(
             onDismiss = { showAccountSelection = false },
+            title = "Select Account",
+            subtitle = "Choose an account for your transaction",
             onAccountSelected = { account ->
                 selectedAccount = account
                 showAccountSelection = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { /* TODO: Add account functionality for ledger */ }
         )
     }
 }

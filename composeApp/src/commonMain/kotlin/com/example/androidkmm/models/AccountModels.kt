@@ -10,7 +10,8 @@ data class Account(
     val icon: ImageVector,
     val color: Color,
     val type: String,
-    val isCustom: Boolean = false
+    val isCustom: Boolean = false,
+    val isArchived: Boolean = false
 )
 
 enum class AccountType {

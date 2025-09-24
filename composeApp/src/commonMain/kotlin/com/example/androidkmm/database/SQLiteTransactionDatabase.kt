@@ -378,47 +378,60 @@ class SQLiteTransactionDatabase(
     ) {
         scope.launch {
             try {
-                    // Validate transaction data before processing
-                    if (transaction.id.isBlank()) {
-                        throw IllegalArgumentException("Transaction ID cannot be blank")
-                    }
-                    if (transaction.amount <= 0) {
-                        throw IllegalArgumentException("Transaction amount must be positive")
-                    }
-                    if (transaction.account.isBlank()) {
-                        throw IllegalArgumentException("Transaction account cannot be blank")
-                    }
-                    
-                    // First, add the transaction
-                    database.categoryDatabaseQueries.insertTransaction(
-                        id = transaction.id,
-                        title = transaction.title,
-                        amount = transaction.amount,
-                        category_name = transaction.category,
-                        category_icon_name = getIconName(transaction.categoryIcon),
-                        category_color_hex = transaction.categoryColor.toHexString(),
-                        account_name = transaction.account,
-                        account_icon_name = getIconName(transaction.accountIcon),
-                        account_color_hex = transaction.accountColor.toHexString(),
-                        transfer_to = transaction.transferTo ?: "",
-                        time = transaction.time,
-                        type = transaction.type.name,
-                        description = transaction.description,
-                        date = transaction.date,
-                        is_ledger_transaction = 0, // Default to 0 for regular transactions
-                        ledger_person_id = "", // Empty for regular transactions
-                        ledger_person_name = "" // Empty for regular transactions
-                    )
-                    
-                    // Then update account balances
-                    updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+                println("DEBUG: addTransactionWithBalanceUpdate called for transaction: ${transaction.title}")
+                println("DEBUG: Transaction type: ${transaction.type}, Amount: ${transaction.amount}")
+                println("DEBUG: From account: ${transaction.account}, To account: ${transaction.transferTo}")
+                
+                // Validate transaction data before processing
+                if (transaction.id.isBlank()) {
+                    throw IllegalArgumentException("Transaction ID cannot be blank")
+                }
+                if (transaction.amount <= 0) {
+                    throw IllegalArgumentException("Transaction amount must be positive")
+                }
+                if (transaction.account.isBlank()) {
+                    throw IllegalArgumentException("Transaction account cannot be blank")
+                }
+                
+                // First, add the transaction
+                println("DEBUG: Inserting transaction into database...")
+                database.categoryDatabaseQueries.insertTransaction(
+                    id = transaction.id,
+                    title = transaction.title,
+                    amount = transaction.amount,
+                    category_name = transaction.category,
+                    category_icon_name = getIconName(transaction.categoryIcon),
+                    category_color_hex = transaction.categoryColor.toHexString(),
+                    account_name = transaction.account,
+                    account_icon_name = getIconName(transaction.accountIcon),
+                    account_color_hex = transaction.accountColor.toHexString(),
+                    transfer_to = transaction.transferTo ?: "",
+                    time = transaction.time,
+                    type = transaction.type.name,
+                    description = transaction.description,
+                    date = transaction.date,
+                    is_ledger_transaction = 0, // Default to 0 for regular transactions
+                    ledger_person_id = "", // Empty for regular transactions
+                    ledger_person_name = "" // Empty for regular transactions
+                )
+                println("DEBUG: Transaction inserted successfully")
+                
+                // Then update account balances
+                println("DEBUG: Updating account balances...")
+                updateAccountBalancesForTransaction(transaction, accountDatabaseManager)
+                println("DEBUG: Account balances updated successfully")
                 
                 println("DEBUG: Transaction added and balances updated successfully")
                 Logger.info("Transaction added successfully: ${transaction.id}", "SQLiteTransactionDatabase")
                 onSuccess()
             } catch (error: Exception) {
+                println("DEBUG: Exception caught in addTransactionWithBalanceUpdate: ${error.message}")
+                println("DEBUG: Exception type: ${error.javaClass.simpleName}")
+                error.printStackTrace()
+                
                 // Rollback the transaction if balance update fails
                 try {
+                    println("DEBUG: Attempting to rollback transaction...")
                     database.categoryDatabaseQueries.deleteTransaction(transaction.id)
                     println("DEBUG: Transaction rollback successful")
                     Logger.info("Transaction rollback successful: ${transaction.id}", "SQLiteTransactionDatabase")
@@ -429,24 +442,28 @@ class SQLiteTransactionDatabase(
                 
                 println("ERROR: Failed to add transaction with balance update: ${error.message}")
                 Logger.error("Failed to add transaction with balance update", "SQLiteTransactionDatabase", error)
+                println("DEBUG: Calling onError callback...")
                 onError(error)
+                println("DEBUG: onError callback called")
             }
         }
     }
     
     fun updateTransactionWithBalanceUpdate(
         oldTransaction: Transaction,
-        newTransaction: Transaction, 
+        newTransaction: Transaction,
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
         onSuccess: () -> Unit = {}, 
         onError: (Throwable) -> Unit = {}
     ) {
         scope.launch {
             try {
-                // First, reverse the old transaction's balance changes
-                reverseAccountBalancesForTransaction(oldTransaction, accountDatabaseManager)
+                println("DEBUG: === TRANSACTION EDIT DEBUG (FIXED APPROACH) ===")
+                println("DEBUG: Old transaction - ID: ${oldTransaction.id}, Amount: ${oldTransaction.amount}, Type: ${oldTransaction.type}, Account: ${oldTransaction.account}")
+                println("DEBUG: New transaction - ID: ${newTransaction.id}, Amount: ${newTransaction.amount}, Type: ${newTransaction.type}, Account: ${newTransaction.account}")
                 
-                // Then update the transaction
+                // Step 1: Update the transaction in database first
+                println("DEBUG: Step 1 - Updating transaction in database...")
                 database.categoryDatabaseQueries.updateTransaction(
                     title = newTransaction.title,
                     amount = newTransaction.amount,
@@ -464,10 +481,12 @@ class SQLiteTransactionDatabase(
                     id = newTransaction.id
                 )
                 
-                // Then apply the new transaction's balance changes
-                updateAccountBalancesForTransaction(newTransaction, accountDatabaseManager)
+                // Step 2: Recalculate account balances from scratch to avoid double counting
+                println("DEBUG: Step 2 - Recalculating account balances from scratch...")
+                recalculateAccountBalancesFromTransactions(accountDatabaseManager)
                 
-                println("DEBUG: Transaction updated and balances updated successfully")
+                println("DEBUG: Transaction updated and balances recalculated successfully")
+                println("DEBUG: === END TRANSACTION EDIT DEBUG ===")
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error updating transaction with balance update: ${e.message}")
@@ -504,8 +523,11 @@ class SQLiteTransactionDatabase(
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
         try {
+            println("DEBUG: updateAccountBalancesForTransaction called for transaction type: ${transaction.type}")
+            
             when (transaction.type) {
                 com.example.androidkmm.models.TransactionType.INCOME -> {
+                    println("DEBUG: Processing INCOME transaction")
                     // Add amount to account balance
                     val account = getAccountByName(transaction.account)
                     if (account != null) {
@@ -518,6 +540,7 @@ class SQLiteTransactionDatabase(
                     }
                 }
                 com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                    println("DEBUG: Processing EXPENSE transaction")
                     // Subtract amount from account balance
                     val account = getAccountByName(transaction.account)
                     if (account != null) {
@@ -530,6 +553,9 @@ class SQLiteTransactionDatabase(
                     }
                 }
                 com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                    println("DEBUG: Processing TRANSFER transaction")
+                    println("DEBUG: From account: ${transaction.account}, To account: ${transaction.transferTo}")
+                    
                     // Validate transfer requirements
                     if (transaction.transferTo.isNullOrBlank()) {
                         throw IllegalStateException("Transfer destination account is required for TRANSFER transaction")
@@ -537,6 +563,8 @@ class SQLiteTransactionDatabase(
                     
                     val fromAccount = getAccountByName(transaction.account)
                     val toAccount = getAccountByName(transaction.transferTo!!)
+                    
+                    println("DEBUG: From account found: ${fromAccount != null}, To account found: ${toAccount != null}")
                     
                     if (fromAccount == null) {
                         throw IllegalStateException("Source account '${transaction.account}' not found for TRANSFER transaction")
@@ -557,21 +585,27 @@ class SQLiteTransactionDatabase(
                     
                     // Check if source account has sufficient balance
                     val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
+                    println("DEBUG: Current from account balance: $currentFromBalance, Required amount: ${transaction.amount}")
+                    
                     if (currentFromBalance < transaction.amount) {
+                        println("DEBUG: Insufficient balance detected - throwing exception")
                         throw IllegalStateException("Insufficient balance in source account '${fromAccount.name}'. Available: $currentFromBalance, Required: ${transaction.amount}")
                     }
                     
                     // Perform the transfer atomically
                     try {
+                        println("DEBUG: Performing transfer - updating from account balance")
                         val newFromBalance = currentFromBalance - transaction.amount
                         accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
                         println("DEBUG: Updated from account ${fromAccount.name} balance from $currentFromBalance to $newFromBalance (TRANSFER: -${transaction.amount})")
                         
+                        println("DEBUG: Performing transfer - updating to account balance")
                         val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                         val newToBalance = currentToBalance + transaction.amount
                         accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
                         println("DEBUG: Updated to account ${toAccount.name} balance from $currentToBalance to $newToBalance (TRANSFER: +${transaction.amount})")
                     } catch (e: Exception) {
+                        println("DEBUG: Error during transfer - attempting rollback")
                         // If the second update fails, try to rollback the first update
                         try {
                             accountDatabaseManager.updateAccountBalance(fromAccount.id, currentFromBalance)
@@ -584,8 +618,11 @@ class SQLiteTransactionDatabase(
                     }
                 }
             }
+            println("DEBUG: updateAccountBalancesForTransaction completed successfully")
         } catch (e: Exception) {
             println("ERROR: Failed to update account balances for transaction ${transaction.id}: ${e.message}")
+            println("ERROR: Exception type: ${e.javaClass.simpleName}")
+            e.printStackTrace()
             Logger.error("Failed to update account balances", "SQLiteTransactionDatabase", e)
             throw e
         }
@@ -595,6 +632,7 @@ class SQLiteTransactionDatabase(
         transaction: Transaction, 
         accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
     ) {
+        println("DEBUG: Reversing transaction - ID: ${transaction.id}, Amount: ${transaction.amount}, Type: ${transaction.type}, Account: ${transaction.account}")
         when (transaction.type) {
             com.example.androidkmm.models.TransactionType.INCOME -> {
                 // Subtract amount from account balance (reverse income)
@@ -603,6 +641,7 @@ class SQLiteTransactionDatabase(
                     val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: REVERSE INCOME - Account: ${account.name}, Balance: $currentBalance -> $newBalance (reversed +${transaction.amount})")
                 }
             }
             com.example.androidkmm.models.TransactionType.EXPENSE -> {
@@ -612,6 +651,7 @@ class SQLiteTransactionDatabase(
                     val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                     val newBalance = currentBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                    println("DEBUG: REVERSE EXPENSE - Account: ${account.name}, Balance: $currentBalance -> $newBalance (reversed -${transaction.amount})")
                 }
             }
             com.example.androidkmm.models.TransactionType.TRANSFER -> {
@@ -623,12 +663,14 @@ class SQLiteTransactionDatabase(
                     val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
                     val newFromBalance = currentFromBalance + transaction.amount
                     accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                    println("DEBUG: REVERSE TRANSFER FROM - Account: ${fromAccount.name}, Balance: $currentFromBalance -> $newFromBalance (reversed -${transaction.amount})")
                 }
                 
                 if (toAccount != null) {
                     val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
                     val newToBalance = currentToBalance - transaction.amount
                     accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                    println("DEBUG: REVERSE TRANSFER TO - Account: ${toAccount.name}, Balance: $currentToBalance -> $newToBalance (reversed +${transaction.amount})")
                 }
             }
         }
@@ -641,6 +683,64 @@ class SQLiteTransactionDatabase(
         } catch (e: Exception) {
             println("DEBUG: Error getting account by name: ${e.message}")
             null
+        }
+    }
+    
+    private suspend fun recalculateAccountBalancesFromTransactions(
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        try {
+            println("DEBUG: Recalculating all account balances from transactions...")
+            
+            // Get all transactions
+            val allTransactions = database.categoryDatabaseQueries.selectAllTransactions().executeAsList()
+            println("DEBUG: Found ${allTransactions.size} transactions to recalculate")
+            
+            // Get all accounts
+            val allAccounts = database.categoryDatabaseQueries.selectAllAccounts().executeAsList()
+            println("DEBUG: Found ${allAccounts.size} accounts to recalculate")
+            
+            // Reset all account balances to 0
+            allAccounts.forEach { accountRow ->
+                accountDatabaseManager.updateAccountBalance(accountRow.id, 0.0)
+                println("DEBUG: Reset account ${accountRow.name} balance to 0.0")
+            }
+            
+            // Recalculate each account balance from transactions
+            allAccounts.forEach { accountRow ->
+                val accountTransactions = allTransactions.filter { transaction ->
+                    transaction.account_name == accountRow.name
+                }
+                
+                var balance = 0.0
+                accountTransactions.forEach { transaction ->
+                    when (transaction.type) {
+                        "INCOME" -> balance += transaction.amount
+                        "EXPENSE" -> balance -= transaction.amount
+                        "TRANSFER" -> {
+                            // For transfers, subtract from source account
+                            balance -= transaction.amount
+                        }
+                    }
+                }
+                
+                // Also handle transfers TO this account
+                val transfersToThisAccount = allTransactions.filter { transaction ->
+                    transaction.type == "TRANSFER" && transaction.transfer_to == accountRow.name
+                }
+                
+                transfersToThisAccount.forEach { transaction ->
+                    balance += transaction.amount
+                }
+                
+                accountDatabaseManager.updateAccountBalance(accountRow.id, balance)
+                println("DEBUG: Recalculated account ${accountRow.name} balance to $balance")
+            }
+            
+            println("DEBUG: All account balances recalculated successfully")
+        } catch (e: Exception) {
+            println("ERROR: Failed to recalculate account balances: ${e.message}")
+            throw e
         }
     }
     
@@ -710,7 +810,7 @@ class SQLiteTransactionDatabase(
                 database.categoryDatabaseQueries.deleteAllAccounts()
                 
                 // Re-insert default account (Cash) with dynamic currency symbol
-                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "AttachMoney", "#FF4CAF50", "CASH", 0)
+                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "Money", "#FF4CAF50", "CASH", 0)
             }
         }
     }
@@ -720,6 +820,7 @@ class SQLiteTransactionDatabase(
 private val transactionIconMap = mapOf(
     "Restaurant" to Icons.Default.Restaurant,
     "AttachMoney" to Icons.Default.AttachMoney,
+    "Money" to Icons.Default.Money,
     "ShoppingCart" to Icons.Default.ShoppingCart,
     "SwapHoriz" to Icons.Default.SwapHoriz,
     "AccountBalance" to Icons.Default.AccountBalance,

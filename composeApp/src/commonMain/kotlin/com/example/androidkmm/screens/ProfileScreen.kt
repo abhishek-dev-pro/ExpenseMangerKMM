@@ -178,6 +178,13 @@ fun ProfileMainScreen() {
                 containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = null
             ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                ) {
                 AddAccountBottomSheet(
                     onDismiss = { showAddAccountSheet = false },
                     onAccountAdded = { account ->
@@ -192,6 +199,7 @@ fun ProfileMainScreen() {
                         )
                     }
                 )
+                }
             }
         }
 
@@ -1527,19 +1535,16 @@ fun AddAccountBottomSheet(
 ) {
     var accountName by remember { mutableStateOf("") }
     var selectedAccountType by remember { mutableStateOf("Bank Account") }
-    var selectedBank by remember { mutableStateOf("HDFC Bank") }
     var initialBalance by remember { mutableStateOf("0.00") }
     
     // Get settings to get currency symbol
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val settings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = settings.currencySymbol
+    
+    // Validation logic - button should be enabled when account name is filled
+    val isFormValid = accountName.isNotEmpty()
 
-    val bankOptions = listOf(
-        "HDFC Bank", "State Bank of India (SBI)",
-        "ICICI Bank", "Axis Bank",
-        "Bank of Baroda", "Punjab National Bank"
-    )
 
     Column(
         modifier = Modifier
@@ -1558,12 +1563,20 @@ fun AddAccountBottomSheet(
 
         BasicTextField(
             value = accountName,
-            onValueChange = { accountName = it },
+            onValueChange = { newValue ->
+                // Limit to 24 characters and capitalize first letter
+                val capitalizedValue = if (newValue.isNotEmpty()) {
+                    newValue.take(24).replaceFirstChar { it.uppercase() }
+                } else {
+                    newValue
+                }
+                accountName = capitalizedValue
+            },
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (accountName.isEmpty()) {
@@ -1634,33 +1647,6 @@ fun AddAccountBottomSheet(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Bank Name Section (only show if Bank Account is selected)
-        if (selectedAccountType == "Bank Account") {
-            Text(
-                text = "Bank Name",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM),
-                verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
-            ) {
-                items(bankOptions) { bank ->
-                    BankCard(
-                        bankName = bank,
-                        isSelected = selectedBank == bank,
-                        onClick = { selectedBank = bank }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
 
         // Initial Balance Section
         Text(
@@ -1677,7 +1663,7 @@ fun AddAccountBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(16.dp)
         ) {
             Text(
@@ -1690,7 +1676,7 @@ fun AddAccountBottomSheet(
             BasicTextField(
                 value = initialBalance,
                 onValueChange = { newValue ->
-                    if (newValue.matches(Regex("^\\d*\\.?\\d*$"))) {
+                    if (newValue.matches(Regex("^\\d*\\.?\\d*$")) && newValue.length <= 10) {
                         initialBalance = newValue
                     }
                 },
@@ -1708,12 +1694,11 @@ fun AddAccountBottomSheet(
         // Add Account Button
         Button(
             onClick = {
+                val balance = if (initialBalance.isEmpty() || initialBalance == "0.00") "0.00" else initialBalance
                 val account = Account(
                     id = Clock.System.now().toEpochMilliseconds().toString(),
-                    name = accountName.ifEmpty {
-                        if (selectedAccountType == "Bank Account") selectedBank else selectedAccountType
-                    },
-                    balance = "$currencySymbol$initialBalance",
+                    name = accountName,
+                    balance = balance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
                         "Credit/Debit Card" -> Icons.Default.CreditCard
@@ -1726,12 +1711,13 @@ fun AddAccountBottomSheet(
                 )
                 onAccountAdded(account)
             },
+            enabled = isFormValid,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF6C6C6C)
+                containerColor = if (isFormValid) Color(0xFF2196F3) else Color(0xFF6C6C6C)
             )
         ) {
             Text(
@@ -1795,37 +1781,6 @@ fun AccountTypeCard(
     }
 }
 
-@Composable
-fun BankCard(
-    bankName: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(56.dp)
-            .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) Color.Black else Color.Black
-        ),
-        border = if (isSelected) BorderStroke(1.dp, Color.White) else null
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = bankName,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -2813,7 +2768,9 @@ fun CategoriesScreen(
 
 @Composable
 fun CarryForwardToggle() {
-    var isCarryForwardEnabled by remember { mutableStateOf(true) }
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val scope = rememberCoroutineScope()
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -2858,8 +2815,14 @@ fun CarryForwardToggle() {
             }
 
             Switch(
-                checked = isCarryForwardEnabled,
-                onCheckedChange = { isCarryForwardEnabled = it },
+                checked = appSettings.carryForwardEnabled,
+                onCheckedChange = { enabled ->
+                    println("CarryForwardToggle - Toggle clicked: $enabled")
+                    scope.launch {
+                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
+                        println("CarryForwardToggle - Updated carry forward to: $enabled")
+                    }
+                },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.primary,
                     checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),

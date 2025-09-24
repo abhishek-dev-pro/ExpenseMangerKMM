@@ -50,6 +50,7 @@ class SQLiteAccountDatabase(
                 println("DEBUG: Account table not found, will be created on next app restart")
             }
         }
+        
     }
     
     fun getAllAccounts(): Flow<List<Account>> {
@@ -197,6 +198,73 @@ class SQLiteAccountDatabase(
             }
         }
     }
+    
+    suspend fun hasAccountTransactions(accountName: String): Boolean {
+        return try {
+            val transactionCount = database.categoryDatabaseQueries.getTransactionCountByAccount(accountName).executeAsOne()
+            transactionCount > 0
+        } catch (e: Exception) {
+            println("DEBUG: Error checking transactions for account $accountName: ${e.message}")
+            false
+        }
+    }
+    
+    fun getActiveAccounts(): Flow<List<Account>> {
+        return database.categoryDatabaseQueries.selectActiveAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
+            try {
+                list.mapNotNull { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting active account ${dbAccount.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing active account list: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+    
+    fun getArchivedAccounts(): Flow<List<Account>> {
+        return database.categoryDatabaseQueries.selectArchivedAccounts().asFlow().mapToList(Dispatchers.Default).map { list ->
+            try {
+                list.mapNotNull { dbAccount ->
+                    try {
+                        dbAccount.toAccount()
+                    } catch (e: Exception) {
+                        println("Error converting archived account ${dbAccount.id}: ${e.message}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                println("Error processing archived account list: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+    
+    
+    suspend fun archiveAccount(accountId: String) {
+        try {
+            database.categoryDatabaseQueries.archiveAccount(accountId)
+            println("DEBUG: Account $accountId archived successfully")
+        } catch (e: Exception) {
+            println("DEBUG: Error archiving account $accountId: ${e.message}")
+            throw e
+        }
+    }
+    
+    suspend fun unarchiveAccount(accountId: String) {
+        try {
+            database.categoryDatabaseQueries.unarchiveAccount(accountId)
+            println("DEBUG: Account $accountId unarchived successfully")
+        } catch (e: Exception) {
+            println("DEBUG: Error unarchiving account $accountId: ${e.message}")
+            throw e
+        }
+    }
 }
 
 // Icon name to ImageVector mapping for accounts
@@ -246,13 +314,21 @@ private fun Color.toHexString(): String {
 
 // Extension function to convert database row to Account
 private fun com.example.androidkmm.database.Account.toAccount(): com.example.androidkmm.models.Account {
+    val isArchived = this.name.startsWith("[ARCHIVED]")
+    val displayName = if (isArchived) {
+        this.name.removePrefix("[ARCHIVED]")
+    } else {
+        this.name
+    }
+    
     return com.example.androidkmm.models.Account(
         id = this.id,
-        name = this.name,
+        name = displayName,
         balance = this.balance,
         icon = getIconByName(this.icon_name),
         color = parseColorHex(this.color_hex),
         type = this.type,
-        isCustom = this.is_custom == 1L
+        isCustom = this.is_custom == 1L,
+        isArchived = isArchived
     )
 }

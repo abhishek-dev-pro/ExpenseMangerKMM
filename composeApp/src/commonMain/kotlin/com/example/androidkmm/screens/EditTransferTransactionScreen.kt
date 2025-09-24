@@ -50,7 +50,7 @@ fun EditTransferTransactionScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     
-    val accounts by accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList())
+    val accounts by accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList())
     
     // Date and Time picker states
     val today = java.time.LocalDate.now()

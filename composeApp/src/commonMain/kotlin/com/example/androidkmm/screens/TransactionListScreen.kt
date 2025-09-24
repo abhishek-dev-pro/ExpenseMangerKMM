@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -47,6 +49,7 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.TextUnit
@@ -65,6 +68,8 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.components.AddAccountBottomSheet
+import com.example.androidkmm.components.SharedAccountSelectionBottomSheet
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -77,7 +82,7 @@ object TransactionColors {
 
 // Data classes for the form (using models from TransactionModels.kt)
 
-
+// Data class for insufficient balance dialog
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -94,7 +99,7 @@ fun TransactionsScreen(
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     
     val transactionsState = transactionDatabaseManager.getAllTransactions().collectAsState(initial = emptyList<com.example.androidkmm.models.Transaction>())
-    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
+    val allAccounts = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
     
     // Fix any existing transfer transactions that might not have proper transferTo field
     LaunchedEffect(Unit) {
@@ -178,6 +183,10 @@ fun TransactionsScreen(
 
     var showAddSheet by remember { mutableStateOf(false) }
     var showSearchScreen by remember { mutableStateOf(false) }
+    
+    // Insufficient balance dialog state
+    var showInsufficientBalanceDialog by remember { mutableStateOf(false) }
+    var insufficientBalanceInfo by remember { mutableStateOf<com.example.androidkmm.models.InsufficientBalanceInfo?>(null) }
     
     // Track scroll state for showing compact summary
     val listState = rememberLazyListState()
@@ -313,10 +322,15 @@ fun TransactionsScreen(
         AddTransactionScreen(
             onDismiss = { showAddSheet = false },
             onSave = { transactionFormData ->
+                println("DEBUG: onSave called with transactionFormData: $transactionFormData")
                 // Convert TransactionFormData to Transaction and save to database
                 val transaction = com.example.androidkmm.models.Transaction(
                     id = "${Clock.System.now().epochSeconds}",
-                    title = transactionFormData.title,
+                    title = if (transactionFormData.type == TransactionType.TRANSFER && transactionFormData.title.isBlank()) {
+                        "Transfer from ${transactionFormData.account?.name ?: ""} to ${transactionFormData.toAccount?.name ?: ""}"
+                    } else {
+                        transactionFormData.title
+                    },
                     amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
                     category = if (transactionFormData.type == TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),
                     categoryIcon = if (transactionFormData.type == TransactionType.TRANSFER) Icons.Default.SwapHoriz else (transactionFormData.category?.icon ?: Icons.Default.Category),
@@ -331,14 +345,162 @@ fun TransactionsScreen(
                     accountColor = transactionFormData.account?.color ?: Color.Blue
                 )
                 
+                println("DEBUG: Calling addTransactionWithBalanceUpdate")
                 transactionDatabaseManager.addTransactionWithBalanceUpdate(
                     transaction = transaction,
-                    accountDatabaseManager = accountDatabaseManager
+                    accountDatabaseManager = accountDatabaseManager,
+                    onSuccess = {
+                        println("DEBUG: Transaction added successfully")
+                        showAddSheet = false
+                    },
+                    onError = { error ->
+                        println("DEBUG: TransactionListScreen - onError callback called")
+                        println("DEBUG: TransactionListScreen - Error message: ${error.message}")
+                        println("DEBUG: TransactionListScreen - Error type: ${error.javaClass.simpleName}")
+                        error.printStackTrace()
+                        
+                        // Check if it's an insufficient balance error
+                        if (error.message?.startsWith("Insufficient balance in source account") == true) {
+                            println("DEBUG: TransactionListScreen - Insufficient balance detected, showing dialog")
+                            val parts = error.message!!.split("Available: ", ", Required: ")
+                            if (parts.size >= 3) {
+                                val accountName = error.message!!.substringAfter("source account '").substringBefore("'")
+                                val currentBalance = parts[1].toDoubleOrNull() ?: 0.0
+                                val requiredAmount = parts[2].toDoubleOrNull() ?: 0.0
+
+                                // Show insufficient balance dialog
+                                println("DEBUG: TransactionListScreen - Setting showInsufficientBalanceDialog = true")
+                                showInsufficientBalanceDialog = true
+                                insufficientBalanceInfo = com.example.androidkmm.models.InsufficientBalanceInfo(
+                                    accountName = accountName,
+                                    currentBalance = currentBalance,
+                                    requiredAmount = requiredAmount
+                                )
+                                println("DEBUG: TransactionListScreen - Dialog state set - showInsufficientBalanceDialog: $showInsufficientBalanceDialog, insufficientBalanceInfo: $insufficientBalanceInfo")
+                            }
+                        } else {
+                            println("DEBUG: TransactionListScreen - Error is not insufficient balance error")
+                        }
+                    }
                 )
-                showAddSheet = false
             },
             categoryDatabaseManager = categoryDatabaseManager,
             accountDatabaseManager = accountDatabaseManager
+        )
+    }
+    
+    // Insufficient Balance Dialog
+    if (showInsufficientBalanceDialog && insufficientBalanceInfo != null) {
+        println("DEBUG: TransactionListScreen - Rendering insufficient balance dialog")
+        println("DEBUG: TransactionListScreen - Dialog state - showInsufficientBalanceDialog: $showInsufficientBalanceDialog")
+        println("DEBUG: TransactionListScreen - Dialog state - insufficientBalanceInfo: $insufficientBalanceInfo")
+        AlertDialog(
+            onDismissRequest = {
+                showInsufficientBalanceDialog = false
+                insufficientBalanceInfo = null
+            },
+            title = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "Cannot Complete Transfer",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "The source account '${insufficientBalanceInfo!!.accountName}' has a negative balance and cannot be used for transfers.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 22.sp
+                    )
+                    
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "To fix this:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "1.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Add money to ${insufficientBalanceInfo!!.accountName} first",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "2.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Transfer money TO ${insufficientBalanceInfo!!.accountName} from another account",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showInsufficientBalanceDialog = false
+                        insufficientBalanceInfo = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Got it",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         )
     }
     
@@ -486,7 +648,7 @@ private fun TransactionHeader(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add Transaction",
                 tint = Color.Black,
-                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                modifier = Modifier.size(28.dp)
             )
         }
     }
@@ -963,6 +1125,7 @@ fun TransactionCard(
                     },
                     color = MaterialTheme.colorScheme.onBackground,
                     style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontSize = 16.sp,
                         fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     fontStyle = FontStyle.Normal,
@@ -973,7 +1136,9 @@ fun TransactionCard(
                 Text(
                     text = "${transaction.time} • Transfer",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    style = AppStyleDesignSystem.Typography.CALL_OUT.copy(
+                        fontSize = 14.sp
+                    ),
                     fontStyle = FontStyle.Normal
                 )
             } else {
@@ -981,6 +1146,7 @@ fun TransactionCard(
                     text = transaction.title,
                     color = MaterialTheme.colorScheme.onBackground,
                     style = AppStyleDesignSystem.Typography.BODY.copy(
+                        fontSize = 16.sp,
                         fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
                     fontStyle = FontStyle.Normal,
@@ -995,21 +1161,27 @@ fun TransactionCard(
                     Text(
                         text = transaction.time,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = "•",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
 
                     Text(
                         text = transaction.category,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = AppStyleDesignSystem.Typography.CAPTION_1,
+                        style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
+                            fontSize = 14.sp
+                        ),
                         fontStyle = FontStyle.Normal
                     )
                 }
@@ -1046,7 +1218,7 @@ fun TransactionCard(
                 Text(
                     text = transaction.account,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontStyle = FontStyle.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -1121,25 +1293,28 @@ fun AddTransactionScreen(
             ),
         )
         
-        // Scrollable content - using Column with verticalScroll instead of LazyColumn
-        Column(
+        // Scrollable content - using LazyColumn like ledger for better scrolling
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .weight(1f)
                 .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+            contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
         ) {
-            AddTransactionContent(
-                formData = formData,
-                onFormDataChange = { formData = it },
-                onShowCategorySheet = { showCategorySheet = true },
-                onShowFromAccountSheet = { showFromAccountSheet = true },
-                onShowToAccountSheet = { showToAccountSheet = true },
-                onShowDatePicker = { showDatePicker = true },
-                onShowTimePicker = { showTimePicker = true },
-                onSave = { onSave(formData) },
-                onDismiss = onDismiss
-            )
+            item {
+                AddTransactionContent(
+                    formData = formData,
+                    onFormDataChange = { formData = it },
+                    onShowCategorySheet = { showCategorySheet = true },
+                    onShowFromAccountSheet = { showFromAccountSheet = true },
+                    onShowToAccountSheet = { showToAccountSheet = true },
+                    onShowDatePicker = { showDatePicker = true },
+                    onShowTimePicker = { showTimePicker = true },
+                    onSave = { onSave(formData) },
+                    onDismiss = onDismiss,
+                    focusManager = LocalFocusManager.current
+                )
+            }
         }
     }
 
@@ -1264,7 +1439,8 @@ fun AddTransactionScreen(
                             println("Error adding account: ${error.message}")
                         }
                     )
-                }
+                },
+                accountDatabaseManager = accountDatabaseManager
             )
         }
     }
@@ -1284,7 +1460,8 @@ private fun AddTransactionContent(
     onShowDatePicker: () -> Unit,
     onShowTimePicker: () -> Unit,
     onSave: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    focusManager: androidx.compose.ui.focus.FocusManager
 ) {
     // Use iOS design system with reduced spacing for more compact form
     val spacing = AppStyleDesignSystem.Padding.MEDIUM
@@ -1297,6 +1474,19 @@ private fun AddTransactionContent(
     val amountFontSize = AppStyleDesignSystem.Typography.TITLE_1.fontSize
     // Validation state
     var validationErrors by remember { mutableStateOf(emptyMap<String, String>()) }
+    
+    // Track if user has attempted to submit
+    var hasAttemptedSubmit by remember { mutableStateOf(false) }
+    
+    // Focus manager to clear focus when transaction type changes
+    val focusManager = LocalFocusManager.current
+    
+    // Clear focus and validation errors when transaction type changes
+    LaunchedEffect(formData.type) {
+        focusManager.clearFocus()
+        validationErrors = emptyMap()
+        hasAttemptedSubmit = false
+    }
     
     // Validation function using standardized validation
     fun validateForm(): Boolean {
@@ -1328,7 +1518,12 @@ private fun AddTransactionContent(
             }
         }
         
-        validationErrors = validationResult.errors
+        // Only show validation errors after user has attempted to submit
+        if (hasAttemptedSubmit) {
+            validationErrors = validationResult.errors
+        } else {
+            validationErrors = emptyMap()
+        }
         return validationResult.isValid
     }
     
@@ -1359,6 +1554,7 @@ private fun AddTransactionContent(
     
     // Save function with validation
     fun handleSave() {
+        hasAttemptedSubmit = true
         if (validateForm()) {
             // Capitalize first letter of title and description before saving
             val capitalizedFormData = formData.copy(
@@ -1373,7 +1569,12 @@ private fun AddTransactionContent(
     // Simple Column layout without LazyColumn
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .wrapContentHeight() // Ensure content wraps properly
+            .clickable { 
+                // Clear focus when tapping empty space
+                focusManager.clearFocus()
+            },
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         // Transaction Type Selector
@@ -1408,24 +1609,28 @@ private fun AddTransactionContent(
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "From Account",
+                                title = "From Account *",
                                 selectedText = formData.account?.name ?: "Select",
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("account"),
+                                errorMessage = validationErrors["account"]
                             )
 
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "To Account",
+                                title = "To Account *",
                                 selectedText = formData.toAccount?.name ?: "Select",
                                 icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowToAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("toAccount"),
+                                errorMessage = validationErrors["toAccount"]
                             )
             }
         } else {
@@ -1436,38 +1641,42 @@ private fun AddTransactionContent(
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "Category",
+                                title = "Category *",
                                 selectedText = formData.category?.name ?: "Select",
                                 icon = formData.category?.icon ?: Icons.Default.Category,
                                 iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowCategorySheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("category"),
+                                errorMessage = validationErrors["category"]
                             )
 
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "Account",
+                                title = "Account *",
                                 selectedText = formData.account?.name ?: "Select",
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("account"),
+                                errorMessage = validationErrors["account"]
                             )
             }
         }
 
         // Title Input
         InputField(
-            label = "Title",
+            label = if (formData.type == TransactionType.TRANSFER) "Title" else "Title *",
             value = formData.title,
             onValueChange = { title ->
                 // Limit title to 30 characters
                 val limitedTitle = if (title.length <= 30) title else title.take(30)
                 onFormDataChange(formData.copy(title = limitedTitle))
             },
-            placeholder = "e.g., Lunch at Subway",
+            placeholder = "Provide title here",
             errorMessage = validationErrors["title"],
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
@@ -1527,7 +1736,7 @@ private fun AddTransactionContent(
                 val limitedDescription = if (description.length <= 75) description else description.take(75)
                 onFormDataChange(formData.copy(description = limitedDescription))
             },
-            placeholder = "e.g., we ate two each",
+            placeholder = "Provide description here",
             errorMessage = validationErrors["description"],
             labelFontSize = labelFontSize,
             inputHeight = inputHeight
@@ -1639,6 +1848,9 @@ private fun AmountInputSection(
     titleFontSize: TextUnit = 18.sp,
     amountFontSize: TextUnit = 54.sp
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -1650,7 +1862,9 @@ private fun AmountInputSection(
                 val filteredValue = newValue.filter { char: Char -> char.isDigit() || char == '.' }
                 // Ensure only one decimal point
                 val decimalCount = filteredValue.count { char: Char -> char == '.' }
-                if (decimalCount <= 1) {
+                // Limit to maximum 10 digits (excluding decimal point)
+                val digitsOnly = filteredValue.filter { char: Char -> char.isDigit() }
+                if (decimalCount <= 1 && digitsOnly.length <= 10) {
                     onAmountChange(filteredValue)
                 }
             },
@@ -1662,12 +1876,14 @@ private fun AmountInputSection(
                 color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            interactionSource = interactionSource,
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.White),
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (amount.isEmpty()) {
+                    if (amount.isEmpty() && !isFocused) {
                         Text(
                             text = "0.00",
                             fontSize = amountFontSize,
@@ -1710,7 +1926,9 @@ private fun CategoryAccountSelector(
     isSmallScreen: Boolean = false,
     isMediumScreen: Boolean = true,
     labelFontSize: TextUnit = 14.sp,
-    inputHeight: Dp = 56.dp
+    inputHeight: Dp = 56.dp,
+    isError: Boolean = false,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = modifier,
@@ -1735,7 +1953,7 @@ private fun CategoryAccountSelector(
             ),
             border = BorderStroke(
                 width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                color = if (isError) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             ),
             contentPadding = PaddingValues(12.dp)
         ) {
@@ -1756,6 +1974,16 @@ private fun CategoryAccountSelector(
                 )
             }
         }
+        
+        // Error message
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+        }
     }
 }
 
@@ -1771,6 +1999,9 @@ private fun InputField(
     labelFontSize: TextUnit = 14.sp,
     inputHeight: Dp = 56.dp
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    
     Column(
         verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
     ) {
@@ -1787,18 +2018,23 @@ private fun InputField(
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = inputHeight),
-            placeholder = { Text(placeholder) },
+            interactionSource = interactionSource,
+            placeholder = { 
+                if (!isFocused && value.isEmpty()) {
+                    Text(placeholder)
+                }
+            },
             isError = errorMessage != null,
             shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = Color(0xFF121212),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
+                focusedContainerColor = Color(0xFF2A2A2A), // Grey when typing
+                unfocusedContainerColor = Color.Black, // Black when empty
+                focusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when typing
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when empty
                 focusedTextColor = MaterialTheme.colorScheme.onBackground,
                 unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                 errorBorderColor = Color.Red,
-                errorContainerColor = MaterialTheme.colorScheme.surface
+                errorContainerColor = Color.Black
             )
         )
 
@@ -1999,148 +2235,14 @@ fun AccountSelectionBottomSheet(
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     onAddAccount: (() -> Unit)? = null
 ) {
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+    SharedAccountSelectionBottomSheet(
+        onDismiss = onDismiss,
+        title = title,
+        subtitle = subtitle,
+        onAccountSelected = onAccountSelected,
+        accountDatabaseManager = accountDatabaseManager,
+        onAddAccount = onAddAccount
     )
-    val accountsState = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>())
-    val accounts = accountsState.value
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        dragHandle = null
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding(),
-            contentPadding = PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.XXS)
-        ) {
-            item {
-                // Header with close button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL))
-
-                    Text(
-                        text = title,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                        )
-                    }
-                }
-            }
-
-            item {
-                // Subtitle
-                Text(
-                    text = subtitle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            items(accounts) { account ->
-                AccountCard(
-                    account = account,
-                    onClick = { onAccountSelected(account) }
-                )
-            }
-
-            item {
-                // Add Account Button
-                Card(
-                    onClick = { onAddAccount?.invoke() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
-                        .border(
-                            width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-                        ),
-                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
-                    ) {
-                        // Plus icon
-                        Box(
-                            modifier = Modifier
-                                .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Account",
-                                tint = Color.White,
-                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                            )
-                        }
-
-                        // Add Account text
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
-                        ) {
-                            Text(
-                                text = "Add Account",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "Create a new account",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
 }
 
 @Composable
@@ -2173,19 +2275,19 @@ private fun AccountCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
         ) {
-            // Dollar sign icon
+            // Account type icon
             Box(
                 modifier = Modifier
                     .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface),
+                    .background(getAccountTypeColor(account.type)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = getAccountTypeIcon(account.type),
+                    contentDescription = account.type,
+                    tint = Color.White,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
                 )
             }
 
@@ -3314,10 +3416,30 @@ fun EditTransactionScreen(
     }
     var selectedCategoryName by remember { mutableStateOf(transaction.category) }
     var selectedAccountName by remember { mutableStateOf(transaction.account) }
+    
+    // Store original category to restore when switching back
+    var originalCategory by remember { mutableStateOf(transaction.category) }
+    var hasStoredOriginalCategory by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    
+    // Track the original transaction type to restore category when switching back
+    val originalTransactionType = remember {
+        when (transaction.type) {
+            com.example.androidkmm.models.TransactionType.INCOME -> TransactionType.INCOME
+            com.example.androidkmm.models.TransactionType.EXPENSE -> TransactionType.EXPENSE
+            com.example.androidkmm.models.TransactionType.TRANSFER -> TransactionType.EXPENSE
+        }
+    }
+    
+    // Restore original category when switching back to original type
+    LaunchedEffect(selectedType) {
+        if (selectedType == originalTransactionType && originalCategory.isNotEmpty() && selectedCategoryName.isEmpty()) {
+            selectedCategoryName = originalCategory
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -3378,7 +3500,17 @@ fun EditTransactionScreen(
                         // Expense Toggle
                         val isExpenseSelected = selectedType == TransactionType.EXPENSE
                         Button(
-                            onClick = { selectedType = TransactionType.EXPENSE },
+                            onClick = { 
+                                if (selectedType != TransactionType.EXPENSE) {
+                                    // Store original category only once when first switching away from original type
+                                    if (!hasStoredOriginalCategory && selectedType == originalTransactionType) {
+                                        originalCategory = selectedCategoryName
+                                        hasStoredOriginalCategory = true
+                                    }
+                                    selectedType = TransactionType.EXPENSE
+                                    selectedCategoryName = "" // Clear category when switching
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(18.dp)),
@@ -3410,7 +3542,17 @@ fun EditTransactionScreen(
                         // Income Toggle
                         val isIncomeSelected = selectedType == TransactionType.INCOME
                         Button(
-                            onClick = { selectedType = TransactionType.INCOME },
+                            onClick = { 
+                                if (selectedType != TransactionType.INCOME) {
+                                    // Store original category only once when first switching away from original type
+                                    if (!hasStoredOriginalCategory && selectedType == originalTransactionType) {
+                                        originalCategory = selectedCategoryName
+                                        hasStoredOriginalCategory = true
+                                    }
+                                    selectedType = TransactionType.INCOME
+                                    selectedCategoryName = "" // Clear category when switching
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(18.dp)),
@@ -3695,19 +3837,34 @@ fun EditTransactionScreen(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+                
+                val interactionSource = remember { MutableInteractionSource() }
+                val isFocused by interactionSource.collectIsFocusedAsState()
+                
                 OutlinedTextField(
                     value = description,
                     onValueChange = { 
                         val limitedDescription = if (it.length <= 75) it else it.take(75)
                         description = limitedDescription
                     },
-                    placeholder = { Text("we ate two each") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(minHeight = 56.dp),
+                    interactionSource = interactionSource,
+                    placeholder = { 
+                        if (!isFocused && description.isEmpty()) {
+                            Text("Provide description here")
+                        }
+                    },
+                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.outline,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                        cursorColor = MaterialTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                        focusedContainerColor = Color(0xFF2A2A2A), // Grey when typing
+                        unfocusedContainerColor = Color.Black, // Black when empty
+                        focusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when typing
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f), // Subtle white border when empty
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
             }
             
@@ -4081,5 +4238,27 @@ fun AddCategoryBottomSheetForTransaction(
         }
     }
 }
+
+// Helper functions for account type icons and colors
+private fun getAccountTypeIcon(type: String): ImageVector {
+    return when (type) {
+        "Bank Account" -> Icons.Default.AccountBalance
+        "Credit/Debit Card" -> Icons.Default.CreditCard
+        "Cash" -> Icons.Default.Money
+        "Digital Wallet" -> Icons.Default.PhoneAndroid
+        else -> Icons.Default.AccountBalance
+    }
+}
+
+private fun getAccountTypeColor(type: String): Color {
+    return when (type) {
+        "Bank Account" -> Color(0xFF2196F3) // Blue
+        "Credit/Debit Card" -> Color(0xFF4CAF50) // Green
+        "Cash" -> Color(0xFFFF9800) // Orange
+        "Digital Wallet" -> Color(0xFF9C27B0) // Purple
+        else -> Color(0xFF2196F3)
+    }
+}
+
 
 
