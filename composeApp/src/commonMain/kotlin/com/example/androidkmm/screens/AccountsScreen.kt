@@ -95,7 +95,7 @@ fun AccountsScreen(
                 Column {
                     Text(
                         text = "Manage Accounts",
-                        style = AppStyleDesignSystem.Typography.TITLE_1,
+                        style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
@@ -334,7 +334,7 @@ private fun AccountCard(
                 // Account Icon
                 Box(
                     modifier = Modifier
-                        .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                         .clip(CircleShape)
                         .background(getAccountTypeColor(account.type)),
                     contentAlignment = Alignment.Center

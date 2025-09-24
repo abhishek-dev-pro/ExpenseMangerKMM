@@ -136,7 +136,7 @@ fun SharedAccountSelectionBottomSheet(
                         // Plus icon
                         Box(
                             modifier = Modifier
-                                .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                                .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
@@ -210,7 +210,7 @@ private fun SharedAccountCard(
             // Account type icon
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(CircleShape)
                     .background(getAccountTypeColor(account.type)),
                 contentAlignment = Alignment.Center

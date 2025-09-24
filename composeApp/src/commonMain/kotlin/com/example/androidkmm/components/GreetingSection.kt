@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,16 +34,13 @@ fun GreetingSection() {
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            TextUtils.StandardText(
+           Text(
                 text = "Hi $userName 👋",
-                color = Color.White,
-                fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
-                fontWeight = AppStyleDesignSystem.iOSFontWeights.regular
+                style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE
             )
-            TextUtils.StandardText(
+            Text(
                 text = greeting,
-                color = Color.Gray,
-                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize
+                style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE
             )
         }
         Icon(

@@ -56,7 +56,7 @@ fun PersonLedgerItem(
             // Avatar
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .background(
                         person.avatarColor,
                         CircleShape

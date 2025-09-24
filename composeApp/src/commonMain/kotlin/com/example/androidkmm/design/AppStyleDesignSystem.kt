@@ -28,10 +28,16 @@ object AppStyleDesignSystem {
             lineHeight = 34.sp
         )
         
-        val TITLE_1 = TextStyle(
+        val MAIN_PAGE_HEADING_TITLE = TextStyle(
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             lineHeight = 30.sp
+        )
+
+        val TRANSACTION_DATE_HEADING = TextStyle(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 20.sp
         )
         
         val TITLE_2 = TextStyle(
@@ -40,9 +46,9 @@ object AppStyleDesignSystem {
             lineHeight = 26.sp
         )
         
-        val TITLE_3 = TextStyle(
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
+        val MAIN_PAGE_SUBHEADING_TITLE = TextStyle(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal,
             lineHeight = 24.sp
         )
         
@@ -53,7 +59,7 @@ object AppStyleDesignSystem {
         )
         
         val BODY = TextStyle(
-            fontSize = 15.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             lineHeight = 20.sp
         )
@@ -91,8 +97,11 @@ object AppStyleDesignSystem {
 
     // iOS-inspired Padding System
     object Padding {
+        val SCREEN_VERTICAL = 16.dp
+        val SCREEN_SECTION_SPACING = 16.dp
+
         val XXS = 1.dp
-        val XS = 3.dp
+        val XS = 4.dp
         val SMALL = 6.dp
         val SMALL_MEDIUM = 9.dp
         val MEDIUM = 12.dp
@@ -103,8 +112,8 @@ object AppStyleDesignSystem {
         val XXXL = 48.dp
 
         // Screen Padding
-        val SCREEN_HORIZONTAL = 12.dp
-        val SCREEN_VERTICAL = 16.dp
+        val SCREEN_HORIZONTAL = 16.dp
+
 
         // Card Padding
         val CARD_PADDING = 12.dp
@@ -122,19 +131,22 @@ object AppStyleDesignSystem {
         val ARRANGEMENT_TINY = 4.dp
         val ARRANGEMENT_SMALL = 8.dp
         val ARRANGEMENT_MEDIUM = 12.dp
-        val ARRANGEMENT_LARGE = 16.dp
+
         val ARRANGEMENT_XL = 20.dp
         val ARRANGEMENT_XXL = 24.dp
     }
 
     // iOS-inspired Component Sizes
     object Sizes {
+
+        val MONTH_SLIDER_ICON_SIZE = 36.dp
+        val ICON_SIZE_SMALL = 16.dp
         val BUTTON_HEIGHT = 44.dp
         val INPUT_HEIGHT = 44.dp
         
         // Icon Sizes
         val ICON_SIZE_TINY = 12.dp
-        val ICON_SIZE_SMALL = 16.dp
+
         val ICON_SIZE_MEDIUM = 20.dp
         val ICON_SIZE_LARGE = 24.dp
         val ICON_SIZE_XL = 32.dp
@@ -147,7 +159,9 @@ object AppStyleDesignSystem {
         // Avatar Sizes
         val AVATAR_SMALL = 32.dp
         val AVATAR_MEDIUM = 40.dp
-        val AVATAR_LARGE = 48.dp
+        val ICON_BUTTON_SIZE = 48.dp
+
+        val ICON__SIZE = 28.dp
         val AVATAR_XL = 60.dp
         
         // Border Widths

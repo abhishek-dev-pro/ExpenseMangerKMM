@@ -47,7 +47,7 @@ fun SimpleDatePickerDialog(
                 Text(
                     text = "Select Date",
                     color = LedgerTheme.textPrimary(),
-                    fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
+                    fontSize = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE.fontSize,
                     fontWeight = FontWeight.SemiBold
                 )
             },

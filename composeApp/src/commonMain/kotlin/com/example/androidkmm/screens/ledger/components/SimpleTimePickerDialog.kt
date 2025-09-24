@@ -35,7 +35,7 @@ fun SimpleTimePickerDialog(
                 Text(
                     text = "Select Time",
                     color = LedgerTheme.textPrimary(),
-                    fontSize = AppStyleDesignSystem.Typography.TITLE_3.fontSize,
+                    fontSize = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE.fontSize,
                     fontWeight = FontWeight.SemiBold
                 )
             },

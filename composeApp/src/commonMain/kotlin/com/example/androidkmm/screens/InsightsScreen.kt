@@ -81,8 +81,7 @@ fun InsightsScreen(
         // Title
         Text(
             text = "Financial Insights",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = AppStyleDesignSystem.Typography.TITLE_3,
+            style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = AppStyleDesignSystem.Padding.LARGE, vertical = AppStyleDesignSystem.Padding.SMALL)
@@ -327,7 +326,7 @@ private fun MonthSelectorCard(
             ) {
                 Text(
                     text = "${monthNames[currentMonth - 1]} $currentYear",
-                    style = AppStyleDesignSystem.Typography.TITLE_3,
+                    style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(

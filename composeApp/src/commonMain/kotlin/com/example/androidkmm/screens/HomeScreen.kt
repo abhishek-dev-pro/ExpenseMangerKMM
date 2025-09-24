@@ -41,7 +41,8 @@ fun HomeScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+            .padding(top = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
         verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
     ) {
 

@@ -166,7 +166,7 @@ fun EditLedgerEntryBottomSheet(
                                     imageVector = Icons.Default.Warning,
                                     contentDescription = null,
                                     tint = Color(0xFFD32F2F),
-                                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                                 )
                                 Spacer(Modifier.height(8.dp))
                                 Text(

@@ -40,7 +40,7 @@ fun GroupItem(
             // Group icon - same style as transaction category icon
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE))
                     .background(color),
                 contentAlignment = Alignment.Center

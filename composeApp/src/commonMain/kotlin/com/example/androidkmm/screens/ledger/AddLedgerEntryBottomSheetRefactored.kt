@@ -1,7 +1,6 @@
 package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -14,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
@@ -25,9 +23,6 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.components.*
-import com.example.androidkmm.screens.ledger.TransactionType
-import com.example.androidkmm.screens.ledger.LedgerPerson
-import com.example.androidkmm.screens.ledger.LedgerTheme
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -396,7 +391,7 @@ fun AddLedgerEntryBottomSheetRefactored(
             }
             
             item {
-                Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE))
+                Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING))
             }
         }
         

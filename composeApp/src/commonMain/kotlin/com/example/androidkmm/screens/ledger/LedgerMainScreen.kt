@@ -122,33 +122,31 @@ fun LedgerMainScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LedgerTheme.backgroundColor())
+            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+            .padding(top = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
     ) {
         // Header
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
                 Text(
                     text = "Ledger",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = LedgerTheme.textPrimary()
+                    style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE
                 )
                 Text(
                     text = "Track borrowed & lent money",
-                    fontSize = 16.sp,
-                    color = LedgerTheme.textSecondary()
+                    style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE
                 )
             }
 
             IconButton(
                 onClick = { showAddBottomSheet = true },
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .background(
                         Color.White,
                         CircleShape
@@ -158,7 +156,7 @@ fun LedgerMainScreen(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
                     tint = Color.Black,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON__SIZE)
                 )
             }
         }

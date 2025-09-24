@@ -450,7 +450,7 @@ fun ProfileScreen(
                             ) {
                                 Text(
                                     text = userName,
-                                    style = AppStyleDesignSystem.Typography.TITLE_1,
+                                    style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
 
@@ -650,7 +650,7 @@ fun ProfileScreen(
             },
             text = {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+                    verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
                 ) {
                     // Name Input
                     OutlinedTextField(
@@ -849,7 +849,7 @@ fun MenuCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
@@ -1359,7 +1359,7 @@ private fun CategoryCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1406,7 +1406,7 @@ private fun CustomCategoryItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(CircleShape)
                     .background(category.color),
                 contentAlignment = Alignment.Center
@@ -1937,7 +1937,7 @@ fun AddCategoryBottomSheet(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                         .clip(CircleShape)
                         .background(selectedColor),
                     contentAlignment = Alignment.Center
@@ -2380,7 +2380,7 @@ fun CustomizeScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
     ) {
         item {
             // Header with back button
@@ -2672,7 +2672,7 @@ fun CategoriesScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 20.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
     ) {
         // Header with back button
         Row(
@@ -2784,7 +2784,7 @@ fun CarryForwardToggle() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),

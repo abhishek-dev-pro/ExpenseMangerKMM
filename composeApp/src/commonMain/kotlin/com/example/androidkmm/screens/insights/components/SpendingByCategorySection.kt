@@ -66,7 +66,7 @@ fun SpendingByCategorySection(
         ) {
             Text(
                 text = "Spending by Category",
-                style = AppStyleDesignSystem.Typography.TITLE_3,
+                style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE,
                 color = MaterialTheme.colorScheme.onSurface
             )
             

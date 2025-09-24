@@ -13,8 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
@@ -84,7 +82,7 @@ fun RecentTransactionsSection(
         ) {
             Text(
                 text = "Recent Transactions",
-                style = AppStyleDesignSystem.Typography.TITLE_3,
+                style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE,
                 color = MaterialTheme.colorScheme.onBackground
             )
             
@@ -156,7 +154,7 @@ fun RecentTransactionsSection(
                         imageVector = Icons.Default.Receipt,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                         Text(
@@ -205,7 +203,7 @@ currencySymbol: String
             // Category icon - more prominent like restaurant example
             Box(
                 modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
+                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
                     .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE))
                     .background(transaction.categoryColor),
                 contentAlignment = Alignment.Center
