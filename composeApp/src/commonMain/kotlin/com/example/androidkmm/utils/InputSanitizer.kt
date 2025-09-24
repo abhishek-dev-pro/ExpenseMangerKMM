@@ -150,7 +150,7 @@ object InputSanitizer {
             sanitized.isEmpty() -> Pair("", "Amount is required")
             sanitized.toDoubleOrNull() == null -> Pair(sanitized, "Invalid amount format")
             sanitized.toDoubleOrNull()!! <= 0 -> Pair(sanitized, "Amount must be positive")
-            sanitized.toDoubleOrNull()!! > 999999.99 -> Pair(sanitized, "Amount is too large")
+            sanitized.toDoubleOrNull()!! > 9999999999.99 -> Pair(sanitized, "Amount is too large")
             else -> Pair(sanitized, null)
         }
     }

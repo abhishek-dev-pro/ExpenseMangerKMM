@@ -350,55 +350,126 @@ fun BalanceCard(
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Incoming amount (green with arrow down)
+                // Check if amounts are very large (more than 6 digits) to determine layout
+                val incomingAmount = todaysChange.first
+                val outgoingAmount = todaysChange.second
+                val isLargeAmount = incomingAmount >= 1000000 || outgoingAmount >= 1000000
+                
+                if (isLargeAmount) {
+                    // Two-line layout for large amounts - keep label in center
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Incoming",
-                            tint = Color(0xFF4CAF50),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", todaysChange.first)}" else "••••",
-                            color = Color(0xFF4CAF50),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        // Incoming amount (green with arrow down)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Incoming",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", incomingAmount)}" else "••••",
+                                color = Color(0xFF4CAF50),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        
+                        // Today's Overview label in the center (two lines)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Today's",
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "Overview",
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                        
+                        // Outgoing amount (red with arrow up)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", outgoingAmount)}" else "••••",
+                                color = Color(0xFFF44336),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Outgoing",
+                                tint = Color(0xFFF44336),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
-                    
-                    // Today's Overview label in the center
-                    Text(
-                        text = "Today's Overview",
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    
-                    // Outgoing amount (red with arrow up)
+                } else {
+                    // Single-line layout for normal amounts
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Incoming amount (green with arrow down)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Incoming",
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", incomingAmount)}" else "••••",
+                                color = Color(0xFF4CAF50),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        
+                        // Today's Overview label in the center (single line)
                         Text(
-                            text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", todaysChange.second)}" else "••••",
-                            color = Color(0xFFF44336),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
+                            text = "Today's Overview",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Outgoing",
-                            tint = Color(0xFFF44336),
-                            modifier = Modifier.size(16.dp)
-                        )
+                        
+                        // Outgoing amount (red with arrow up)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (isBalanceVisible) "$currencySymbol${String.format("%.2f", outgoingAmount)}" else "••••",
+                                color = Color(0xFFF44336),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Outgoing",
+                                tint = Color(0xFFF44336),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }

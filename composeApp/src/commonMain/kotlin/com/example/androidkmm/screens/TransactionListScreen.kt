@@ -3708,7 +3708,9 @@ fun EditTransactionScreen(
                         val filteredValue =
                             newValue.filter { char -> char.isDigit() || char == '.' }
                         val decimalCount = filteredValue.count { char -> char == '.' }
-                        if (decimalCount <= 1) {
+                        // Limit to maximum 10 digits (excluding decimal point)
+                        val digitsOnly = filteredValue.filter { char -> char.isDigit() }
+                        if (decimalCount <= 1 && digitsOnly.length <= 10) {
                             amount = filteredValue
                         }
                     },

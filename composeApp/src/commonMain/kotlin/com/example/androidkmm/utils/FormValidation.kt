@@ -51,7 +51,7 @@ object FormValidation {
             amount.isBlank() -> errors["amount"] = "Amount is required"
             amount.toDoubleOrNull() == null -> errors["amount"] = "Please enter a valid amount"
             amount.toDoubleOrNull()!! <= 0 -> errors["amount"] = "Amount must be greater than 0"
-            amount.toDoubleOrNull()!! > 999999.99 -> errors["amount"] = "Amount is too large"
+            amount.toDoubleOrNull()!! > 9999999999.99 -> errors["amount"] = "Amount is too large"
         }
         
         return ValidationResult(errors.isEmpty(), errors)

@@ -38,8 +38,14 @@ fun AmountInputSection(
                         char.isDigit() || char == '.'
                     }
                     
-                    // Check if it's a valid decimal format
-                    if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$"))) {
+                    // Limit to maximum 10 digits (excluding decimal point)
+                    val digitsOnly = filtered.filter { char -> char.isDigit() }
+                    val decimalCount = filtered.count { char -> char == '.' }
+                    
+                    // Check if it's a valid decimal format and within digit limit
+                    if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$")) && 
+                        digitsOnly.length <= 10 && 
+                        decimalCount <= 1) {
                         onAmountChanged(filtered)
                     }
                 },

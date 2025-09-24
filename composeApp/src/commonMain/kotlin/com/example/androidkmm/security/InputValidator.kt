@@ -96,7 +96,7 @@ object InputValidator {
                 return ValidationResult(false, "Amount must be greater than 0")
             }
             
-            if (numericAmount > 999999.99) {
+            if (numericAmount > 9999999999.99) {
                 return ValidationResult(false, "Amount is too large")
             }
             
