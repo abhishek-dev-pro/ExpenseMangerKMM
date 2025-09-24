@@ -6,6 +6,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -41,14 +44,36 @@ fun AddAccountBottomSheet(
     var selectedAccountType by remember { mutableStateOf("Bank Account") }
     var initialBalance by remember { mutableStateOf("") }
 
-    // Validation logic - button should be enabled when account name is filled
-    val isFormValid = accountName.isNotEmpty()
+    // Get all existing accounts for duplicate validation
+    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>()).value
+    
+    // Check for duplicate account (same name and type)
+    val isDuplicateAccount = allAccounts.any { existingAccount ->
+        existingAccount.name.equals(accountName, ignoreCase = true) && 
+        existingAccount.type == selectedAccountType
+    }
+    
+    // Validation logic - button should be enabled when account name is filled and not duplicate
+    val isFormValid = accountName.isNotEmpty() && !isDuplicateAccount
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(24.dp)
     ) {
+        // Subtle top border line
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(0.5.dp)
+                )
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
         // Account Name Section
         Text(
             text = "Account Name",
@@ -59,25 +84,29 @@ fun AddAccountBottomSheet(
 
         Spacer(modifier = Modifier.height(6.dp))
 
+        // Account Name Input with focus handling
+        val nameInteractionSource = remember { MutableInteractionSource() }
+        val isNameFocused = nameInteractionSource.collectIsFocusedAsState()
+        
         BasicTextField(
             value = accountName,
             onValueChange = { newValue ->
-                // Limit to 24 characters and capitalize first letter
-                val capitalizedValue = if (newValue.isNotEmpty()) {
-                    newValue.take(24).replaceFirstChar { it.uppercase() }
-                } else {
-                    newValue
-                }
-                accountName = capitalizedValue
+                // Limit to 24 characters only, don't capitalize while typing
+                accountName = newValue.take(24)
             },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+            cursorBrush = SolidColor(Color.White),
+            interactionSource = nameInteractionSource,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(12.dp))
+                .background(
+                    if (isNameFocused.value) Color.Gray.copy(alpha = 0.3f) else Color.Black,
+                    RoundedCornerShape(12.dp)
+                )
                 .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
-                if (accountName.isEmpty()) {
+                if (accountName.isEmpty() && !isNameFocused.value) {
                     Text(
                         text = "e.g. HDFC Savings, Cash Wallet",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -87,6 +116,16 @@ fun AddAccountBottomSheet(
                 innerTextField()
             }
         )
+
+        // Show duplicate account warning
+        if (isDuplicateAccount && accountName.isNotEmpty()) {
+            Text(
+                text = "An account with this name and type already exists",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -126,7 +165,7 @@ fun AddAccountBottomSheet(
             item {
                 SharedAccountTypeCard(
                     title = "Cash",
-                    icon = Icons.Default.AttachMoney,
+                    icon = Icons.Default.Money,
                     iconColor = Color(0xFFFF6D01),
                     isSelected = selectedAccountType == "Cash",
                     onClick = { selectedAccountType = "Cash" }
@@ -155,6 +194,10 @@ fun AddAccountBottomSheet(
 
         Spacer(modifier = Modifier.height(6.dp))
 
+        // Amount Input with focus handling
+        val amountInteractionSource = remember { MutableInteractionSource() }
+        val isAmountFocused = amountInteractionSource.collectIsFocusedAsState()
+        
         BasicTextField(
             value = initialBalance,
             onValueChange = { newValue ->
@@ -165,14 +208,19 @@ fun AddAccountBottomSheet(
                 }
             },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+            cursorBrush = SolidColor(Color.White),
+            interactionSource = amountInteractionSource,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(12.dp))
+                .background(
+                    if (isAmountFocused.value) Color.Gray.copy(alpha = 0.3f) else Color.Black,
+                    RoundedCornerShape(12.dp)
+                )
                 .border(0.5.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
             decorationBox = { innerTextField ->
-                if (initialBalance.isEmpty()) {
+                if (initialBalance.isEmpty() && !isAmountFocused.value) {
                     Text(
                         text = "Enter amount",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -188,14 +236,27 @@ fun AddAccountBottomSheet(
         // Add Account Button
         Button(
             onClick = {
+                // Capitalize first letter of every word when saving
+                val capitalizedAccountName = if (accountName.isNotEmpty()) {
+                    accountName.split(" ").joinToString(" ") { word ->
+                        if (word.isNotEmpty()) {
+                            word.replaceFirstChar { it.uppercase() }
+                        } else {
+                            word
+                        }
+                    }
+                } else {
+                    accountName
+                }
+                
                 val account = Account(
                     id = System.currentTimeMillis().toString(),
-                    name = accountName,
+                    name = capitalizedAccountName,
                     balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
                         "Credit/Debit Card" -> Icons.Default.CreditCard
-                        "Cash" -> Icons.Default.AttachMoney
+                        "Cash" -> Icons.Default.Money
                         "Digital Wallet" -> Icons.Default.Wallet
                         else -> Icons.Default.AccountBalance
                     },

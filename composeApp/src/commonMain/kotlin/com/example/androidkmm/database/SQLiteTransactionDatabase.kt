@@ -810,7 +810,7 @@ class SQLiteTransactionDatabase(
                 database.categoryDatabaseQueries.deleteAllAccounts()
                 
                 // Re-insert default account (Cash) with dynamic currency symbol
-                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "AttachMoney", "#FF4CAF50", "CASH", 0)
+                database.categoryDatabaseQueries.insertAccount("1", "Cash", "${currencySymbol}0", "Money", "#FF4CAF50", "CASH", 0)
             }
         }
     }
@@ -820,6 +820,7 @@ class SQLiteTransactionDatabase(
 private val transactionIconMap = mapOf(
     "Restaurant" to Icons.Default.Restaurant,
     "AttachMoney" to Icons.Default.AttachMoney,
+    "Money" to Icons.Default.Money,
     "ShoppingCart" to Icons.Default.ShoppingCart,
     "SwapHoriz" to Icons.Default.SwapHoriz,
     "AccountBalance" to Icons.Default.AccountBalance,

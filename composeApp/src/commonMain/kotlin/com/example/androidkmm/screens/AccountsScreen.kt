@@ -415,12 +415,25 @@ private fun EditAccountBottomSheet(
     // Check if this is a Cash account
     val isCashAccount = account.name.equals("Cash", ignoreCase = true)
     
+    // Get all existing accounts for duplicate validation
+    val allAccounts = accountDatabaseManager.getAllAccounts().collectAsState(initial = emptyList<Account>()).value
+    
+    // Check for duplicate account (same name and type, excluding current account)
+    val isDuplicateAccount = allAccounts.any { existingAccount ->
+        existingAccount.id != account.id && // Exclude current account
+        existingAccount.name.equals(accountName, ignoreCase = true) && 
+        existingAccount.type == selectedAccountType
+    }
+    
     // Track if any changes have been made
     val hasChanges = remember(accountName, selectedAccountType, initialBalance) {
         accountName != account.name ||
         selectedAccountType != account.type ||
         initialBalance != account.balance
     }
+    
+    // Form is valid if there are changes and no duplicate
+    val isFormValid = hasChanges && !isDuplicateAccount
 
 
     Column(
@@ -440,7 +453,7 @@ private fun EditAccountBottomSheet(
 
         BasicTextField(
             value = accountName,
-            onValueChange = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { accountName = it } },
+            onValueChange = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { accountName = it.take(24) } },
             textStyle = TextStyle(
                 color = if (isCashAccount) Color.Gray else Color.White, 
                 fontSize = 16.sp
@@ -465,6 +478,16 @@ private fun EditAccountBottomSheet(
                 innerTextField()
             }
         )
+
+        // Show duplicate account warning
+        if (isDuplicateAccount && accountName.isNotEmpty()) {
+            Text(
+                text = "An account with this name and type already exists",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -504,7 +527,7 @@ private fun EditAccountBottomSheet(
             item {
                 AccountsAccountTypeCard(
                     title = "Cash",
-                    icon = Icons.Default.AttachMoney,
+                    icon = Icons.Default.Money,
                     iconColor = if (isCashAccount) Color.Gray else Color(0xFFFF6D01),
                     isSelected = selectedAccountType == "Cash",
                     onClick = if (isCashAccount) { { /* Disabled for Cash account */ } } else { { selectedAccountType = "Cash" } }
@@ -568,8 +591,21 @@ private fun EditAccountBottomSheet(
         // Update Account Button
         Button(
             onClick = {
+                // Capitalize first letter of every word when saving
+                val capitalizedAccountName = if (accountName.isNotEmpty()) {
+                    accountName.split(" ").joinToString(" ") { word ->
+                        if (word.isNotEmpty()) {
+                            word.replaceFirstChar { it.uppercase() }
+                        } else {
+                            word
+                        }
+                    }
+                } else {
+                    accountName
+                }
+                
                 val updatedAccount = account.copy(
-                    name = accountName.ifEmpty { selectedAccountType },
+                    name = capitalizedAccountName.ifEmpty { selectedAccountType },
                     balance = initialBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
@@ -587,8 +623,9 @@ private fun EditAccountBottomSheet(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             shape = RoundedCornerShape(12.dp),
+            enabled = isFormValid,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (hasChanges) Color(0xFF4285F4) else Color(0xFF6C6C6C)
+                containerColor = if (isFormValid) Color(0xFF4285F4) else Color(0xFF6C6C6C)
             )
         ) {
             Text(
@@ -743,23 +780,12 @@ private fun NewAccountCard(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.TrendingUp,
-                            contentDescription = "Trend",
-                            tint = AccountsGreenSuccess,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "+$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
-                            fontSize = 14.sp,
-                            color = AccountsGreenSuccess,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        fontSize = 14.sp,
+                        color = AccountsGreenSuccess,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
 
