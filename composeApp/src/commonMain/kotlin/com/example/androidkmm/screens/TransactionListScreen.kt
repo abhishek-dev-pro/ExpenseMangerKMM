@@ -1292,26 +1292,27 @@ fun AddTransactionScreen(
             ),
         )
         
-        // Scrollable content - using Column with verticalScroll instead of LazyColumn
-        Column(
+        // Scrollable content - using LazyColumn like ledger for better scrolling
+        LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
-                .padding(bottom = 16.dp), // Add bottom padding for better scrolling
+                .weight(1f)
+                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+            contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
         ) {
-            AddTransactionContent(
-                formData = formData,
-                onFormDataChange = { formData = it },
-                onShowCategorySheet = { showCategorySheet = true },
-                onShowFromAccountSheet = { showFromAccountSheet = true },
-                onShowToAccountSheet = { showToAccountSheet = true },
-                onShowDatePicker = { showDatePicker = true },
-                onShowTimePicker = { showTimePicker = true },
-                onSave = { onSave(formData) },
-                onDismiss = onDismiss
-            )
+            item {
+                AddTransactionContent(
+                    formData = formData,
+                    onFormDataChange = { formData = it },
+                    onShowCategorySheet = { showCategorySheet = true },
+                    onShowFromAccountSheet = { showFromAccountSheet = true },
+                    onShowToAccountSheet = { showToAccountSheet = true },
+                    onShowDatePicker = { showDatePicker = true },
+                    onShowTimePicker = { showTimePicker = true },
+                    onSave = { onSave(formData) },
+                    onDismiss = onDismiss
+                )
+            }
         }
     }
 

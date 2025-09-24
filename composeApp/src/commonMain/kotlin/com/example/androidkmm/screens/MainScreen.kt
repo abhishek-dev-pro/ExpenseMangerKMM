@@ -206,97 +206,97 @@ fun MainScreen() {
                         transactionDatabaseManager = transactionDatabaseManager
                     )
                 }
-            }
-            
-            // Add Transaction Screen
-            if (showAddTransactionSheet) {
-                AddTransactionScreen(
-                    onDismiss = { 
-                        showAddTransactionSheet = false
-                        defaultTransactionType = null
-                        // Trigger refresh when returning to home screen
-                        homeScreenRefreshTrigger++
-                        println("DEBUG: MainScreen - Triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
-                    },
-                    onSave = { transactionFormData: com.example.androidkmm.models.TransactionFormData ->
-                        // Convert TransactionFormData to Transaction and save to database
-                        val transaction = com.example.androidkmm.models.Transaction(
-                            id = "${kotlin.time.Clock.System.now().epochSeconds}",
-                            title = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER && transactionFormData.title.isBlank()) {
-                                "Transfer from ${transactionFormData.account?.name ?: ""} to ${transactionFormData.toAccount?.name ?: ""}"
-                            } else {
-                                transactionFormData.title
-                            },
-                            amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
-                            category = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),
-                            categoryIcon = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) Icons.Default.SwapHoriz else (transactionFormData.category?.icon ?: Icons.Default.Category),
-                            categoryColor = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) Color(0xFF3B82F6) else (transactionFormData.category?.color ?: Color.Gray),
-                            account = transactionFormData.account?.name ?: "",
-                            transferTo = transactionFormData.toAccount?.name,
-                            time = transactionFormData.time,
-                            type = com.example.androidkmm.models.TransactionType.valueOf(transactionFormData.type.name),
-                            description = transactionFormData.description,
-                            date = transactionFormData.date,
-                            accountIcon = transactionFormData.account?.icon ?: Icons.Default.AccountBalance,
-                            accountColor = transactionFormData.account?.color ?: Color.Blue
-                        )
-                        
-                        transactionDatabaseManager.addTransactionWithBalanceUpdate(
-                            transaction = transaction,
-                            accountDatabaseManager = accountDatabaseManager,
-                            onSuccess = {
-                                showAddTransactionSheet = false
-                                defaultTransactionType = null
-                                // Trigger refresh when transaction is saved
-                                homeScreenRefreshTrigger++
-                                println("DEBUG: MainScreen - Transaction saved, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
-                            },
-                            onError = { error ->
-                                println("DEBUG: MainScreen - Transaction failed: ${error.message}")
-                                // Check if it's an insufficient balance error
-                                if (error.message?.startsWith("Insufficient balance in source account") == true) {
-                                    println("DEBUG: MainScreen - Insufficient balance detected, showing dialog")
-                                    val parts = error.message!!.split("Available: ", ", Required: ")
-                                    if (parts.size >= 3) {
-                                        val accountName = error.message!!.substringAfter("source account '").substringBefore("'")
-                                        val currentBalance = parts[1].toDoubleOrNull() ?: 0.0
-                                        val requiredAmount = parts[2].toDoubleOrNull() ?: 0.0
-
-                                        // Show insufficient balance dialog
-                                        println("DEBUG: MainScreen - Setting showInsufficientBalanceDialog = true")
-                                        showInsufficientBalanceDialog = true
-                                        insufficientBalanceInfo = com.example.androidkmm.models.InsufficientBalanceInfo(
-                                            accountName = accountName,
-                                            currentBalance = currentBalance,
-                                            requiredAmount = requiredAmount
-                                        )
-                                        println("DEBUG: MainScreen - Dialog state set - showInsufficientBalanceDialog: $showInsufficientBalanceDialog, insufficientBalanceInfo: $insufficientBalanceInfo")
-                                    }
-                                }
-                            }
-                        )
-                    },
-                    categoryDatabaseManager = categoryDatabaseManager,
-                    accountDatabaseManager = accountDatabaseManager,
-                    defaultTransactionType = defaultTransactionType
-                )
-            }
-            
-            // Add Ledger Entry Full Screen
-            if (showAddLedgerEntrySheet) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.5f))
-                ) {
-                    AddLedgerEntryBottomSheet(
+                
+                // Show Add Transaction Screen
+                if (showAddTransactionSheet) {
+                    AddTransactionScreen(
                         onDismiss = { 
-                            showAddLedgerEntrySheet = false
+                            showAddTransactionSheet = false
+                            defaultTransactionType = null
                             // Trigger refresh when returning to home screen
                             homeScreenRefreshTrigger++
-                            println("DEBUG: MainScreen - Ledger entry dismissed, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
-                        }
+                            println("DEBUG: MainScreen - Triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
+                        },
+                        onSave = { transactionFormData: com.example.androidkmm.models.TransactionFormData ->
+                            // Convert TransactionFormData to Transaction and save to database
+                            val transaction = com.example.androidkmm.models.Transaction(
+                                id = "${kotlin.time.Clock.System.now().epochSeconds}",
+                                title = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER && transactionFormData.title.isBlank()) {
+                                    "Transfer from ${transactionFormData.account?.name ?: ""} to ${transactionFormData.toAccount?.name ?: ""}"
+                                } else {
+                                    transactionFormData.title
+                                },
+                                amount = transactionFormData.amount.toDoubleOrNull() ?: 0.0,
+                                category = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) "Transfer" else (transactionFormData.category?.name ?: ""),
+                                categoryIcon = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) Icons.Default.SwapHoriz else (transactionFormData.category?.icon ?: Icons.Default.Category),
+                                categoryColor = if (transactionFormData.type == com.example.androidkmm.models.TransactionType.TRANSFER) Color(0xFF3B82F6) else (transactionFormData.category?.color ?: Color.Gray),
+                                account = transactionFormData.account?.name ?: "",
+                                transferTo = transactionFormData.toAccount?.name,
+                                time = transactionFormData.time,
+                                type = com.example.androidkmm.models.TransactionType.valueOf(transactionFormData.type.name),
+                                description = transactionFormData.description,
+                                date = transactionFormData.date,
+                                accountIcon = transactionFormData.account?.icon ?: Icons.Default.AccountBalance,
+                                accountColor = transactionFormData.account?.color ?: Color.Blue
+                            )
+                            
+                            transactionDatabaseManager.addTransactionWithBalanceUpdate(
+                                transaction = transaction,
+                                accountDatabaseManager = accountDatabaseManager,
+                                onSuccess = {
+                                    showAddTransactionSheet = false
+                                    defaultTransactionType = null
+                                    // Trigger refresh when transaction is saved
+                                    homeScreenRefreshTrigger++
+                                    println("DEBUG: MainScreen - Transaction saved, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
+                                },
+                                onError = { error ->
+                                    println("DEBUG: MainScreen - Transaction failed: ${error.message}")
+                                    // Check if it's an insufficient balance error
+                                    if (error.message?.startsWith("Insufficient balance in source account") == true) {
+                                        println("DEBUG: MainScreen - Insufficient balance detected, showing dialog")
+                                        val parts = error.message!!.split("Available: ", ", Required: ")
+                                        if (parts.size >= 3) {
+                                            val accountName = error.message!!.substringAfter("source account '").substringBefore("'")
+                                            val currentBalance = parts[1].toDoubleOrNull() ?: 0.0
+                                            val requiredAmount = parts[2].toDoubleOrNull() ?: 0.0
+
+                                            // Show insufficient balance dialog
+                                            println("DEBUG: MainScreen - Setting showInsufficientBalanceDialog = true")
+                                            showInsufficientBalanceDialog = true
+                                            insufficientBalanceInfo = com.example.androidkmm.models.InsufficientBalanceInfo(
+                                                accountName = accountName,
+                                                currentBalance = currentBalance,
+                                                requiredAmount = requiredAmount
+                                            )
+                                            println("DEBUG: MainScreen - Dialog state set - showInsufficientBalanceDialog: $showInsufficientBalanceDialog, insufficientBalanceInfo: $insufficientBalanceInfo")
+                                        }
+                                    }
+                                }
+                            )
+                        },
+                        categoryDatabaseManager = categoryDatabaseManager,
+                        accountDatabaseManager = accountDatabaseManager,
+                        defaultTransactionType = defaultTransactionType
                     )
+                }
+                
+                // Show Add Ledger Entry Full Screen
+                if (showAddLedgerEntrySheet) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.5f))
+                    ) {
+                        AddLedgerEntryBottomSheet(
+                            onDismiss = { 
+                                showAddLedgerEntrySheet = false
+                                // Trigger refresh when returning to home screen
+                                homeScreenRefreshTrigger++
+                                println("DEBUG: MainScreen - Ledger entry dismissed, triggering home screen refresh (trigger: $homeScreenRefreshTrigger)")
+                            }
+                        )
+                    }
                 }
             }
             

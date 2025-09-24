@@ -108,10 +108,10 @@ fun AddExpenseScreen(
             )
         )
 
-        // Content
+        // Content - Make it scrollable with proper constraints
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
         ) {
