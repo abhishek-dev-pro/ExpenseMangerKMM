@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.AppStyleDesignSystem
@@ -102,7 +103,9 @@ fun InsightsScreen(
                             text = title,
                             style = AppStyleDesignSystem.Typography.BODY.copy(
                                 fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal
-                            )
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 )

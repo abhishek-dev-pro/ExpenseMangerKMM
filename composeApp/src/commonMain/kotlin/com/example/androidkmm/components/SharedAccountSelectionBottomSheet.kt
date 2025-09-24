@@ -237,25 +237,14 @@ private fun SharedAccountCard(
             }
 
             // Balance on the right
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
-            ) {
-                // Green arrow up icon
-                Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = null,
-                    tint = Color(0xFF00A63E),
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
-                )
-
-                Text(
-                    text = account.balance,
-                    color = Color(0xFF00A63E),
-                    style = AppStyleDesignSystem.Typography.BODY,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+            Text(
+                text = account.balance,
+                color = Color(0xFF00A63E),
+                style = AppStyleDesignSystem.Typography.BODY.copy(
+                    fontSize = 16.sp // Increased from default body size
+                ),
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }

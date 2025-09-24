@@ -49,6 +49,7 @@ import com.example.androidkmm.theme.AppColors
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.TextUnit
@@ -1310,7 +1311,8 @@ fun AddTransactionScreen(
                     onShowDatePicker = { showDatePicker = true },
                     onShowTimePicker = { showTimePicker = true },
                     onSave = { onSave(formData) },
-                    onDismiss = onDismiss
+                    onDismiss = onDismiss,
+                    focusManager = LocalFocusManager.current
                 )
             }
         }
@@ -1458,7 +1460,8 @@ private fun AddTransactionContent(
     onShowDatePicker: () -> Unit,
     onShowTimePicker: () -> Unit,
     onSave: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    focusManager: androidx.compose.ui.focus.FocusManager
 ) {
     // Use iOS design system with reduced spacing for more compact form
     val spacing = AppStyleDesignSystem.Padding.MEDIUM
@@ -1474,6 +1477,16 @@ private fun AddTransactionContent(
     
     // Track if user has attempted to submit
     var hasAttemptedSubmit by remember { mutableStateOf(false) }
+    
+    // Focus manager to clear focus when transaction type changes
+    val focusManager = LocalFocusManager.current
+    
+    // Clear focus and validation errors when transaction type changes
+    LaunchedEffect(formData.type) {
+        focusManager.clearFocus()
+        validationErrors = emptyMap()
+        hasAttemptedSubmit = false
+    }
     
     // Validation function using standardized validation
     fun validateForm(): Boolean {
@@ -1557,7 +1570,11 @@ private fun AddTransactionContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(), // Ensure content wraps properly
+            .wrapContentHeight() // Ensure content wraps properly
+            .clickable { 
+                // Clear focus when tapping empty space
+                focusManager.clearFocus()
+            },
         verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         // Transaction Type Selector
@@ -1592,24 +1609,28 @@ private fun AddTransactionContent(
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "From Account",
+                                title = "From Account *",
                                 selectedText = formData.account?.name ?: "Select",
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowFromAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("account"),
+                                errorMessage = validationErrors["account"]
                             )
 
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "To Account",
+                                title = "To Account *",
                                 selectedText = formData.toAccount?.name ?: "Select",
                                 icon = formData.toAccount?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.toAccount?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                 onClick = onShowToAccountSheet,
                                 labelFontSize = labelFontSize,
-                                inputHeight = inputHeight
+                                inputHeight = inputHeight,
+                                isError = validationErrors.containsKey("toAccount"),
+                                errorMessage = validationErrors["toAccount"]
                             )
             }
         } else {
@@ -1620,7 +1641,7 @@ private fun AddTransactionContent(
             ) {
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "Category",
+                                title = "Category *",
                                 selectedText = formData.category?.name ?: "Select",
                                 icon = formData.category?.icon ?: Icons.Default.Category,
                                 iconColor = formData.category?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1633,7 +1654,7 @@ private fun AddTransactionContent(
 
                             CategoryAccountSelector(
                                 modifier = Modifier.weight(1f),
-                                title = "Account",
+                                title = "Account *",
                                 selectedText = formData.account?.name ?: "Select",
                                 icon = formData.account?.icon ?: Icons.Default.CreditCard,
                                 iconColor = formData.account?.color ?: MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1648,7 +1669,7 @@ private fun AddTransactionContent(
 
         // Title Input
         InputField(
-            label = "Title",
+            label = if (formData.type == TransactionType.TRANSFER) "Title" else "Title *",
             value = formData.title,
             onValueChange = { title ->
                 // Limit title to 30 characters
