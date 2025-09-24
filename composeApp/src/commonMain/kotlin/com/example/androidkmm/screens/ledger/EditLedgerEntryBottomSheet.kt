@@ -677,10 +677,14 @@ fun EditLedgerEntryBottomSheet(
     if (showAccountSelection) {
         AccountSelectionBottomSheet(
             onDismiss = { showAccountSelection = false },
+            title = "Select Account",
+            subtitle = "Choose an account for your transaction",
             onAccountSelected = { account ->
                 selectedAccount = account
                 showAccountSelection = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { /* TODO: Add account functionality for ledger */ }
         )
     }
 }

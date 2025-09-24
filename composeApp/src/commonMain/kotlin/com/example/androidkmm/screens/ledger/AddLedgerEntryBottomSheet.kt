@@ -877,7 +877,9 @@ fun AddLedgerEntryBottomSheet(
             onAccountSelected = { account ->
                 selectedAccount = account
                 showAccountSelection = false
-            }
+            },
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = { /* TODO: Add account functionality for ledger */ }
         )
     }
     
