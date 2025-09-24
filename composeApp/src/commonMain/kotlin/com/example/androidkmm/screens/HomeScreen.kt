@@ -79,8 +79,6 @@ fun HomeScreenContent(
 
 
 
-
-
 /**
  * Group highlights section
  */
