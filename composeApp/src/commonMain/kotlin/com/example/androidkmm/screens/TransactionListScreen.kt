@@ -1316,36 +1316,50 @@ fun AddTransactionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.background),
     ) {
         // Header with back button
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Add Transaction",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            navigationIcon = {
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+                .padding(top = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            Text(
+                text = "Add Transaction",
+                style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
                     )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-        )
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                )
+            }
+        }
+
 
         // Scrollable content - using LazyColumn like ledger for better scrolling
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+                .padding(top = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
             contentPadding = PaddingValues(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SECTION_SPACING)
         ) {
             item {
                 AddTransactionContent(
@@ -1510,7 +1524,7 @@ private fun AddTransactionContent(
     focusManager: androidx.compose.ui.focus.FocusManager
 ) {
     // Use iOS design system with reduced spacing for more compact form
-    val spacing = AppStyleDesignSystem.Padding.MEDIUM
+    val spacing = AppStyleDesignSystem.Padding.SECTION_SPACING
     val titleFontSize = AppStyleDesignSystem.Typography.TITLE_2.fontSize
     val labelFontSize = AppStyleDesignSystem.Typography.BODY.fontSize
     val inputHeight = AppStyleDesignSystem.Sizes.INPUT_HEIGHT
@@ -1624,7 +1638,7 @@ private fun AddTransactionContent(
                 // Clear focus when tapping empty space
                 focusManager.clearFocus()
             },
-        verticalArrangement = Arrangement.spacedBy(spacing)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Transaction Type Selector
         TransactionTypeSelector(
@@ -1640,7 +1654,7 @@ private fun AddTransactionContent(
             }
         )
 
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(24.dp))
         // Amount Input
         AmountInputSection(
             amount = formData.amount,
@@ -1649,7 +1663,21 @@ private fun AddTransactionContent(
             },
             errorMessage = validationErrors["amount"]
         )
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(16.dp))
+
+        InputField(
+            label = if (formData.type == TransactionType.TRANSFER) "Title" else "Title *",
+            value = formData.title,
+            onValueChange = { title ->
+                // Limit title to 30 characters
+                val limitedTitle = if (title.length <= 30) title else title.take(30)
+                onFormDataChange(formData.copy(title = limitedTitle))
+            },
+            placeholder = "Provide title here",
+            errorMessage = validationErrors["title"],
+            labelFontSize = labelFontSize,
+            inputHeight = inputHeight
+        )
 
         // Account Selection - different for transfer vs others
         if (formData.type == TransactionType.TRANSFER) {
@@ -1723,64 +1751,56 @@ private fun AddTransactionContent(
         }
 
         // Title Input
-        InputField(
-            label = if (formData.type == TransactionType.TRANSFER) "Title" else "Title *",
-            value = formData.title,
-            onValueChange = { title ->
-                // Limit title to 30 characters
-                val limitedTitle = if (title.length <= 30) title else title.take(30)
-                onFormDataChange(formData.copy(title = limitedTitle))
-            },
-            placeholder = "Provide title here",
-            errorMessage = validationErrors["title"],
-            labelFontSize = labelFontSize,
-            inputHeight = inputHeight
-        )
+
 
         // Date and Time
-        Text(
-            text = "Date & Time",
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = labelFontSize,
-            fontWeight = FontWeight.Medium
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
+        Column(        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
         ) {
-            DateTimeSelector(
-                modifier = Modifier.weight(1f),
-                value = if (formData.date.isEmpty()) "Today" else {
-                    try {
-                        val parts = formData.date.split("-")
-                        if (parts.size == 3) {
-                            val year = parts[0]
-                            val month = parts[1]
-                            val day = parts[2]
-                            "$day/$month/$year"
-                        } else {
+            Text(
+                text = "Date & Time",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = labelFontSize,
+                fontWeight = FontWeight.Medium
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
+            ) {
+                DateTimeSelector(
+                    modifier = Modifier.weight(1f),
+                    value = if (formData.date.isEmpty()) "Today" else {
+                        try {
+                            val parts = formData.date.split("-")
+                            if (parts.size == 3) {
+                                val year = parts[0]
+                                val month = parts[1]
+                                val day = parts[2]
+                                "$day/$month/$year"
+                            } else {
+                                formData.date
+                            }
+                        } catch (e: Exception) {
                             formData.date
                         }
-                    } catch (e: Exception) {
-                        formData.date
-                    }
-                },
-                icon = Icons.Default.CalendarMonth,
-                isSelected = true,
-                onClick = onShowDatePicker,
-                inputHeight = inputHeight
-            )
+                    },
+                    icon = Icons.Default.CalendarMonth,
+                    isSelected = true,
+                    onClick = onShowDatePicker,
+                    inputHeight = inputHeight
+                )
 
-            DateTimeSelector(
-                modifier = Modifier.weight(1f),
-                value = formData.time.ifEmpty { "01:31" },
-                icon = Icons.Default.AccessTime,
-                isSelected = true,
-                onClick = onShowTimePicker,
-                inputHeight = inputHeight
-            )
+                DateTimeSelector(
+                    modifier = Modifier.weight(1f),
+                    value = formData.time.ifEmpty { "01:31" },
+                    icon = Icons.Default.AccessTime,
+                    isSelected = true,
+                    onClick = onShowTimePicker,
+                    inputHeight = inputHeight
+                )
+            }
         }
+
 
         // Description Input
         InputField(
@@ -1884,7 +1904,7 @@ private fun TransactionTypeSelector(
                     Spacer(modifier = Modifier.width(if (false) 4.dp else 6.dp))
                     Text(
                         text = text,
-                        fontSize = toggleFontSize,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                     )
