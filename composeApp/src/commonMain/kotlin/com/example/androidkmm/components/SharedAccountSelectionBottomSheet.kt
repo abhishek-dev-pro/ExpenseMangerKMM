@@ -51,7 +51,7 @@ fun SharedAccountSelectionBottomSheet(
                 .fillMaxWidth()
                 .navigationBarsPadding(),
             contentPadding = PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.XXS)
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             item {
                 // Header with close button
@@ -187,7 +187,7 @@ private fun SharedAccountCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
-            .padding(vertical = 6.dp)
+            .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border
@@ -203,9 +203,9 @@ private fun SharedAccountCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_LARGE)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Account type icon
             Box(
@@ -234,26 +234,27 @@ private fun SharedAccountCard(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold
                 )
+            }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
-                ) {
-                    // Green arrow up icon
-                    Icon(
-                        imageVector = Icons.Default.TrendingUp,
-                        contentDescription = null,
-                        tint = Color(0xFF00A63E),
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
-                    )
+            // Balance on the right
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
+            ) {
+                // Green arrow up icon
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = Color(0xFF00A63E),
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
+                )
 
-                    Text(
-                        text = account.balance,
-                        color = Color(0xFF00A63E),
-                        style = AppStyleDesignSystem.Typography.BODY,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = account.balance,
+                    color = Color(0xFF00A63E),
+                    style = AppStyleDesignSystem.Typography.BODY,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

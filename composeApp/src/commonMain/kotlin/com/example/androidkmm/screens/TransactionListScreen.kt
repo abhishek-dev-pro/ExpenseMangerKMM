@@ -68,6 +68,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.components.AddAccountBottomSheet
+import com.example.androidkmm.components.SharedAccountSelectionBottomSheet
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -2212,148 +2213,14 @@ fun AccountSelectionBottomSheet(
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     onAddAccount: (() -> Unit)? = null
 ) {
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+    SharedAccountSelectionBottomSheet(
+        onDismiss = onDismiss,
+        title = title,
+        subtitle = subtitle,
+        onAccountSelected = onAccountSelected,
+        accountDatabaseManager = accountDatabaseManager,
+        onAddAccount = onAddAccount
     )
-    val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
-    val accounts = accountsState.value
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = bottomSheetState,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        dragHandle = null
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding(),
-            contentPadding = PaddingValues(0.dp),
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.XXS)
-        ) {
-            item {
-                // Header with close button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL))
-
-                    Text(
-                        text = title,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                        )
-                    }
-                }
-            }
-
-            item {
-                // Subtitle
-                Text(
-                    text = subtitle,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 24.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            items(accounts) { account ->
-                AccountCard(
-                    account = account,
-                    onClick = { onAccountSelected(account) }
-                )
-            }
-
-            item {
-                // Add Account Button
-                Card(
-                    onClick = { onAddAccount?.invoke() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
-                        .border(
-                            width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-                        ),
-                    shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
-                    ) {
-                        // Plus icon
-                        Box(
-                            modifier = Modifier
-                                .size(AppStyleDesignSystem.Sizes.AVATAR_LARGE)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Account",
-                                tint = Color.White,
-                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                            )
-                        }
-
-                        // Add Account text
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
-                        ) {
-                            Text(
-                                text = "Add Account",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "Create a new account",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-    }
 }
 
 @Composable

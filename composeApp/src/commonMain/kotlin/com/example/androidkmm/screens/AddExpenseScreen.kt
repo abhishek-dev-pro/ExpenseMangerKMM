@@ -477,7 +477,8 @@ fun AddExpenseScreen(
                 selectedAccount = account
                 showAccountPicker = false
             },
-            accountDatabaseManager = accountDatabaseManager
+            accountDatabaseManager = accountDatabaseManager,
+            onAddAccount = null // No add account functionality in AddExpenseScreen
         )
     }
 }
@@ -526,7 +527,8 @@ private fun CategorySelectionBottomSheet(
 private fun AccountSelectionBottomSheet(
     onDismiss: () -> Unit,
     onAccountSelected: (Account) -> Unit,
-    accountDatabaseManager: SQLiteAccountDatabase
+    accountDatabaseManager: SQLiteAccountDatabase,
+    onAddAccount: (() -> Unit)? = null
 ) {
     SharedAccountSelectionBottomSheet(
         onDismiss = onDismiss,
@@ -534,7 +536,7 @@ private fun AccountSelectionBottomSheet(
         subtitle = "Choose an account for your transaction",
         onAccountSelected = onAccountSelected,
         accountDatabaseManager = accountDatabaseManager,
-        onAddAccount = null // No add account functionality in AddExpenseScreen
+        onAddAccount = onAddAccount
     )
 }
 
