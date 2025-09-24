@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Account
 import com.example.androidkmm.screens.ledger.LedgerTheme
@@ -37,12 +38,18 @@ fun AccountSelectionSection(
         Column {
             Button(
                 onClick = onAccountSelectionClick,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1F1F1F)
+                    containerColor = Color(0xFF2D2D2D)
                 ),
-                shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
-                contentPadding = PaddingValues(AppStyleDesignSystem.Padding.MEDIUM_LARGE)
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 2.dp
+                ),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),

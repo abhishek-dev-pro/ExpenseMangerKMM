@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.collectAsState
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
@@ -164,7 +166,7 @@ fun AddLedgerEntryBottomSheetRefactored(
                         color = LedgerTheme.textPrimary()
                     )
                     
-                    TextButton(
+                    Button(
                         onClick = {
                             validationErrors = validateForm()
                             if (validationErrors.isEmpty() && isFormValid) {
@@ -218,16 +220,47 @@ fun AddLedgerEntryBottomSheetRefactored(
                                 }
                             }
                         },
-                        enabled = isFormValid
+                        enabled = isFormValid,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = when {
+                                !isFormValid -> Color(0xFF404040)
+                                person != null && currentTransactionType == TransactionType.SENT -> LedgerTheme.greenAmount
+                                person != null && currentTransactionType == TransactionType.RECEIVED -> LedgerTheme.redAmount
+                                else -> LedgerTheme.avatarBlue
+                            }
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = if (isFormValid) 6.dp else 2.dp,
+                            pressedElevation = if (isFormValid) 4.dp else 1.dp
+                        ),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                     ) {
-                        Text(
-                            text = when {
-                                person != null && currentTransactionType == TransactionType.SENT -> "Record Sent"
-                                person != null && currentTransactionType == TransactionType.RECEIVED -> "Record Received"
-                                else -> "Add Entry"
-                            },
-                            color = if (isFormValid) LedgerTheme.textPrimary() else LedgerTheme.textSecondary()
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = if (isFormValid) Color.White else LedgerTheme.textSecondary(),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = when {
+                                    person != null && currentTransactionType == TransactionType.SENT -> "Record Sent"
+                                    person != null && currentTransactionType == TransactionType.RECEIVED -> "Record Received"
+                                    else -> "Add Entry"
+                                },
+                                color = if (isFormValid) Color.White else LedgerTheme.textSecondary(),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
@@ -293,31 +326,31 @@ fun AddLedgerEntryBottomSheetRefactored(
                     horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
                 ) {
                     // Date Selection
-                    Card(
+                    Button(
+                        onClick = { showDatePicker = true },
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { showDatePicker = true },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2D2D2D)
                         ),
-                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(AppStyleDesignSystem.Padding.MEDIUM_LARGE),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CalendarToday,
                                 contentDescription = null,
-                                tint = LedgerTheme.textSecondary(),
+                                tint = LedgerTheme.textPrimary(),
                                 modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                             )
-                            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY))
-                            Text(
-                                text = "Date",
-                                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
-                                color = LedgerTheme.textSecondary()
-                            )
+                            Spacer(modifier = Modifier.width(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
                             Text(
                                 text = selectedDate,
                                 fontSize = AppStyleDesignSystem.Typography.CALL_OUT.fontSize,
@@ -327,31 +360,31 @@ fun AddLedgerEntryBottomSheetRefactored(
                     }
                     
                     // Time Selection
-                    Card(
+                    Button(
+                        onClick = { showTimePicker = true },
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { showTimePicker = true },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2D2D2D)
                         ),
-                        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 4.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(AppStyleDesignSystem.Padding.MEDIUM_LARGE),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.AccessTime,
                                 contentDescription = null,
-                                tint = LedgerTheme.textSecondary(),
+                                tint = LedgerTheme.textPrimary(),
                                 modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                             )
-                            Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY))
-                            Text(
-                                text = "Time",
-                                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
-                                color = LedgerTheme.textSecondary()
-                            )
+                            Spacer(modifier = Modifier.width(AppStyleDesignSystem.Padding.ARRANGEMENT_SMALL))
                             Text(
                                 text = selectedTime,
                                 fontSize = AppStyleDesignSystem.Typography.CALL_OUT.fontSize,

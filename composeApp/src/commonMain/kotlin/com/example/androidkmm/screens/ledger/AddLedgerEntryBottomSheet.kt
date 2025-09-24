@@ -578,11 +578,18 @@ fun AddLedgerEntryBottomSheet(
                         // Date Picker
                         Button(
                             onClick = { showDatePicker = true },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1F1F1F)
+                                containerColor = Color(0xFF2D2D2D)
                             ),
-                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp,
+                                pressedElevation = 2.dp
+                            ),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CalendarMonth,
@@ -601,11 +608,18 @@ fun AddLedgerEntryBottomSheet(
                         // Time Picker
                         Button(
                             onClick = { showTimePicker = true },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1F1F1F)
+                                containerColor = Color(0xFF2D2D2D)
                             ),
-                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp,
+                                pressedElevation = 2.dp
+                            ),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.AccessTime,
@@ -644,12 +658,18 @@ fun AddLedgerEntryBottomSheet(
                     Column {
                         Button(
                             onClick = { showAccountSelection = true },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF1F1F1F)
+                                containerColor = Color(0xFF2D2D2D)
                             ),
-                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
-                            contentPadding = PaddingValues(AppStyleDesignSystem.Padding.MEDIUM_LARGE)
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 4.dp,
+                                pressedElevation = 2.dp
+                            ),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -830,7 +850,7 @@ fun AddLedgerEntryBottomSheet(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(AppStyleDesignSystem.Sizes.INPUT_HEIGHT),
+                            .height(56.dp),
                         enabled = isFormValid,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = when {
@@ -840,7 +860,12 @@ fun AddLedgerEntryBottomSheet(
                                 else -> LedgerTheme.avatarBlue
                             }
                         ),
-                        shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = if (isFormValid) 6.dp else 2.dp,
+                            pressedElevation = if (isFormValid) 4.dp else 1.dp
+                        ),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
