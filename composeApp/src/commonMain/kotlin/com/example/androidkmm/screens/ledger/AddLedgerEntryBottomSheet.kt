@@ -151,8 +151,7 @@ fun AddLedgerEntryBottomSheet(
     ) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
+                .fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
