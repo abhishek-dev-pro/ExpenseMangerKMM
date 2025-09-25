@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.*
@@ -292,7 +293,7 @@ fun LedgerMainScreen(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Search Field
-            TextField(
+            OutlinedTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
                 placeholder = {
@@ -312,26 +313,33 @@ fun LedgerMainScreen(
                         modifier = Modifier.size(18.dp)
                     )
                 },
+                trailingIcon = {
+                    if (searchText.isNotEmpty()) {
+                        IconButton(onClick = { searchText = "" }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear",
+                                tint = LedgerTheme.textSecondary(),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                },
                 textStyle = androidx.compose.ui.text.TextStyle(
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = LedgerTheme.textPrimary()
                 ),
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedTextColor = LedgerTheme.textPrimary(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.White,
+                    unfocusedBorderColor = Color.Gray,
                     focusedTextColor = LedgerTheme.textPrimary(),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent
+                    unfocusedTextColor = LedgerTheme.textPrimary(),
+                    cursorColor = Color.Blue
                 ),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .border(
-                        width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                        color = Color.White.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(16.dp)
-                    )
+                modifier = Modifier.weight(1f)
             )
+
 
             // Filter Dropdown
             var expanded by remember { mutableStateOf(false) }
