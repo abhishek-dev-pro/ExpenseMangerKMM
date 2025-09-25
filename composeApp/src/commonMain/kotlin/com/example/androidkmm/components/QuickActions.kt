@@ -25,8 +25,7 @@ fun QuickActions(
         Text(
             text = "Quick Actions",
             color = Color.White,
-            fontSize = 18.sp, // Slightly larger title
-            fontWeight = FontWeight.Bold, // Bolder title
+            style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         Spacer(modifier = Modifier.height(8.dp)) // Reduced spacing after title
