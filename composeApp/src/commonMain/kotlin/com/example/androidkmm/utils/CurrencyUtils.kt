@@ -20,10 +20,19 @@ object CurrencyUtils {
     }
     
     /**
-     * Gets the currency symbol with a parameter (for backward compatibility)
+     * Gets the currency symbol based on currency code
      */
-    fun getCurrencySymbol(locale: String = "IN"): String {
-        return "₹" // Default to Indian Rupee
+    fun getCurrencySymbol(currencyCode: String): String {
+        return when (currencyCode) {
+            "USD" -> "$"
+            "EUR" -> "€"
+            "GBP" -> "£"
+            "INR" -> "₹"
+            "JPY" -> "¥"
+            "CAD" -> "C$"
+            "AUD" -> "A$"
+            else -> "₹" // Default to Indian Rupee
+        }
     }
     
     /**
