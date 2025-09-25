@@ -161,11 +161,11 @@ fun LedgerMainScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
         // Summary Cards
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // To Receive Card
@@ -187,7 +187,7 @@ fun LedgerMainScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
+                        .padding( 16.dp),
                     verticalArrangement = Arrangement.Top
                 ) {
                     Row(
@@ -288,8 +288,7 @@ fun LedgerMainScreen(
         // Search Bar and Filter
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Search Field
@@ -417,8 +416,7 @@ fun LedgerMainScreen(
         // Filter and People Section
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -433,8 +431,7 @@ fun LedgerMainScreen(
         // People Header
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -478,7 +475,7 @@ fun LedgerMainScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 48.dp),
+                        .padding(vertical = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Search Icon
@@ -547,7 +544,7 @@ fun LedgerMainScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 48.dp),
+                        .padding(vertical = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Receipt Icon
@@ -615,8 +612,7 @@ fun LedgerMainScreen(
         } else {
             // People List
             LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 24.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 items(people) { person ->
                     PersonLedgerItem(
