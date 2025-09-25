@@ -33,6 +33,7 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
+import com.example.androidkmm.components.AddAccountBottomSheet
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -98,6 +99,7 @@ fun AddLedgerEntryBottomSheet(
     var selectedTime by remember { mutableStateOf(currentTime) }
     var selectedAccount by remember { mutableStateOf<com.example.androidkmm.models.Account?>(null) }
     var showAccountSelection by remember { mutableStateOf(false) }
+    var showAddAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     
@@ -910,7 +912,7 @@ fun AddLedgerEntryBottomSheet(
                 showAccountSelection = false
             },
             accountDatabaseManager = accountDatabaseManager,
-            onAddAccount = { /* TODO: Add account functionality for ledger */ }
+            onAddAccount = { showAddAccountSheet = true }
         )
     }
     
@@ -936,6 +938,32 @@ fun AddLedgerEntryBottomSheet(
             },
             initialTime = selectedTime
         )
+    }
+    
+    // Add Account Bottom Sheet
+    if (showAddAccountSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddAccountSheet = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null
+        ) {
+            AddAccountBottomSheet(
+                onDismiss = { showAddAccountSheet = false },
+                onAccountAdded = { account ->
+                    accountDatabaseManager.addAccount(
+                        account = account,
+                        onSuccess = {
+                            selectedAccount = account
+                            showAddAccountSheet = false
+                        },
+                        onError = { error ->
+                            println("Error adding account: ${error.message}")
+                        }
+                    )
+                },
+                accountDatabaseManager = accountDatabaseManager
+            )
+        }
     }
 }
 
