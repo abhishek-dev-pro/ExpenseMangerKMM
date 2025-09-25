@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -22,16 +22,14 @@ import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
+import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.models.Transaction
 import com.example.androidkmm.models.TransactionType
-import com.example.androidkmm.design.AppStyleDesignSystem
-import com.example.androidkmm.utils.TextUtils
 import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 import com.example.androidkmm.utils.Logger
-import androidx.compose.runtime.collectAsState
+import com.example.androidkmm.utils.TextUtils
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 

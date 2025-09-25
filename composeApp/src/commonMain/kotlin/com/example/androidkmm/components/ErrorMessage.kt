@@ -16,77 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.androidkmm.design.AppStyleDesignSystem
 
-/**
- * Standardized error message component
- */
-@Composable
-fun ErrorMessage(
-    message: String,
-    modifier: Modifier = Modifier,
-    type: ErrorType = ErrorType.ERROR
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = when (type) {
-                    ErrorType.ERROR -> Color(0xFFFFEBEE)
-                    ErrorType.WARNING -> Color(0xFFFFF3E0)
-                    ErrorType.INFO -> Color(0xFFE3F2FD)
-                },
-                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-            )
-            .border(
-                width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                color = when (type) {
-                    ErrorType.ERROR -> Color(0xFFD32F2F)
-                    ErrorType.WARNING -> Color(0xFFFF9800)
-                    ErrorType.INFO -> Color(0xFF2196F3)
-                },
-                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-            )
-            .padding(AppStyleDesignSystem.Padding.MEDIUM),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = when (type) {
-                ErrorType.ERROR -> Icons.Default.Error
-                ErrorType.WARNING -> Icons.Default.Warning
-                ErrorType.INFO -> Icons.Default.Info
-            },
-            contentDescription = null,
-            tint = when (type) {
-                ErrorType.ERROR -> Color(0xFFD32F2F)
-                ErrorType.WARNING -> Color(0xFFFF9800)
-                ErrorType.INFO -> Color(0xFF2196F3)
-            },
-            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
-        )
-        
-        Spacer(modifier = Modifier.width(AppStyleDesignSystem.Padding.SMALL))
-        
-        Text(
-            text = message,
-            color = when (type) {
-                ErrorType.ERROR -> Color(0xFFD32F2F)
-                ErrorType.WARNING -> Color(0xFFE65100)
-                ErrorType.INFO -> Color(0xFF1976D2)
-            },
-            style = AppStyleDesignSystem.Typography.CAPTION_1.copy(
-                fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
-            )
-        )
-    }
-}
 
-/**
- * Error types
- */
-enum class ErrorType {
-    ERROR,
-    WARNING,
-    INFO
-}
 
 /**
  * Field error message component
