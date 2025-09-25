@@ -399,6 +399,12 @@ fun ProfileScreen(
     var errorMessage by remember { mutableStateOf("") }
     
     val coroutineScope = rememberCoroutineScope()
+    
+    // Ensure settings are properly initialized before rendering
+    LaunchedEffect(Unit) {
+        settingsDatabase.ensureDefaultSettings()
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -540,14 +546,20 @@ fun ProfileScreen(
             )
         }
 
+
+        item {
+            // Currency Setting
+            CurrencySetting()
+        }
+
         item {
             // Carry Forward Toggle
             CarryForwardToggle()
         }
 
         item {
-            // Currency Setting
-            CurrencySetting()
+            // Negative Balance Warning Toggle
+            NegativeBalanceWarningToggle()
         }
 
 //        item {
@@ -2288,88 +2300,7 @@ fun ColorSelector(
 
 
 
-@Composable
-fun SettingsSection() {
-    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
-    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = com.example.androidkmm.models.AppSettings())
-    val scope = rememberCoroutineScope()
-    
-    // Debug logging
-    LaunchedEffect(appSettings.value.carryForwardEnabled) {
-        println("SettingsSection - Carry Forward Enabled: ${appSettings.value.carryForwardEnabled}")
-        println("SettingsSection - Full AppSettings: ${appSettings.value}")
-    }
-    
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Carry Forward Icon
-            Box(
-                modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
-                    .background(
-                        Color(0xFF2C2C2E),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = "Carry Forward",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
-                )
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            // Carry Forward Text
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = "Carry Forward",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Include previous months balance in current month",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-            
-            // Toggle Switch
-            Switch(
-                checked = appSettings.value.carryForwardEnabled,
-                onCheckedChange = { enabled ->
-                    println("Toggle clicked: $enabled")
-                    scope.launch {
-                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
-                        println("Updated carry forward to: $enabled")
-                    }
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
-        }
-    }
-}
+// SettingsSection removed - toggles are now in main ProfileScreen
 
 @Composable
 fun CustomizeScreen(
@@ -2418,10 +2349,7 @@ fun CustomizeScreen(
             }
         }
         
-        item {
-            // Settings Section
-            SettingsSection()
-        }
+        // Settings Section removed - toggles are now in main ProfileScreen
         
         item {
             // Dark Mode Setting
@@ -2500,6 +2428,119 @@ fun DarkModeSetting() {
                     checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                     checkedTrackColor = MaterialTheme.colorScheme.primary,
                     uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        }
+    }
+}
+
+
+@Composable
+fun CarryForwardToggle() {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val scope = rememberCoroutineScope()
+    
+    // Get current settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Carry Forward",
+                    style = AppStyleDesignSystem.Typography.HEADLINE,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Include previous months balance in current month",
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            
+            // Toggle Switch
+            Switch(
+                checked = appSettings.value.carryForwardEnabled,
+                onCheckedChange = { enabled ->
+                    scope.launch {
+                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
+                    }
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun NegativeBalanceWarningToggle() {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val scope = rememberCoroutineScope()
+    
+    // Get current settings
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFF3A3A3A))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Negative Balance Warning",
+                    style = AppStyleDesignSystem.Typography.HEADLINE,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Show warning when selecting accounts with negative balance for expenses",
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+            
+            // Toggle Switch
+            Switch(
+                checked = appSettings.value.negativeBalanceWarningEnabled,
+                onCheckedChange = { enabled ->
+                    scope.launch {
+                        settingsDatabaseManager.updateNegativeBalanceWarningEnabled(enabled)
+                    }
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
@@ -2766,70 +2807,3 @@ fun CategoriesScreen(
     }
 }
 
-@Composable
-fun CarryForwardToggle() {
-    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
-    val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
-    val scope = rememberCoroutineScope()
-    
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TrendingUp,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Carry Forward",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Automatically carry forward balances",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Switch(
-                checked = appSettings.carryForwardEnabled,
-                onCheckedChange = { enabled ->
-                    println("CarryForwardToggle - Toggle clicked: $enabled")
-                    scope.launch {
-                        settingsDatabaseManager.updateCarryForwardEnabled(enabled)
-                        println("CarryForwardToggle - Updated carry forward to: $enabled")
-                    }
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
-        }
-    }
-}

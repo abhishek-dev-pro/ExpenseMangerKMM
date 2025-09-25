@@ -1280,6 +1280,9 @@ fun AddTransactionScreen(
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     defaultTransactionType: TransactionType? = null
 ) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    
     var formData by remember { mutableStateOf(TransactionFormData()) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showFromAccountSheet by remember { mutableStateOf(false) }
@@ -1408,7 +1411,9 @@ fun AddTransactionScreen(
             },
             accountDatabaseManager = accountDatabaseManager,
             onAddAccount = { showAddAccountSheet = true },
-            excludeAccountId = formData.toAccount?.id
+            excludeAccountId = formData.toAccount?.id,
+            transactionType = formData.type.name,
+            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled
         )
     }
 
@@ -1424,7 +1429,9 @@ fun AddTransactionScreen(
             },
             accountDatabaseManager = accountDatabaseManager,
             onAddAccount = { showAddAccountSheet = true },
-            excludeAccountId = formData.account?.id
+            excludeAccountId = formData.account?.id,
+            transactionType = formData.type.name,
+            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled
         )
     }
 
@@ -2314,7 +2321,9 @@ fun AccountSelectionBottomSheet(
     onAccountSelected: (Account) -> Unit,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
     onAddAccount: (() -> Unit)? = null,
-    excludeAccountId: String? = null
+    excludeAccountId: String? = null,
+    transactionType: String? = null,
+    negativeBalanceWarningEnabled: Boolean = true
 ) {
     SharedAccountSelectionBottomSheet(
         onDismiss = onDismiss,
@@ -2323,7 +2332,9 @@ fun AccountSelectionBottomSheet(
         onAccountSelected = onAccountSelected,
         accountDatabaseManager = accountDatabaseManager,
         onAddAccount = onAddAccount,
-        excludeAccountId = excludeAccountId
+        excludeAccountId = excludeAccountId,
+        transactionType = transactionType,
+        negativeBalanceWarningEnabled = negativeBalanceWarningEnabled
     )
 }
 

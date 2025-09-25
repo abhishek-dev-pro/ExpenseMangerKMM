@@ -32,8 +32,12 @@ fun SharedAccountSelectionBottomSheet(
     onAccountSelected: (Account) -> Unit,
     accountDatabaseManager: SQLiteAccountDatabase,
     onAddAccount: (() -> Unit)? = null,
-    excludeAccountId: String? = null
+    excludeAccountId: String? = null,
+    transactionType: String? = null, // Add transaction type parameter
+    negativeBalanceWarningEnabled: Boolean = true // Add warning setting parameter
 ) {
+    var showNegativeBalanceDialog by remember { mutableStateOf(false) }
+    var selectedAccount by remember { mutableStateOf<Account?>(null) }
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -108,7 +112,16 @@ fun SharedAccountSelectionBottomSheet(
             items(accounts) { account ->
                 SharedAccountCard(
                     account = account,
-                    onClick = { onAccountSelected(account) }
+                    onClick = { 
+                        // Check if account has negative balance AND transaction type is EXPENSE AND warning is enabled
+                        val balance = account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                        if (balance < 0 && transactionType == "EXPENSE" && negativeBalanceWarningEnabled) {
+                            selectedAccount = account
+                            showNegativeBalanceDialog = true
+                        } else {
+                            onAccountSelected(account)
+                        }
+                    }
                 )
             }
 
@@ -180,6 +193,22 @@ fun SharedAccountSelectionBottomSheet(
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+    
+    // Negative Balance Warning Dialog
+    if (showNegativeBalanceDialog && selectedAccount != null) {
+        NegativeBalanceWarningDialog(
+            account = selectedAccount!!,
+            onDismiss = { 
+                showNegativeBalanceDialog = false
+                selectedAccount = null
+            },
+            onProceed = { 
+                onAccountSelected(selectedAccount!!)
+                showNegativeBalanceDialog = false
+                selectedAccount = null
+            }
+        )
     }
 }
 
@@ -274,4 +303,73 @@ private fun getAccountTypeColor(accountType: String): Color {
         "digital wallet" -> Color(0xFF9C27B0)
         else -> Color(0xFF2196F3)
     }
+}
+
+@Composable
+private fun NegativeBalanceWarningDialog(
+    account: Account,
+    onDismiss: () -> Unit,
+    onProceed: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "⚠️ Negative Balance Warning",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF6B35)
+            )
+        },
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "The account \"${account.name}\" has a negative balance of ${account.balance}.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "Are you sure you want to proceed with this account?",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "You can disable this warning from Settings in your profile.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                            )
+                        }
+                    },
+        confirmButton = {
+            Button(
+                onClick = onProceed,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF6B35)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = "Yes, Proceed",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text(
+                    text = "Cancel",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
 }

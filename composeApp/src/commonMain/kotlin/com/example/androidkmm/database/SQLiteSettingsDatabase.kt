@@ -49,28 +49,70 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
     
     fun getAppSettings(): Flow<AppSettings> {
         return getAllSettings().map { settings ->
+            println("SQLiteSettingsDatabase - Loading settings, found ${settings.size} settings")
+            settings.forEach { setting ->
+                println("SQLiteSettingsDatabase - Setting: ${setting.key} = '${setting.value}'")
+            }
+            
             val settingsMap = settings.associate { it.key to it.value }
+            
+            // Check if required settings exist, if not, insert them
+            val needsCarryForward = !settingsMap.containsKey("carry_forward_enabled")
+            val needsNegativeBalanceWarning = !settingsMap.containsKey("negative_balance_warning_enabled")
+            val needsCurrencySymbol = !settingsMap.containsKey("currency_symbol")
+            val needsDateFormat = !settingsMap.containsKey("date_format")
+            val needsUserName = !settingsMap.containsKey("user_name")
+            val needsUserEmail = !settingsMap.containsKey("user_email")
+            
+            if (needsCarryForward || needsNegativeBalanceWarning || needsCurrencySymbol || needsDateFormat || needsUserName || needsUserEmail) {
+                println("SQLiteSettingsDatabase - Missing required settings, will insert defaults")
+                // Note: We can't call suspend functions here, so we'll handle this in the UI layer
+            }
+            
             val carryForwardValue = settingsMap["carry_forward_enabled"]
             val carryForwardEnabled = when (carryForwardValue) {
                 "1" -> true
                 "0" -> false
-                null -> true // Default to true if not found
-                else -> carryForwardValue.toBoolean()
+                null -> {
+                    println("SQLiteSettingsDatabase - WARNING: carry_forward_enabled not found in database, defaulting to true")
+                    true // Default to true if not found
+                }
+                else -> {
+                    println("SQLiteSettingsDatabase - WARNING: carry_forward_enabled has unexpected value: '$carryForwardValue', defaulting to true")
+                    true
+                }
             }
-            println("Settings Debug - carry_forward_enabled: '$carryForwardValue', parsed: $carryForwardEnabled")
-            println("Settings Debug - settingsMap: $settingsMap")
-            println("Settings Debug - user_name from map: '${settingsMap["user_name"]}'")
-            println("Settings Debug - user_email from map: '${settingsMap["user_email"]}'")
+            
+            val negativeBalanceWarningValue = settingsMap["negative_balance_warning_enabled"]
+            val negativeBalanceWarningEnabled = when (negativeBalanceWarningValue) {
+                "1" -> true
+                "0" -> false
+                null -> {
+                    println("SQLiteSettingsDatabase - WARNING: negative_balance_warning_enabled not found in database, defaulting to true")
+                    true // Default to true if not found
+                }
+                else -> {
+                    println("SQLiteSettingsDatabase - WARNING: negative_balance_warning_enabled has unexpected value: '$negativeBalanceWarningValue', defaulting to true")
+                    true
+                }
+            }
+            
+            println("SQLiteSettingsDatabase - carry_forward_enabled: '$carryForwardValue', parsed: $carryForwardEnabled")
+            println("SQLiteSettingsDatabase - negative_balance_warning_enabled: '$negativeBalanceWarningValue', parsed: $negativeBalanceWarningEnabled")
+            println("SQLiteSettingsDatabase - settingsMap: $settingsMap")
+            println("SQLiteSettingsDatabase - user_name from map: '${settingsMap["user_name"]}'")
+            println("SQLiteSettingsDatabase - user_email from map: '${settingsMap["user_email"]}'")
             
             val appSettings = AppSettings(
                 carryForwardEnabled = carryForwardEnabled,
                 currencySymbol = settingsMap["currency_symbol"] ?: "$",
                 dateFormat = settingsMap["date_format"] ?: "MMM dd, yyyy",
                 userName = settingsMap["user_name"] ?: "",
-                userEmail = settingsMap["user_email"] ?: ""
+                userEmail = settingsMap["user_email"] ?: "",
+                negativeBalanceWarningEnabled = negativeBalanceWarningEnabled
             )
             
-            println("Settings Debug - Final AppSettings: userName='${appSettings.userName}', userEmail='${appSettings.userEmail}'")
+            println("SQLiteSettingsDatabase - Final AppSettings: userName='${appSettings.userName}', userEmail='${appSettings.userEmail}', carryForwardEnabled='${appSettings.carryForwardEnabled}', negativeBalanceWarningEnabled='${appSettings.negativeBalanceWarningEnabled}'")
             appSettings
         }
     }
@@ -97,6 +139,12 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
         updateSetting("user_email", email)
     }
     
+    suspend fun updateNegativeBalanceWarningEnabled(enabled: Boolean) {
+        val value = if (enabled) "1" else "0"
+        println("Updating negative_balance_warning_enabled to: $value")
+        updateSetting("negative_balance_warning_enabled", value)
+    }
+    
     // Debug function to check database state
     suspend fun debugDatabaseState() {
         try {
@@ -107,6 +155,62 @@ class SQLiteSettingsDatabase(private val database: CategoryDatabase) {
             }
         } catch (e: Exception) {
             println("Database Debug - Error reading database: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+    
+    // Force initialize default settings if they don't exist
+    suspend fun ensureDefaultSettings() {
+        try {
+            val settings = database.categoryDatabaseQueries.selectAllSettings().executeAsList()
+            val settingsMap = settings.associate { it.key to it.value_ }
+            
+            println("Database Debug - Current settings in database: $settingsMap")
+            
+            if (!settingsMap.containsKey("carry_forward_enabled")) {
+                println("Database Debug - carry_forward_enabled not found, inserting default value")
+                updateSetting("carry_forward_enabled", "1")
+            } else {
+                println("Database Debug - carry_forward_enabled already exists: ${settingsMap["carry_forward_enabled"]}")
+            }
+            
+            if (!settingsMap.containsKey("negative_balance_warning_enabled")) {
+                println("Database Debug - negative_balance_warning_enabled not found, inserting default value")
+                updateSetting("negative_balance_warning_enabled", "1")
+            } else {
+                println("Database Debug - negative_balance_warning_enabled already exists: ${settingsMap["negative_balance_warning_enabled"]}")
+            }
+            
+            if (!settingsMap.containsKey("currency_symbol")) {
+                println("Database Debug - currency_symbol not found, inserting default value")
+                updateSetting("currency_symbol", "₹")
+            } else {
+                println("Database Debug - currency_symbol already exists: ${settingsMap["currency_symbol"]}")
+            }
+            
+            if (!settingsMap.containsKey("date_format")) {
+                println("Database Debug - date_format not found, inserting default value")
+                updateSetting("date_format", "MMM dd, yyyy")
+            } else {
+                println("Database Debug - date_format already exists: ${settingsMap["date_format"]}")
+            }
+            
+            if (!settingsMap.containsKey("user_name")) {
+                println("Database Debug - user_name not found, inserting default value")
+                updateSetting("user_name", "")
+            } else {
+                println("Database Debug - user_name already exists: ${settingsMap["user_name"]}")
+            }
+            
+            if (!settingsMap.containsKey("user_email")) {
+                println("Database Debug - user_email not found, inserting default value")
+                updateSetting("user_email", "")
+            } else {
+                println("Database Debug - user_email already exists: ${settingsMap["user_email"]}")
+            }
+            
+        } catch (e: Exception) {
+            println("Database Debug - Error ensuring default settings: ${e.message}")
             e.printStackTrace()
         }
     }

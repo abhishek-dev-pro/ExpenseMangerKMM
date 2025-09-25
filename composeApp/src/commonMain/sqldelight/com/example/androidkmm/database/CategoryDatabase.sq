@@ -73,7 +73,8 @@ INSERT INTO app_settings (key, value) VALUES
 ('carry_forward_enabled', '1'),
 ('currency_symbol', '₹'),
 ('date_format', 'MMM dd, yyyy'),
-('user_name', '');
+('user_name', ''),
+('negative_balance_warning_enabled', '1');
 
 -- Settings queries
 selectAllSettings:

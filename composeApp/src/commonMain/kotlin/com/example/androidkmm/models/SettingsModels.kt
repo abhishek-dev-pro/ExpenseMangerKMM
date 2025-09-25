@@ -11,5 +11,6 @@ data class AppSettings(
     val currencySymbol: String = "$",
     val dateFormat: String = "MMM dd, yyyy",
     val userName: String = "",
-    val userEmail: String = ""
+    val userEmail: String = "",
+    val negativeBalanceWarningEnabled: Boolean = true
 )
