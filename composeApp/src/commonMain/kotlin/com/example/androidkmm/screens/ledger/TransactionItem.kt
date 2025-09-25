@@ -1,213 +1,178 @@
 package com.example.androidkmm.screens.ledger
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidkmm.utils.CurrencyUtils.formatDouble
-import com.example.androidkmm.design.AppStyleDesignSystem
-import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
-import com.example.androidkmm.models.AppSettings
 
 @Composable
 fun TransactionItem(
     transaction: LedgerTransaction,
     balanceAtTransaction: Double,
+    modifier: Modifier = Modifier,
     onDelete: () -> Unit = {},
     onEdit: () -> Unit = {},
     isHighlighted: Boolean = false
 ) {
-    // Get currency symbol from settings
-    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
-    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
-    val currencySymbol = appSettings.value.currencySymbol
+    val isSent = transaction.type == TransactionType.SENT
+    val amountColor = if (isSent) Color(0xFFFF1744) else Color(0xFF00C853)
+    val bgColor = Color(0xFF1A1A1A)
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
-            .border(
-                width = if (isHighlighted) 2.dp else 0.5.dp, // thicker border when highlighted
-                color = if (isHighlighted) Color(0xFFE0E0E0) else Color.White.copy(alpha = 0.2f), // dark white border when highlighted
-                shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-            ),
+        modifier = modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) Color(0xFF000000) else Color(0xFF1A1A1A)
-        ),
-        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
-    ) {
-        Column(
+            containerColor = Color.Transparent // No background
+        ),    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Row 1: Money sent on left, -200 on right (big size)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+            // Left colored square with amount
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(amountColor.copy(alpha = 0.15f))
+                .border(
+                    width = 1.dp,                // thin border
+            color = Color.LightGray.copy(alpha = 0.15f),     // light color border
+            shape = RoundedCornerShape(4.dp)
+            ),
+                contentAlignment = Alignment.Center
             ) {
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (transaction.type == TransactionType.SENT) {
-                                Icons.Default.ArrowUpward
-                            } else {
-                                Icons.Default.ArrowDownward
-                            },
-                            contentDescription = null,
-                            tint = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = if (transaction.type == TransactionType.SENT) "Money sent" else "Money received",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = LedgerTheme.textPrimary()
-                        )
-                    }
-                    
-                    // Title directly below without spacing
-                    if (transaction.description.isNotEmpty()) {
-                        Text(
-                            text = transaction.description,
-                            fontSize = 14.sp,
-                            color = LedgerTheme.textSecondary(),
-                            modifier = Modifier.padding(start = 22.dp) // Align with text, not icon
-                        )
-                    }
+                if(transaction.type == TransactionType.RECEIVED) {
+                    Text(
+                        text = "${transaction.amount.toInt()}",
+                        color = amountColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                
-                Text(
-                    text = "${if (transaction.type == TransactionType.SENT) "-" else "+"}$currencySymbol${formatDouble(transaction.amount)}",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (transaction.type == TransactionType.SENT) LedgerTheme.redAmount else LedgerTheme.greenAmount
-                )
             }
+            Spacer(Modifier.width(4.dp))
 
-            // Row 3: Date Time on left, balance on right (with gap)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Date section
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = null,
-                            tint = LedgerTheme.textSecondary(),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = transaction.date,
-                            fontSize = 12.sp,
-                            color = LedgerTheme.textSecondary()
-                        )
-                    }
-                    
-                    // Time section
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = null,
-                            tint = LedgerTheme.textSecondary(),
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = transaction.time,
-                            fontSize = 12.sp,
-                            color = LedgerTheme.textSecondary()
-                        )
-                    }
-                }
-                
-                Text(
-                    text = "Balance: $currencySymbol${formatDouble(kotlin.math.abs(balanceAtTransaction))}",
-                    fontSize = 12.sp,
-                    color = LedgerTheme.textSecondary()
-                )
-            }
 
-            // Row 4: Account on left, edit and delete buttons on right
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+
+            // Middle content - FIXED LAYOUT
+            Column(
+                modifier = Modifier
+                    .size(56.dp)
+                    .weight(1f)
+                    .clip(RoundedCornerShape(4.dp)) // rounded corners
+                    .background(Color.Black)         // black background
+                    .border(
+                        width = 1.dp,                // thin border
+                        color = Color.LightGray.copy(alpha = 0.15f),     // light color border
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )  {
+                // First row: Description and Balance
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Wallet,
-                        contentDescription = null,
-                        tint = LedgerTheme.textSecondary(),
-                        modifier = Modifier.size(12.dp)
+                    // Description with limited width
+                    Text(
+                        text = "${transaction.description} - ${if (isSent) "Sent" else "Received"}",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Balance with fixed width
+                    Text(
+                        text = "Bal: ${balanceAtTransaction.toInt()}",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        maxLines = 1
+                    )
+                }
+
+
+                // Second row: Date and Account
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Date/Time
+                    Text(
+                        text = "${transaction.date} | ${transaction.time}",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    // Account
                     Text(
                         text = transaction.account ?: "Cash",
                         fontSize = 12.sp,
-                        color = LedgerTheme.textSecondary()
+                        color = Color.Gray,
+                        maxLines = 1
                     )
                 }
-                
-                // Edit and Delete buttons on the right
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    // Edit button
-                    IconButton(
-                        onClick = onEdit,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = Color(0xFF2196F3),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    
-                    // Delete button
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = LedgerTheme.redAmount,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+            }
+            Spacer(Modifier.width(4.dp))
+
+
+            // Right colored square with amount
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(amountColor.copy(alpha = 0.15f))
+                    .border(
+                        width = 1.dp,                // thin border
+                        color = Color.LightGray.copy(alpha = 0.15f),     // light color border
+                        shape = RoundedCornerShape(4.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if(transaction.type == TransactionType.SENT) {
+
+                    Text(
+                        text = "${transaction.amount.toInt()}",
+                        color = amountColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
     }
 }
+

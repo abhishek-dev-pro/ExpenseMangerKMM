@@ -94,7 +94,6 @@ fun PersonLedgerDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(LedgerTheme.backgroundColor())
-            .statusBarsPadding()
     ) {
         // Header
         Row(
@@ -108,7 +107,7 @@ fun PersonLedgerDetailScreen(
                     imageVector = Icons.Default.ChevronLeft,
                     contentDescription = "Back",
                     tint = LedgerTheme.textPrimary(),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
 
@@ -165,7 +164,7 @@ fun PersonLedgerDetailScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
                 .border(
                     width = 0.5.dp, // very thin border
@@ -173,7 +172,7 @@ fun PersonLedgerDetailScreen(
                     shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
                 ),
             colors = CardDefaults.cardColors(
-                containerColor = if (updatedPerson.balance < 0) Color(0xFF0F2419) else Color(0xFF2A1919)
+                containerColor = if (updatedPerson.balance < 0) Color(0xFF0F1619) else Color(0xFF2A1919)
             ),
             shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM)
         ) {
@@ -226,13 +225,13 @@ fun PersonLedgerDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Transaction Type Buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // You Sent Button
@@ -324,13 +323,13 @@ fun PersonLedgerDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Transaction History Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -356,13 +355,41 @@ fun PersonLedgerDetailScreen(
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Received",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = LedgerTheme.textPrimary()
+            )
+
+            Text(
+                text = "Transaction",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = LedgerTheme.textPrimary()
+            )
+
+            Text(
+                text = "Sent  ",
+                fontSize = 12.sp,
+                color = LedgerTheme.textSecondary()
+            )
+        }
+
+
 
         // Transactions List
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(transactions.withIndex().toList()) { (index, transaction) ->
                 // Use the stored balance at the time of this transaction
@@ -451,9 +478,7 @@ fun PersonLedgerDetailScreen(
                         }
                     }
                 )
-                if (transaction != transactions.last()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                }
+
             }
         }
     }
