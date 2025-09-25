@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -556,7 +557,7 @@ private fun MonthlySummaryCard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "${if (savings >= 0) "" else "-"}${kotlin.math.abs(savingsRate)}%",
+                                text = "${if (savingsRate >= 0) "" else "-"}${kotlin.math.abs(savingsRate)}%",
                                 color = Color.White,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold
@@ -1424,11 +1425,11 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                         .fillMaxSize()
                         .pointerInput(Unit) {
                             detectTapGestures(
-                                onPress = { offset ->
+                                onLongPress = { offset ->
                                     val center = Offset(size.width / 2f, size.height / 2f)
                                     val radius = kotlin.math.min(size.width, size.height) / 2f - 20f
                                     
-                                    // Calculate which segment is being hovered
+                                    // Calculate which segment is being long pressed
                                     val angle = kotlin.math.atan2(
                                         offset.y - center.y,
                                         offset.x - center.x
@@ -1447,8 +1448,11 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                                         currentAngle += sweepAngle
                                     }
                                     
-                                    // Keep showing tooltip while pressed
-                                    tryAwaitRelease()
+                                    // Keep tooltip visible while long pressing
+                                    // Tooltip will be hidden when long press ends
+                                },
+                                onPress = { offset ->
+                                    // Clear tooltip on regular press
                                     hoveredSegment = null
                                 }
                             )
@@ -1465,7 +1469,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                         val color = colors[index % colors.size]
                         val isHovered = hoveredSegment == index
                         
-                        // Draw outer arc with enhanced stroke for hovered segment
+                        // Draw outer arc with straight edges and enhanced stroke for hovered segment
                         drawArc(
                             color = color,
                             startAngle = startAngle,
@@ -1474,8 +1478,9 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                             topLeft = Offset(center.x - radius, center.y - radius),
                             size = Size(radius * 2, radius * 2),
                             style = Stroke(
-                                width = if (isHovered) 28.dp.toPx() else 20.dp.toPx(), 
-                                cap = StrokeCap.Round
+                                width = if (isHovered) 32.dp.toPx() else 24.dp.toPx(), 
+                                cap = StrokeCap.Butt,
+                                join = StrokeJoin.Miter
                             )
                         )
                         
@@ -1489,46 +1494,103 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                 ) {
                     Text(
                         text = "$currencySymbol${String.format("%.0f", totalAmount)}",
-                        fontSize = 20.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Total Spent",
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 
-                // Tooltip for hovered segment
+                // Tooltip for hovered segment - positioned next to the segment
                 hoveredSegment?.let { index ->
                     val (category, amount) = categoryData[index]
                     val percentage = (amount / totalAmount * 100).toInt()
                     
+                    // Calculate position based on segment angle
+                    var currentAngle = -90f
+                    for (i in 0 until index) {
+                        currentAngle += (categoryData[i].second / totalAmount * 360f).toFloat()
+                    }
+                    val segmentAngle = currentAngle + (amount / totalAmount * 360f / 2f) // Middle of segment
+                    
+                    // Smart positioning to utilize black spaces on left and right
+                    val radius = AppStyleDesignSystem.Sizes.ICON_SIZE_GIANT / 2f
+                    val angleRad = Math.toRadians(segmentAngle.toDouble())
+                    
+                    // Determine if segment is on left or right side of chart
+                    val isLeftSide = segmentAngle in 90f..270f
+                    
+                    // Position tooltip in black spaces on left or right
+                    val offsetX = if (isLeftSide) {
+                        -120.dp // Left side black space
+                    } else {
+                        120.dp // Right side black space
+                    }
+                    
+                    // Center vertically with slight adjustment based on segment position
+                    val baseY = (radius.value * kotlin.math.sin(angleRad)).toFloat()
+                    val offsetY = baseY.dp
+                    
                     Card(
                         modifier = Modifier
-                            .offset(y = (-120).dp)
-                            .padding(8.dp),
+                            .offset(x = offsetX, y = offsetY)
+                            .padding(8.dp)
+                            .width(140.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.Black.copy(alpha = 0.8f)
+                            containerColor = Color(0xFF1E1E1E)
                         ),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+                        border = BorderStroke(1.dp, Color(0xFF333333))
                     ) {
                         Column(
-                            modifier = Modifier.padding(12.dp),
+                            modifier = Modifier.padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
+                            // Category name with icon
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(
+                                            color = colors[index % colors.size],
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = category,
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // Amount
                             Text(
-                                text = category,
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = "$percentage%",
+                                text = "$currencySymbol${String.format("%.0f", amount)}",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
+                            )
+                            
+                            // Percentage
+                            Text(
+                                text = "$percentage% of total",
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
