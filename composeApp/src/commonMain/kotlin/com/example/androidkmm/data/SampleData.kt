@@ -16,7 +16,7 @@ object SampleData {
     )
 
     val navigationItems = listOf(
-        NavigationItem("Pal", Icons.Default.Home),
+        NavigationItem("Home", Icons.Default.Home),
         NavigationItem("Transactions", Icons.Default.CurrencyExchange),
         NavigationItem("Ledger", Icons.Default.AccountBalance),
         NavigationItem("Insights", Icons.Default.Analytics),
