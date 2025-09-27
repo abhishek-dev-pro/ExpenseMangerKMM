@@ -1261,14 +1261,6 @@ private fun IncomeCategoriesContent(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Add Custom Category Button
-        AddCustomCategoryButton(
-            text = "Add Custom Income Category",
-            onClick = onAddCustomCategory
-        )
     }
 }
 
@@ -1338,14 +1330,6 @@ private fun ExpenseCategoriesContent(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Add Custom Category Button
-        AddCustomCategoryButton(
-            text = "Add Custom Expense Category",
-            onClick = onAddCustomCategory
-        )
     }
 }
 
@@ -2707,102 +2691,132 @@ fun CategoriesScreen(
     
     var selectedCategoryTab by remember { mutableStateOf(CategoryTab.EXPENSE) }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp, vertical = 16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
     ) {
-        // Header with back button
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(bottom = 80.dp), // Space for sticky button
+            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SCREEN_SECTION_SPACING)
         ) {
-
-
-            Text(
-                text = "Categories",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .background(
-                        Color(0xFF2C2C2E),
-                        CircleShape
+            item {
+                // Header with back button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Categories",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
 
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
-                )
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier
+                            .background(
+                                Color(0xFF2C2C2E),
+                                CircleShape
+                            )
+                            .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                        )
+                    }
+                }
+            }
+            
+            item {
+                // Tab Row
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    Row(modifier = Modifier.padding(4.dp)) {
+                        TabButton(
+                            text = "Expense Categories",
+                            isSelected = selectedCategoryTab == CategoryTab.EXPENSE,
+                            onClick = { selectedCategoryTab = CategoryTab.EXPENSE },
+                            modifier = Modifier.weight(1f)
+                        )
+                        TabButton(
+                            text = "Income Categories",
+                            isSelected = selectedCategoryTab == CategoryTab.INCOME,
+                            onClick = { selectedCategoryTab = CategoryTab.INCOME },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            // Content based on selected tab
+            when (selectedCategoryTab) {
+                CategoryTab.EXPENSE -> {
+                    item {
+                        ExpenseCategoriesContent(
+                            categories = expenseCategories.value,
+                            customCategories = customCategories.value.filter { it.type == CategoryType.EXPENSE },
+                            onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
+                            onEditCategory = onEditCategory,
+                            onDeleteCategory = { category ->
+                                try {
+                                    categoryDatabaseManager.deleteCategory(category)
+                                } catch (e: Exception) {
+                                    println("Error deleting category: ${e.message}")
+                                }
+                            }
+                        )
+                    }
+                }
+                CategoryTab.INCOME -> {
+                    item {
+                        IncomeCategoriesContent(
+                            categories = incomeCategories.value,
+                            customCategories = customCategories.value.filter { it.type == CategoryType.INCOME },
+                            onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
+                            onEditCategory = onEditCategory,
+                            onDeleteCategory = { category ->
+                                try {
+                                    categoryDatabaseManager.deleteCategory(category)
+                                } catch (e: Exception) {
+                                    println("Error deleting category: ${e.message}")
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
         
-        // Tab Row
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        // Sticky Add Custom Category Button
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(
+                    MaterialTheme.colorScheme.background,
+                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+                .padding(
+                    horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL,
+                    vertical = AppStyleDesignSystem.Padding.MEDIUM
+                )
         ) {
-            Row(modifier = Modifier.padding(4.dp)) {
-                TabButton(
-                    text = "Expense Categories",
-                    isSelected = selectedCategoryTab == CategoryTab.EXPENSE,
-                    onClick = { selectedCategoryTab = CategoryTab.EXPENSE },
-                    modifier = Modifier.weight(1f)
-                )
-                TabButton(
-                    text = "Income Categories",
-                    isSelected = selectedCategoryTab == CategoryTab.INCOME,
-                    onClick = { selectedCategoryTab = CategoryTab.INCOME },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // Content based on selected tab
-        when (selectedCategoryTab) {
-            CategoryTab.EXPENSE -> {
-                ExpenseCategoriesContent(
-                    categories = expenseCategories.value,
-                    customCategories = customCategories.value.filter { it.type == CategoryType.EXPENSE },
-                    onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
-                    onEditCategory = onEditCategory,
-                    onDeleteCategory = { category ->
-                        try {
-                            categoryDatabaseManager.deleteCategory(category)
-                        } catch (e: Exception) {
-                            println("Error deleting category: ${e.message}")
-                        }
-                    }
-                )
-            }
-            CategoryTab.INCOME -> {
-                IncomeCategoriesContent(
-                    categories = incomeCategories.value,
-                    customCategories = customCategories.value.filter { it.type == CategoryType.INCOME },
-                    onAddCustomCategory = { onAddCategory(selectedCategoryTab) },
-                    onEditCategory = onEditCategory,
-                    onDeleteCategory = { category ->
-                        try {
-                            categoryDatabaseManager.deleteCategory(category)
-                        } catch (e: Exception) {
-                            println("Error deleting category: ${e.message}")
-                        }
-                    }
-                )
-            }
+            AddCustomCategoryButton(
+                text = if (selectedCategoryTab == CategoryTab.EXPENSE) "Add Custom Expense Category" else "Add Custom Income Category",
+                onClick = { onAddCategory(selectedCategoryTab) }
+            )
         }
     }
 }

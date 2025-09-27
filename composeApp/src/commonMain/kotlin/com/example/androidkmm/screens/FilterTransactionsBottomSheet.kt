@@ -83,13 +83,14 @@ fun FilterTransactionsBottomSheet(
     initialFilters: FilterOptions = FilterOptions()
 ) {
     if (!isVisible) return
-    
+
     var filterOptions by remember { mutableStateOf(initialFilters) }
-    
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.fillMaxSize(),
         dragHandle = {
             Box(
                 modifier = Modifier
@@ -121,106 +122,116 @@ private fun FilterContent(
     val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
     val accountDatabaseManager = rememberSQLiteAccountDatabase()
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
-    
+
     // Get currency symbol from settings
     val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = appSettings.value.currencySymbol
-    
+
     val categoriesState = categoryDatabaseManager.getAllCategories().collectAsState(initial = emptyList<Category>())
     val accountsState = accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList<Account>())
-    
+
     // Date picker states
     var showFromDatePicker by remember { mutableStateOf(false) }
     var showToDatePicker by remember { mutableStateOf(false) }
-    
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Header
-        FilterHeader(onDismiss = onDismiss)
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_XXL)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            // Transaction Type Section
-            item {
-                TransactionTypeSection(
-                    selectedType = filterOptions.transactionType,
-                    onTypeSelected = { type ->
-                        onFilterOptionsChange(filterOptions.copy(transactionType = type))
-                    }
-                )
-            }
-            
-            // Categories Section
-            item {
-                CategoriesSection(
-                    categories = categoriesState.value,
-                    selectedCategories = filterOptions.selectedCategories,
-                    onCategoryToggle = { categoryName ->
-                        val newSelected = if (filterOptions.selectedCategories.contains(categoryName)) {
-                            filterOptions.selectedCategories - categoryName
-                        } else {
-                            filterOptions.selectedCategories + categoryName
+            // Header
+            FilterHeader(onDismiss = onDismiss)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_XXL),
+                modifier = Modifier.weight(1f)
+            ) {
+                // Transaction Type Section
+                item {
+                    TransactionTypeSection(
+                        selectedType = filterOptions.transactionType,
+                        onTypeSelected = { type ->
+                            onFilterOptionsChange(filterOptions.copy(transactionType = type))
                         }
-                        onFilterOptionsChange(filterOptions.copy(selectedCategories = newSelected))
-                    }
-                )
-            }
-            
-            // Accounts Section
-            item {
-                AccountsSection(
-                    accounts = accountsState.value,
-                    selectedAccounts = filterOptions.selectedAccounts,
-                    onAccountToggle = { accountName ->
-                        val newSelected = if (filterOptions.selectedAccounts.contains(accountName)) {
-                            filterOptions.selectedAccounts - accountName
-                        } else {
-                            filterOptions.selectedAccounts + accountName
+                    )
+                }
+
+                // Categories Section
+                item {
+                    CategoriesSection(
+                        categories = categoriesState.value,
+                        selectedCategories = filterOptions.selectedCategories,
+                        onCategoryToggle = { categoryName ->
+                            val newSelected = if (filterOptions.selectedCategories.contains(categoryName)) {
+                                filterOptions.selectedCategories - categoryName
+                            } else {
+                                filterOptions.selectedCategories + categoryName
+                            }
+                            onFilterOptionsChange(filterOptions.copy(selectedCategories = newSelected))
                         }
-                        onFilterOptionsChange(filterOptions.copy(selectedAccounts = newSelected))
-                    }
-                )
+                    )
+                }
+
+                // Accounts Section
+                item {
+                    AccountsSection(
+                        accounts = accountsState.value,
+                        selectedAccounts = filterOptions.selectedAccounts,
+                        onAccountToggle = { accountName ->
+                            val newSelected = if (filterOptions.selectedAccounts.contains(accountName)) {
+                                filterOptions.selectedAccounts - accountName
+                            } else {
+                                filterOptions.selectedAccounts + accountName
+                            }
+                            onFilterOptionsChange(filterOptions.copy(selectedAccounts = newSelected))
+                        }
+                    )
+                }
+
+                // Date Range Section
+                item {
+                    DateRangeSection(
+                        dateRange = filterOptions.dateRange ?: DateRange(),
+                        onDateRangeChange = { newDateRange ->
+                            onFilterOptionsChange(filterOptions.copy(dateRange = newDateRange))
+                        },
+                        onShowFromDatePicker = { showFromDatePicker = true },
+                        onShowToDatePicker = { showToDatePicker = true }
+                    )
+                }
+
+                // Amount Range Section
+                item {
+                    AmountRangeSection(
+                        amountRange = filterOptions.amountRange ?: AmountRange(),
+                        onAmountRangeChange = { newAmountRange ->
+                            onFilterOptionsChange(filterOptions.copy(amountRange = newAmountRange))
+                        },
+                        currencySymbol = currencySymbol
+                    )
+                }
             }
-            
-            // Date Range Section
-            item {
-                DateRangeSection(
-                    dateRange = filterOptions.dateRange ?: DateRange(),
-                    onDateRangeChange = { newDateRange ->
-                        onFilterOptionsChange(filterOptions.copy(dateRange = newDateRange))
-                    },
-                    onShowFromDatePicker = { showFromDatePicker = true },
-                    onShowToDatePicker = { showToDatePicker = true }
-                )
-            }
-            
-            // Amount Range Section
-            item {
-                AmountRangeSection(
-                    amountRange = filterOptions.amountRange ?: AmountRange(),
-                    onAmountRangeChange = { newAmountRange ->
-                        onFilterOptionsChange(filterOptions.copy(amountRange = newAmountRange))
-                    },
-                    currencySymbol = currencySymbol
-                )
-            }
-            
-            // Action Buttons
-            item {
-                ActionButtons(
-                    onApplyFilters = onApplyFilters,
-                    onCancel = onDismiss
-                )
-            }
+
+            // Add extra space at the bottom to ensure content doesn't overlap with buttons
+            Spacer(modifier = Modifier.height(100.dp))
         }
+
+        // Action buttons fixed at the bottom
+        ActionButtons(
+            onApplyFilters = onApplyFilters,
+            onCancel = onDismiss,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
     }
-    
+
     // Date Picker Dialogs
     if (showFromDatePicker) {
         FilterDatePickerDialog(
@@ -239,7 +250,7 @@ private fun FilterContent(
             initialDate = filterOptions.dateRange?.from ?: ""
         )
     }
-    
+
     if (showToDatePicker) {
         FilterDatePickerDialog(
             onDismiss = { showToDatePicker = false },
@@ -282,7 +293,7 @@ private fun FilterHeader(onDismiss: () -> Unit) {
                     .align(Alignment.Center)
             )
         }
-        
+
         // Title and Subtitle
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
@@ -293,14 +304,14 @@ private fun FilterHeader(onDismiss: () -> Unit) {
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Text(
                 text = "Customize your transaction view",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
         }
-        
+
         // Close Icon
         IconButton(
             onClick = onDismiss,
@@ -1173,10 +1184,11 @@ private fun AmountRangeChip(
 @Composable
 private fun ActionButtons(
     onApplyFilters: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    modifier: Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
     ) {
         // Cancel Button
