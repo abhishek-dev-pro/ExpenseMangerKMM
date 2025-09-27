@@ -168,20 +168,20 @@ fun SearchTransactionsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding()
     ) {
         // Header Section
-        SearchHeader(
-            onBackClick = onBackClick,
-            onCloseClick = onCloseClick,
-            resultCount = filteredTransactions.size
-        )
+//        SearchHeader(
+//            onBackClick = onBackClick,
+//            onCloseClick = onCloseClick,
+//            resultCount = filteredTransactions.size
+//        )
         
         // Search and Filter Bar
         SearchAndFilterBar(
             searchQuery = searchQuery,
             onSearchQueryChange = { searchQuery = it },
-            onFilterClick = { showFilterBottomSheet = true }
+            onFilterClick = { showFilterBottomSheet = true },
+            onCloseClick  = onCloseClick
         )
         
         // Filter Summary
@@ -251,7 +251,7 @@ private fun SearchHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -278,14 +278,16 @@ private fun SearchHeader(
             Text(
                 text = "Search Transactions",
                 color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 16.sp
             )
             
             Text(
                 text = "$resultCount results found",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp
+                fontSize = 12.sp,
+                lineHeight = 12.sp
             )
         }
         
@@ -311,12 +313,13 @@ private fun SearchHeader(
 private fun SearchAndFilterBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onFilterClick: () -> Unit
+    onFilterClick: () -> Unit,
+    onCloseClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -327,7 +330,7 @@ private fun SearchAndFilterBar(
             modifier = Modifier.weight(1f),
             placeholder = {
                 Text(
-                    text = "Search by title, description,",
+                    text = "Search..",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp
                 )
@@ -367,6 +370,20 @@ private fun SearchAndFilterBar(
         ) {
             Icon(
                 imageVector = Icons.Default.FilterList,
+                contentDescription = "Filter",
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        IconButton(
+            onClick = onCloseClick,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
                 contentDescription = "Filter",
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
