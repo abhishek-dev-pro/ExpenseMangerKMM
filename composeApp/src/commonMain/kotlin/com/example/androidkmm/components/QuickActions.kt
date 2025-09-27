@@ -1,6 +1,9 @@
 package com.example.androidkmm.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -58,41 +61,28 @@ private fun QuickActionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .height(48.dp), // Reduced height for better proportions
-        colors = ButtonDefaults.buttonColors(
-            containerColor = color.copy(alpha = 0.15f), // Subtle background tint
-            contentColor = color // Bright action color for content
-        ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp), // More rounded corners
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.5.dp,
-            color = color.copy(alpha = 0.3f) // More visible border
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 6.dp,
-            pressedElevation = 3.dp,
-            hoveredElevation = 8.dp
-        )
+    Surface(
+        modifier = modifier.wrapContentHeight().clickable {onClick()},
+        color = color.copy(alpha = 0.15f),
+        contentColor = color,
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.5.dp, color.copy(alpha = 0.3f))
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.padding(vertical = 3.dp) // Add padding inside
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(20.dp) // Slightly smaller icon
+                modifier = Modifier.size(16.dp)
             )
-            Spacer(Modifier.width(6.dp))
             Text(
                 text = text,
-                fontSize = 16.sp, // Much larger text for better readability
-                fontWeight = FontWeight.SemiBold, // Bolder text
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
                 color = color
             )
         }
