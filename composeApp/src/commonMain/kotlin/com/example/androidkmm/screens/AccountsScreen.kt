@@ -103,16 +103,20 @@ fun AccountsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
                 IconButton(
                     onClick = onBackClick,
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                    modifier = Modifier
+                        .background(
+                            Color(0xFF2C2C2E),
+                            CircleShape
+                        )
+                        .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                     )
                 }
             }

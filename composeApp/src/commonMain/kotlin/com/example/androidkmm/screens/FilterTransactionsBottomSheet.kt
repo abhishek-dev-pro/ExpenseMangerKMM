@@ -316,15 +316,17 @@ private fun FilterHeader(onDismiss: () -> Unit) {
         IconButton(
             onClick = onDismiss,
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(
+                    Color(0xFF2C2C2E),
+                    CircleShape
+                )
+                .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Close",
+                contentDescription = "Back",
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
             )
         }
     }
