@@ -79,6 +79,7 @@ private fun QuickActionCard(
                 tint = color,
                 modifier = Modifier.size(16.dp)
             )
+            Spacer(modifier = Modifier.width(2.dp)) // Space between icon and text
             Text(
                 text = text,
                 fontSize = 14.sp,
