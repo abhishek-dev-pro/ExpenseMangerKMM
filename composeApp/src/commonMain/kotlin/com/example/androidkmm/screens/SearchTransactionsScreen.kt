@@ -375,17 +375,18 @@ private fun SearchAndFilterBar(
                 modifier = Modifier.size(20.dp)
             )
         }
-        IconButton(
-            onClick = onCloseClick,
+        Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .clickable(onClick = onCloseClick),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Filter",
-                tint = MaterialTheme.colorScheme.onBackground,
+                contentDescription = "Close",
+                tint = Color.Black,
                 modifier = Modifier.size(20.dp)
             )
         }

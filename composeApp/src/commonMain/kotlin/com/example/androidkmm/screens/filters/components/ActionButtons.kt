@@ -70,7 +70,7 @@ fun ActionButtons(
             Spacer(modifier = Modifier.width(8.dp))
             
             Text(
-                text = "Apply Filters",
+                text = "Apply",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )

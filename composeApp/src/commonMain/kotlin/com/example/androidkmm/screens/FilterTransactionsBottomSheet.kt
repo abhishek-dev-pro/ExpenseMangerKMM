@@ -1215,10 +1215,10 @@ private fun ActionButtons(
                 modifier = Modifier.size(16.dp)
             )
             
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             
             Text(
-                text = "Apply Filters",
+                text = "Apply",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
             )
