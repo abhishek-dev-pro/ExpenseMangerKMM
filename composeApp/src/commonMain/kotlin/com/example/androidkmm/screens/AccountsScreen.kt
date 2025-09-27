@@ -29,7 +29,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
@@ -145,80 +144,98 @@ fun AccountsScreen(
             // Content based on selected tab
             when (selectedTab) {
                 0 -> {
-                    // Accounts List
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
-                        contentPadding = PaddingValues(bottom = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
-                        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
+                    // Accounts List with sticky Add New Account button
+                    Box(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        if (activeAccounts.isEmpty()) {
-                            item {
-                                EmptyAccountsState(
-                                    onAddAccount = { showAddAccountSheet = true }
-                                )
-                            }
-                        } else {
-                            items(activeAccounts) { account ->
-                                NewAccountCard(
-                                    account = account,
-                                    onEditClick = {
-                                        selectedAccount = account
-                                        showEditAccountSheet = true
-                                    },
-                                    onDeleteClick = if (account.name.equals("Cash", ignoreCase = true)) {
-                                        { /* Cash account cannot be deleted */ }
-                                    } else {
-                                        {
-                                            // Check if account has transactions before deletion
-                                            scope.launch {
-                                                val hasTransactions = accountDatabaseManager.hasAccountTransactions(account.name)
-                                                if (hasTransactions) {
-                                                    // Show dialog warning
-                                                    accountToDelete = account
-                                                    showDeletionDialog = true
-                                                } else {
-                                                    // Safe to delete
-                                                    accountDatabaseManager.deleteAccount(account)
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL, vertical = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
+                            contentPadding = PaddingValues(
+                                bottom = 80.dp // Space for sticky button
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
+                        ) {
+                            if (activeAccounts.isEmpty()) {
+                                item {
+                                    EmptyAccountsState(
+                                        onAddAccount = { showAddAccountSheet = true }
+                                    )
+                                }
+                            } else {
+                                items(activeAccounts) { account ->
+                                    NewAccountCard(
+                                        account = account,
+                                        onEditClick = {
+                                            selectedAccount = account
+                                            showEditAccountSheet = true
+                                        },
+                                        onDeleteClick = if (account.name.equals("Cash", ignoreCase = true)) {
+                                            { /* Cash account cannot be deleted */ }
+                                        } else {
+                                            {
+                                                // Check if account has transactions before deletion
+                                                scope.launch {
+                                                    val hasTransactions = accountDatabaseManager.hasAccountTransactions(account.name)
+                                                    if (hasTransactions) {
+                                                        // Show dialog warning
+                                                        accountToDelete = account
+                                                        showDeletionDialog = true
+                                                    } else {
+                                                        // Safe to delete
+                                                        accountDatabaseManager.deleteAccount(account)
+                                                    }
                                                 }
                                             }
-                                        }
-                                    },
-                                    showDeleteButton = !account.name.equals("Cash", ignoreCase = true),
-                                    currencySymbol = currencySymbol
-                                )
-                            }
-                        }
-                        
-                        // Archived Accounts Section
-                        if (archivedAccounts.isNotEmpty()) {
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Archived Accounts",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
+                                        },
+                                        showDeleteButton = !account.name.equals("Cash", ignoreCase = true),
+                                        currencySymbol = currencySymbol
+                                    )
+                                }
                             }
                             
-                            items(archivedAccounts) { account ->
-                                ArchivedAccountCard(
-                                    account = account,
-                                    onUnarchiveClick = {
-                                        scope.launch {
-                                            accountDatabaseManager.unarchiveAccount(account.id)
-                                        }
-                                    },
-                                    currencySymbol = currencySymbol
-                                )
+                            // Archived Accounts Section
+                            if (archivedAccounts.isNotEmpty()) {
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "Archived Accounts",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                                
+                                items(archivedAccounts) { account ->
+                                    ArchivedAccountCard(
+                                        account = account,
+                                        onUnarchiveClick = {
+                                            scope.launch {
+                                                accountDatabaseManager.unarchiveAccount(account.id)
+                                            }
+                                        },
+                                        currencySymbol = currencySymbol
+                                    )
+                                }
                             }
                         }
                         
-                        // Add New Account Button
-                        item {
+                        // Sticky Add New Account Button
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.background,
+                                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                                )
+                                .padding(
+                                    horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL,
+                                    vertical = AppStyleDesignSystem.Padding.MEDIUM
+                                )
+                        ) {
                             AddNewAccountButton(
                                 onClick = { showAddAccountSheet = true }
                             )
@@ -303,101 +320,6 @@ fun AccountsScreen(
                 accountToDelete = null
             }
         )
-    }
-}
-
-@Composable
-private fun AccountCard(
-    account: Account,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    currencySymbol: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onEditClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(AppStyleDesignSystem.CornerRadius.LARGE),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Account Icon
-                Box(
-                    modifier = Modifier
-                        .size(AppStyleDesignSystem.Sizes.ICON_BUTTON_SIZE)
-                        .clip(CircleShape)
-                        .background(getAccountTypeColor(account.type)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = getAccountTypeIcon(account.type),
-                        contentDescription = account.type,
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Account Details
-                Column {
-                    Text(
-                        text = account.name,
-                        style = AppStyleDesignSystem.Typography.HEADLINE,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = account.type,
-                        style = AppStyleDesignSystem.Typography.CALL_OUT,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Balance and Actions
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    Text(
-                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
-                        style = AppStyleDesignSystem.Typography.HEADLINE,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        text = "Balance",
-                        style = AppStyleDesignSystem.Typography.FOOTNOTE,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(
-                    onClick = onDeleteClick,
-                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_XL)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = AccountsRedError,
-                        modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_SMALL)
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -743,41 +665,6 @@ private fun AccountsAccountTypeCard(
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun BankSelectionCard(
-    bankName: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) AccountsBluePrimary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
-        ),
-        shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) BorderStroke(2.dp, AccountsBluePrimary) else null
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(AppStyleDesignSystem.Padding.CARD_PADDING),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = bankName,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
             )
         }
     }
