@@ -345,7 +345,7 @@ private fun TransactionDetailsContent(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Edit Transaction")
+                    Text("Edit")
                 }
             }
         }
