@@ -228,7 +228,14 @@ fun EditLedgerEntryBottomSheet(
                                 val filtered = newValue.filter { it.isDigit() || it == '.' }
                                 // Allow only one decimal point
                                 val decimalCount = filtered.count { it == '.' }
-                                if (decimalCount <= 1) {
+                                
+                                // Limit to maximum 8 digits (excluding decimal point)
+                                val digitsOnly = filtered.filter { char -> char.isDigit() }
+                                
+                                // Check if it's a valid decimal format and within digit limit
+                                if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$")) && 
+                                    digitsOnly.length <= 8 && 
+                                    decimalCount <= 1) {
                                     amount = filtered
                                 }
                             },

@@ -56,7 +56,7 @@ fun TransactionItem(
             // Left colored square with amount
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(amountColor.copy(alpha = 0.15f))
                 .border(
@@ -82,7 +82,7 @@ fun TransactionItem(
             // Middle content - FIXED LAYOUT
             Column(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .weight(1f)
                     .clip(RoundedCornerShape(4.dp)) // rounded corners
                     .background(Color.Black)         // black background
@@ -152,7 +152,7 @@ fun TransactionItem(
             // Right colored square with amount
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(72.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .background(amountColor.copy(alpha = 0.15f))
                     .border(
