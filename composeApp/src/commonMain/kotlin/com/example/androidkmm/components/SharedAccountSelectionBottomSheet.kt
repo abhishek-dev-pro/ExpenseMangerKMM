@@ -113,9 +113,9 @@ fun SharedAccountSelectionBottomSheet(
                 SharedAccountCard(
                     account = account,
                     onClick = { 
-                        // Check if account has negative balance AND transaction type is EXPENSE AND warning is enabled
+                        // Check if account has zero or negative balance AND transaction type is EXPENSE AND warning is enabled
                         val balance = account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
-                        if (balance < 0 && transactionType == "EXPENSE" && negativeBalanceWarningEnabled) {
+                        if (balance <= 0 && transactionType == "EXPENSE" && negativeBalanceWarningEnabled) {
                             selectedAccount = account
                             showNegativeBalanceDialog = true
                         } else {
@@ -315,7 +315,7 @@ private fun NegativeBalanceWarningDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "⚠️ Negative Balance Warning",
+                text = "⚠️ Zero/Negative Balance Warning",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFFF6B35)
@@ -326,7 +326,11 @@ private fun NegativeBalanceWarningDialog(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "The account \"${account.name}\" has a negative balance of ${account.balance}.",
+                                text = if (account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0 == 0.0) {
+                                    "The account \"${account.name}\" has a zero balance."
+                                } else {
+                                    "The account \"${account.name}\" has a negative balance of ${account.balance}."
+                                },
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
