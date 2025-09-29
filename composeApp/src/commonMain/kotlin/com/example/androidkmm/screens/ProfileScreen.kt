@@ -126,7 +126,7 @@ fun ProfileMainScreen() {
     ) {
         when (currentScreen) {
             "profile" -> ProfileScreen(
-                transactionCount = transactionsState.value.size,
+                transactionCount = transactionsState.value.filter { it.category != "Account Operation" }.size,
                 groupCount = groupsState.value.size,
                 onAccountsClick = { currentScreen = "accounts" },
                 onCategoriesClick = { currentScreen = "categories" },

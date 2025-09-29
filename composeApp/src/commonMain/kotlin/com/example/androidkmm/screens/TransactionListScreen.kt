@@ -952,7 +952,7 @@ private fun DayGroupSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${dayGroup.displayDate} (${dayGroup.transactions.size})",
+                text = "${dayGroup.displayDate} (${dayGroup.transactions.filter { it.category != "Account Operation" }.size})",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = AppStyleDesignSystem.Typography.TRANSACTION_DATE_HEADING.copy(
                     fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
@@ -1102,6 +1102,18 @@ fun TransactionCard(
     currencySymbol: String,
     onClick: (Transaction) -> Unit = {}
 ) {
+    // Check if this is an account operation transaction
+    val isAccountOperation = transaction.category == "Account Operation"
+    
+    if (isAccountOperation) {
+        // Display as simple text line for account operations
+        AccountOperationLine(
+            transaction = transaction,
+            currencySymbol = currencySymbol
+        )
+        return
+    }
+
     // Debug: Print transaction details
     LaunchedEffect(transaction.id) {
         if (transaction.type == TransactionType.TRANSFER) {
@@ -4386,6 +4398,61 @@ private fun getAccountTypeColor(type: String): Color {
         else -> Color(0xFF2196F3)
     }
 }
+
+    /**
+     * Simple text line for account operation transactions
+     */
+    @Composable
+    private fun AccountOperationLine(
+        transaction: Transaction,
+        currencySymbol: String
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL,
+                    vertical = AppStyleDesignSystem.Padding.SMALL
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left side - Operation message (single line with ellipsis)
+            Text(
+                text = transaction.title,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            // Right side - Amount (single line with ellipsis)
+            val amountText = when (transaction.type) {
+                TransactionType.INCOME -> "+$currencySymbol${String.format("%.2f", transaction.amount)}"
+                TransactionType.EXPENSE -> "-$currencySymbol${String.format("%.2f", transaction.amount)}"
+                TransactionType.TRANSFER -> "$currencySymbol${String.format("%.2f", transaction.amount)}"
+            }
+
+            val amountColor = when (transaction.type) {
+                TransactionType.INCOME -> Color(0xFF00A63E)
+                TransactionType.EXPENSE -> Color(0xFFEF4444)
+                TransactionType.TRANSFER -> Color(0xFFFF9800)
+            }
+
+            Text(
+                text = amountText,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = amountColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
 
 
 

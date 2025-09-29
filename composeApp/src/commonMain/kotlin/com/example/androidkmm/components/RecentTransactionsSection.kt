@@ -60,7 +60,9 @@ fun RecentTransactionsSection(
                 transaction.id.isNotEmpty() && 
                 transaction.title.isNotEmpty() &&
                 transaction.date.isNotEmpty() &&
-                transaction.time.isNotEmpty()
+                transaction.time.isNotEmpty() &&
+                // Filter out account operation transactions
+                transaction.category != "Account Operation"
             }
             .sortedWith(compareByDescending<Transaction> { it.date }.thenByDescending { it.time })
             .take(3)

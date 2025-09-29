@@ -148,6 +148,14 @@ class SQLiteAccountDatabase(
                     is_custom = if (account.isCustom) 1L else 0L
                 )
                 println("DEBUG: Account inserted successfully into SQLite database")
+                
+                // Create account operation transaction
+                createAccountOperationTransaction(
+                    title = "New account '${account.name}' added with balance ${account.balance}",
+                    amount = account.balance.toDouble(),
+                    type = "INCOME"
+                )
+                
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error inserting account: ${e.message}")
@@ -159,6 +167,12 @@ class SQLiteAccountDatabase(
     fun updateAccount(account: Account, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         scope.launch {
             try {
+                println("DEBUG: updateAccount called for account: ${account.name}, balance: ${account.balance}")
+                
+                // Get old account data to track balance changes
+                val oldAccount = database.categoryDatabaseQueries.selectAccountById(account.id).executeAsOneOrNull()
+                println("DEBUG: Old account data: $oldAccount")
+                
                 database.categoryDatabaseQueries.updateAccount(
                     name = account.name,
                     balance = account.balance,
@@ -168,8 +182,38 @@ class SQLiteAccountDatabase(
                     is_custom = if (account.isCustom) 1L else 0L,
                     id = account.id
                 )
+                println("DEBUG: Account updated in database")
+                
+                // Create account operation transaction for update
+                if (oldAccount != null) {
+                    // Parse balances properly, handling currency symbols
+                    val oldBalance = parseBalance(oldAccount.balance)
+                    val newBalance = parseBalance(account.balance)
+                    val balanceChange = newBalance - oldBalance
+                    
+                    println("DEBUG: Old balance: ${oldAccount.balance} -> parsed: $oldBalance")
+                    println("DEBUG: New balance: ${account.balance} -> parsed: $newBalance")
+                    println("DEBUG: Balance change: $balanceChange")
+                    
+                    // Only create account operation if there's an actual balance change
+                    if (kotlin.math.abs(balanceChange) > 0.01) { // Use small threshold to avoid floating point issues
+                        val transactionType = if (balanceChange > 0) "INCOME" else "EXPENSE"
+                        println("DEBUG: Creating account operation transaction - balance change: $balanceChange, type: $transactionType")
+                        createAccountOperationTransaction(
+                            title = "Account '${account.name}' updated from ${oldAccount.balance} to ${account.balance} balance",
+                            amount = kotlin.math.abs(balanceChange),
+                            type = transactionType
+                        )
+                    } else {
+                        println("DEBUG: No significant balance change detected, skipping account operation transaction")
+                    }
+                } else {
+                    println("DEBUG: No old account data found, skipping account operation transaction")
+                }
+                
                 onSuccess()
             } catch (e: Exception) {
+                println("DEBUG: Error in updateAccount: ${e.message}")
                 onError(e)
             }
         }
@@ -178,6 +222,13 @@ class SQLiteAccountDatabase(
     fun deleteAccount(account: Account, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         scope.launch {
             try {
+                // Create account operation transaction before deleting
+                createAccountOperationTransaction(
+                    title = "Account '${account.name}' deleted with balance ${account.balance}",
+                    amount = account.balance.toDouble(),
+                    type = "EXPENSE"
+                )
+                
                 database.categoryDatabaseQueries.deleteAccount(account.id)
                 onSuccess()
             } catch (e: Exception) {
@@ -187,10 +238,33 @@ class SQLiteAccountDatabase(
     }
     
     fun updateAccountBalance(accountId: String, newBalance: Double, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
+        updateAccountBalanceInternal(accountId, newBalance, createAccountOperation = false, onSuccess, onError)
+    }
+    
+    fun updateAccountBalanceWithOperation(accountId: String, newBalance: Double, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
+        updateAccountBalanceInternal(accountId, newBalance, createAccountOperation = true, onSuccess, onError)
+    }
+    
+    private fun updateAccountBalanceInternal(accountId: String, newBalance: Double, createAccountOperation: Boolean, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         scope.launch {
             try {
+                // Get old account data to track balance changes
+                val oldAccount = database.categoryDatabaseQueries.selectAccountById(accountId).executeAsOneOrNull()
+                
                 database.categoryDatabaseQueries.updateAccountBalance(newBalance.toString(), accountId)
                 println("DEBUG: Account balance updated successfully: $accountId -> $newBalance")
+                
+                // Create account operation transaction only if explicitly requested
+                if (createAccountOperation && oldAccount != null) {
+                    val balanceChange = newBalance - oldAccount.balance.toDouble()
+                    val transactionType = if (balanceChange > 0) "INCOME" else "EXPENSE"
+                    createAccountOperationTransaction(
+                        title = "Account '${oldAccount.name}' updated from ${oldAccount.balance} to $newBalance balance",
+                        amount = kotlin.math.abs(balanceChange),
+                        type = transactionType
+                    )
+                }
+                
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error updating account balance: ${e.message}")
@@ -206,6 +280,44 @@ class SQLiteAccountDatabase(
         } catch (e: Exception) {
             println("DEBUG: Error checking transactions for account $accountName: ${e.message}")
             false
+        }
+    }
+    
+    /**
+     * Creates a special account operation transaction that appears as a simple text line
+     */
+    private fun createAccountOperationTransaction(
+        title: String,
+        amount: Double,
+        type: String
+    ) {
+        try {
+            val transactionId = java.util.UUID.randomUUID().toString()
+            val currentTime = System.currentTimeMillis()
+            val currentDate = java.time.LocalDate.now().toString()
+            
+            database.categoryDatabaseQueries.insertTransaction(
+                id = transactionId,
+                title = title,
+                amount = amount,
+                category_name = "Account Operation",
+                category_icon_name = "account_balance",
+                category_color_hex = "#FF6B6B",
+                account_name = "System",
+                account_icon_name = "account_balance",
+                account_color_hex = "#FF6B6B",
+                transfer_to = null,
+                time = currentTime.toString(),
+                type = type,
+                description = "",
+                date = currentDate,
+                is_ledger_transaction = 0L,
+                ledger_person_id = null,
+                ledger_person_name = null
+            )
+            println("DEBUG: Account operation transaction created: $title")
+        } catch (e: Exception) {
+            println("DEBUG: Error creating account operation transaction: ${e.message}")
         }
     }
     
@@ -248,8 +360,20 @@ class SQLiteAccountDatabase(
     
     suspend fun archiveAccount(accountId: String) {
         try {
+            // Get account data before archiving to create operation message
+            val account = database.categoryDatabaseQueries.selectAccountById(accountId).executeAsOneOrNull()
+            
             database.categoryDatabaseQueries.archiveAccount(accountId)
             println("DEBUG: Account $accountId archived successfully")
+            
+            // Create account operation transaction for archive
+            if (account != null) {
+                createAccountOperationTransaction(
+                    title = "Account '${account.name}' archived with balance ${account.balance}",
+                    amount = 0.0, // Archive has no financial impact
+                    type = "EXPENSE" // Use EXPENSE type but with 0 amount
+                )
+            }
         } catch (e: Exception) {
             println("DEBUG: Error archiving account $accountId: ${e.message}")
             throw e
@@ -258,11 +382,48 @@ class SQLiteAccountDatabase(
     
     suspend fun unarchiveAccount(accountId: String) {
         try {
+            // Get account data before unarchiving to create operation message
+            val account = database.categoryDatabaseQueries.selectAccountById(accountId).executeAsOneOrNull()
+            
             database.categoryDatabaseQueries.unarchiveAccount(accountId)
             println("DEBUG: Account $accountId unarchived successfully")
+            
+            // Create account operation transaction for unarchive
+            if (account != null) {
+                // Remove [ARCHIVED] prefix from name for display
+                val displayName = if (account.name.startsWith("[ARCHIVED]")) {
+                    account.name.substring(11)
+                } else {
+                    account.name
+                }
+                
+                createAccountOperationTransaction(
+                    title = "Account '${displayName}' unarchived with balance ${account.balance}",
+                    amount = 0.0, // Unarchive has no financial impact
+                    type = "INCOME" // Use INCOME type but with 0 amount
+                )
+            }
         } catch (e: Exception) {
             println("DEBUG: Error unarchiving account $accountId: ${e.message}")
             throw e
+        }
+    }
+    
+    /**
+     * Parse balance string, handling currency symbols and formatting
+     */
+    private fun parseBalance(balanceString: String): Double {
+        return try {
+            // Remove common currency symbols and whitespace
+            val cleaned = balanceString
+                .replace(Regex("[₹$€£¥₽₩₪₫₴₸₺₼₾₿]"), "") // Remove currency symbols
+                .replace(Regex("[,\\s]"), "") // Remove commas and whitespace
+                .trim()
+            
+            cleaned.toDoubleOrNull() ?: 0.0
+        } catch (e: Exception) {
+            println("DEBUG: Error parsing balance '$balanceString': ${e.message}")
+            0.0
         }
     }
 }
@@ -311,6 +472,7 @@ private fun Color.toHexString(): String {
     val blue = (this.blue * 255).toInt()
     return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
 }
+
 
 // Extension function to convert database row to Account
 private fun com.example.androidkmm.database.Account.toAccount(): com.example.androidkmm.models.Account {
