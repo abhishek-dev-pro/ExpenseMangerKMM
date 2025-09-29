@@ -231,7 +231,7 @@ fun TransactionsScreen(
     ) {
         // Fixed Header Section (sticky)
         TransactionHeader(
-            transactionCount = filteredTransactions.size,
+            transactionCount = filteredTransactions.filter { it.category != "Account Operation" }.size,
             onAddClick = { showAddSheet = true }
         )
 
