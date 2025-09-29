@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.activity.compose.BackHandler
+// BackHandler and LocalContext are platform-specific - will be handled in platform-specific code
 import com.example.androidkmm.components.*
 import com.example.androidkmm.database.InitializeDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
@@ -100,10 +100,10 @@ fun MainScreen() {
     // Initialize database
     InitializeDatabase()
     
-    // Handle back navigation
-    BackHandler {
-        handleBackNavigation()
-    }
+    // Handle back navigation - platform-specific implementation needed
+    // BackHandler {
+    //     handleBackNavigation()
+    // }
 
     // Handle tab selection with dialog/sheet management
     fun handleTabSelection(newTab: Int) {

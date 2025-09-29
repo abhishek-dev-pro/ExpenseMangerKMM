@@ -33,7 +33,7 @@ fun QuickActions(
         )
         Spacer(modifier = Modifier.height(8.dp)) // Reduced spacing after title
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp), // Better spacing between buttons
+            horizontalArrangement = Arrangement.spacedBy(16.dp), // Increased spacing between buttons
             modifier = Modifier.fillMaxWidth()
         ) {
             actions.forEach { action ->
@@ -62,28 +62,32 @@ private fun QuickActionCard(
     onClick: () -> Unit = {}
 ) {
     Surface(
-        modifier = modifier.wrapContentHeight().clickable {onClick()},
+        modifier = modifier
+            .height(56.dp) // Fixed height to make buttons more substantial
+            .clickable { onClick() },
         color = color.copy(alpha = 0.15f),
         contentColor = color,
-        shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.5.dp, color.copy(alpha = 0.3f))
+        shape = RoundedCornerShape(16.dp), // Slightly more rounded corners
+        border = BorderStroke(2.dp, color.copy(alpha = 0.4f)) // Slightly thicker border
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 3.dp) // Add padding inside
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 12.dp) // More generous padding
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = color,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(20.dp) // Larger icon
             )
-            Spacer(modifier = Modifier.width(2.dp)) // Space between icon and text
+            Spacer(modifier = Modifier.width(8.dp)) // More space between icon and text
             Text(
                 text = text,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp, // Larger text
+                fontWeight = FontWeight.Bold, // Bolder text
                 color = color
             )
         }
