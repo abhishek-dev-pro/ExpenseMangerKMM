@@ -238,6 +238,9 @@ fun AddAccountBottomSheet(
         // Add Account Button
         Button(
             onClick = {
+                println("DEBUG: AddAccountBottomSheet - Button clicked")
+                println("DEBUG: Account name: '$accountName', Type: '$selectedAccountType', Balance: '$initialBalance'")
+                
                 // Capitalize first letter of every word when saving
                 val capitalizedAccountName = if (accountName.isNotEmpty()) {
                     accountName.split(" ").joinToString(" ") { word ->
@@ -252,7 +255,7 @@ fun AddAccountBottomSheet(
                 }
                 
                 val account = Account(
-                    id = TimeUtils.currentTimeMillis().toString(),
+                    id = "${TimeUtils.currentTimeMillis()}_${kotlin.random.Random.nextInt(10000)}",
                     name = capitalizedAccountName,
                     balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
                     icon = when (selectedAccountType) {
@@ -265,6 +268,9 @@ fun AddAccountBottomSheet(
                     color = getAccountTypeColor(selectedAccountType),
                     type = selectedAccountType
                 )
+                println("DEBUG: Created account object: ${account.name}, ID: ${account.id}")
+                println("DEBUG: Account type: ${account.type}, Balance: ${account.balance}")
+                println("DEBUG: Calling onAccountAdded callback")
                 onAccountAdded(account)
             },
             enabled = isFormValid,

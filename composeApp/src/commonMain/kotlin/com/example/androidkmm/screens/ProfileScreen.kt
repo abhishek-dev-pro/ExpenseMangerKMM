@@ -185,20 +185,20 @@ fun ProfileMainScreen() {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 ) {
-                AddAccountBottomSheet(
-                    onDismiss = { showAddAccountSheet = false },
-                    onAccountAdded = { account ->
-                        accountDatabaseManager.addAccount(
-                            account = account,
-                            onSuccess = {
-                                showAddAccountSheet = false
-                            },
-                            onError = { error ->
-                                println("Error adding account: ${error.message}")
-                            }
-                        )
-                    }
-                )
+                    AddAccountBottomSheet(
+                        onDismiss = { showAddAccountSheet = false },
+                        onAccountAdded = { account ->
+                            accountDatabaseManager.addAccount(
+                                account = account,
+                                onSuccess = {
+                                    showAddAccountSheet = false
+                                },
+                                onError = { error ->
+                                    println("Error adding account: ${error.message}")
+                                }
+                            )
+                        }
+                    )
                 }
             }
         }

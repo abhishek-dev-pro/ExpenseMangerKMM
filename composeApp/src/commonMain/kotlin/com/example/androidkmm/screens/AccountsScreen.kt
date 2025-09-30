@@ -9,10 +9,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -263,9 +266,12 @@ fun AccountsScreen(
                 AddAccountBottomSheet(
                     onDismiss = { showAddAccountSheet = false },
                     onAccountAdded = { account ->
+                        println("DEBUG: AccountsScreen - onAccountAdded called with: ${account.name}")
                         scope.launch {
+                            println("DEBUG: AccountsScreen - Calling accountDatabaseManager.addAccount")
                             accountDatabaseManager.addAccount(account)
                         }
+                        println("DEBUG: AccountsScreen - Setting showAddAccountSheet = false")
                         showAddAccountSheet = false
                     },
                     accountDatabaseManager = accountDatabaseManager

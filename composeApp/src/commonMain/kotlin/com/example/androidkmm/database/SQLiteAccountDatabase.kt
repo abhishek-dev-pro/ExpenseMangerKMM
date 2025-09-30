@@ -132,9 +132,11 @@ class SQLiteAccountDatabase(
     
     fun addAccount(account: Account, onSuccess: () -> Unit = {}, onError: (Throwable) -> Unit = {}) {
         println("DEBUG: SQLiteAccountDatabase.addAccount called with: ${account.name}")
+        println("DEBUG: Account details - ID: ${account.id}, Type: ${account.type}, Balance: ${account.balance}")
         scope.launch {
             try {
                 // Check for duplicate account name
+                println("DEBUG: Checking for duplicate account name: ${account.name}")
                 val existing = database.categoryDatabaseQueries.selectAccountByName(account.name).executeAsOneOrNull()
                 if (existing != null) {
                     println("DEBUG: Duplicate account name found: ${account.name}")
@@ -142,6 +144,7 @@ class SQLiteAccountDatabase(
                     return@launch
                 }
                 
+                println("DEBUG: No duplicate found, proceeding with account insertion")
                 database.categoryDatabaseQueries.insertAccount(
                     id = account.id,
                     name = account.name,
@@ -154,16 +157,36 @@ class SQLiteAccountDatabase(
                 println("DEBUG: Account inserted successfully into SQLite database")
                 
                 // Create account operation transaction
+                println("DEBUG: Creating account operation transaction")
                 createAccountOperationTransaction(
                     title = "New account '${account.name}' added with balance ${account.balance}",
                     amount = account.balance.toDouble(),
                     type = "INCOME"
                 )
                 
+                println("DEBUG: Calling onSuccess callback")
                 onSuccess()
             } catch (e: Exception) {
                 println("DEBUG: Error inserting account: ${e.message}")
+                println("DEBUG: Error stack trace: ${e.stackTraceToString()}")
                 onError(e)
+            }
+        }
+    }
+    
+    // Debug function to test database connectivity
+    fun testDatabaseConnection() {
+        println("DEBUG: Testing database connection...")
+        scope.launch {
+            try {
+                val accountCount = database.categoryDatabaseQueries.getAccountCount().executeAsOne()
+                println("DEBUG: Database connection successful. Account count: $accountCount")
+                
+                val allAccounts = database.categoryDatabaseQueries.selectAllAccounts().executeAsList()
+                println("DEBUG: All accounts in database: ${allAccounts.map { it.name }}")
+            } catch (e: Exception) {
+                println("DEBUG: Database connection failed: ${e.message}")
+                println("DEBUG: Error stack trace: ${e.stackTraceToString()}")
             }
         }
     }

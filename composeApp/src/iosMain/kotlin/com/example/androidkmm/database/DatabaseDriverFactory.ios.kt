@@ -8,7 +8,17 @@ import app.cash.sqldelight.driver.native.NativeSqliteDriver
 
 actual class DatabaseDriverFactory {
     actual fun createDriver(): SqlDriver {
-        return NativeSqliteDriver(CategoryDatabase.Schema, "app_database_v13.db")
+        // Use a more specific path for iOS database
+        val databasePath = "app_database_v13.db"
+        println("DEBUG: Creating iOS database driver with path: $databasePath")
+        try {
+            val driver = NativeSqliteDriver(CategoryDatabase.Schema, databasePath)
+            println("DEBUG: iOS database driver created successfully")
+            return driver
+        } catch (e: Exception) {
+            println("DEBUG: Error creating iOS database driver: ${e.message}")
+            throw e
+        }
     }
 }
 

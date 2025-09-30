@@ -101,6 +101,12 @@ fun MainScreen() {
     // Initialize database
     InitializeDatabase()
     
+    // Test database connection on startup
+    LaunchedEffect(Unit) {
+        println("DEBUG: MainScreen - Testing database connection...")
+        accountDatabaseManager.testDatabaseConnection()
+    }
+    
     // Handle back navigation - platform-specific implementation needed
     // BackHandler {
     //     handleBackNavigation()

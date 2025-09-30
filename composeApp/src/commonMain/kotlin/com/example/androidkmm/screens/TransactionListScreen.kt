@@ -1376,7 +1376,8 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .weight(1f)
                 .imePadding()
-                .padding(top = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
+                .padding(top = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
+                .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
             contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SECTION_SPACING)
         ) {
