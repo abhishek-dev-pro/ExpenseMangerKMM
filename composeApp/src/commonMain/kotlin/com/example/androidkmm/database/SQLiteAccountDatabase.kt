@@ -2,6 +2,9 @@ package com.example.androidkmm.database
 
 import androidx.compose.material.icons.Icons
 import com.example.androidkmm.utils.TimeUtils
+import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -287,6 +290,7 @@ class SQLiteAccountDatabase(
     /**
      * Creates a special account operation transaction that appears as a simple text line
      */
+    @OptIn(ExperimentalTime::class)
     private fun createAccountOperationTransaction(
         title: String,
         amount: Double,
@@ -295,7 +299,10 @@ class SQLiteAccountDatabase(
         try {
             val transactionId = TimeUtils.currentTimeMillis().toString() + "_" + (0..999).random()
             val currentTime = TimeUtils.currentTimeMillis()
-            val currentDate = "2024-01-01" // Placeholder date
+            
+            // Get current date dynamically using the same approach as other parts of the codebase
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            val currentDate = "${now.date.year}-${now.date.monthNumber.toString().padStart(2, '0')}-${now.date.dayOfMonth.toString().padStart(2, '0')}"
             
             database.categoryDatabaseQueries.insertTransaction(
                 id = transactionId,
@@ -316,7 +323,7 @@ class SQLiteAccountDatabase(
                 ledger_person_id = null,
                 ledger_person_name = null
             )
-            println("DEBUG: Account operation transaction created: $title")
+            println("DEBUG: Account operation transaction created: $title with date: $currentDate")
         } catch (e: Exception) {
             println("DEBUG: Error creating account operation transaction: ${e.message}")
         }
