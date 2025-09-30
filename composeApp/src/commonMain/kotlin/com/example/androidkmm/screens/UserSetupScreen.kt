@@ -255,7 +255,7 @@ fun UserSetupScreen(
                             
                         } catch (e: Exception) {
                             println("DEBUG: Error during setup: ${e.message}")
-                            println("DEBUG: Error type: ${e.javaClass.simpleName}")
+                            println("DEBUG: Error type: ${e::class.simpleName}")
                             e.printStackTrace()
                             showError = true
                             errorMessage = "Failed to save your information: ${e.message}"

@@ -109,6 +109,7 @@ fun AddGroupExpenseScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(Modifier.height(24.dp))

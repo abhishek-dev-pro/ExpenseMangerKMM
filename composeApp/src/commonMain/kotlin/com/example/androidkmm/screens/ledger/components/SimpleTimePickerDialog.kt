@@ -64,7 +64,7 @@ fun SimpleTimePickerDialog(
                     onClick = {
                         val hour = timePickerState.hour
                         val minute = timePickerState.minute
-                        val timeString = String.format("%02d:%02d", hour, minute)
+                        val timeString = formatTime(hour, minute)
                         onTimeSelected(timeString)
                         showDialog = false
                     }
@@ -87,4 +87,10 @@ fun SimpleTimePickerDialog(
             containerColor = Color(0xFF1F1F1F)
         )
     }
+}
+
+private fun formatTime(hour: Int, minute: Int): String {
+    val hourStr = if (hour < 10) "0$hour" else hour.toString()
+    val minuteStr = if (minute < 10) "0$minute" else minute.toString()
+    return "$hourStr:$minuteStr"
 }

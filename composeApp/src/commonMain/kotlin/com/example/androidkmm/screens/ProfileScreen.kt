@@ -1795,6 +1795,8 @@ fun AddCategoryBottomSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(24.dp)
     ) {
         Row(

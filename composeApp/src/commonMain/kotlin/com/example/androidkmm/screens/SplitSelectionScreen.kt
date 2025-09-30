@@ -342,9 +342,9 @@ private fun SplitSelectionItem(
                 )
                 Text(
                     text = if (member.balance >= 0) 
-                        "Balance: +$${String.format("%.2f", member.balance)}" 
+                        "Balance: +$${formatDouble2Decimals(member.balance)}" 
                     else 
-                        "Balance: -$${String.format("%.2f", kotlin.math.abs(member.balance))}",
+                        "Balance: -$${formatDouble2Decimals(kotlin.math.abs(member.balance))}",
                     fontSize = 14.sp,
                     color = if (member.balance >= 0) 
                         Color(0xFF10B981) 
@@ -454,4 +454,11 @@ private fun CustomAmountInput(
             innerTextField()
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }

@@ -1,5 +1,6 @@
 package com.example.androidkmm.screens
 
+import com.example.androidkmm.utils.DateFormatUtils
 import DateRange
 import FilterOptions
 import SearchTransactionsScreen
@@ -61,8 +62,8 @@ fun InsightsScreen(
             2 -> if (currentYear % 4 == 0 && (currentYear % 100 != 0 || currentYear % 400 == 0)) 29 else 28
             else -> 30
         }
-        val monthStart = "${currentYear}-${String.format("%02d", currentMonth)}-01"
-        val monthEnd = "${currentYear}-${String.format("%02d", currentMonth)}-${String.format("%02d", daysInMonth)}"
+        val monthStart = "${currentYear}-${DateFormatUtils.formatInt(currentMonth, "%02d")}-01"
+        val monthEnd = "${currentYear}-${DateFormatUtils.formatInt(currentMonth, "%02d")}-${DateFormatUtils.formatInt(daysInMonth, "%02d")}"
         
         searchInitialFilters = FilterOptions(
             selectedCategories = setOf(category),
@@ -465,7 +466,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${String.format("%.0f", income)}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(income, "%.0f")}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -495,7 +496,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${String.format("%.0f", expenses)}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(expenses, "%.0f")}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -534,7 +535,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${String.format("%.0f", savings)}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(savings, "%.0f")}",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
@@ -795,7 +796,7 @@ private fun generateSmartInsights(
             insights.add(
                 SmartInsight(
                     title = "Savings Champion! 🏆",
-                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nYour future self is doing a happy dance!",
+                    description = "You've saved ${DateFormatUtils.formatDouble(savingsRate, "%.1f")}% of your income this month.\nYour future self is doing a happy dance!",
                     icon = Icons.Default.CheckCircle,
                     iconColor = Color(0xFF4CAF50),
                     backgroundColor = Color(0xFFE8F5E8)
@@ -806,7 +807,7 @@ private fun generateSmartInsights(
             insights.add(
                 SmartInsight(
                     title = "Financial Rockstar! 💪",
-                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nThe savings account is feeling the love!",
+                    description = "You've saved ${DateFormatUtils.formatDouble(savingsRate, "%.1f")}% of your income this month.\nThe savings account is feeling the love!",
                     icon = Icons.Default.CheckCircle,
                     iconColor = Color(0xFF4CAF50),
                     backgroundColor = Color(0xFFE8F5E8)
@@ -817,7 +818,7 @@ private fun generateSmartInsights(
             insights.add(
                 SmartInsight(
                     title = "Positive Progress! 📈",
-                    description = "You've saved ${String.format("%.1f", savingsRate)}% of your income this month.\nEvery penny saved is a penny earned!",
+                    description = "You've saved ${DateFormatUtils.formatDouble(savingsRate, "%.1f")}% of your income this month.\nEvery penny saved is a penny earned!",
                     icon = Icons.Default.Info,
                     iconColor = Color(0xFF2196F3),
                     backgroundColor = Color(0xFFE3F2FD)
@@ -828,7 +829,7 @@ private fun generateSmartInsights(
             insights.add(
                 SmartInsight(
                     title = "Spending Spree Alert! 💸",
-                    description = "You've spent ${String.format("%.1f", kotlin.math.abs(savingsRate))}% more than your income this month.\nYour wallet is having trust issues!",
+                    description = "You've spent ${DateFormatUtils.formatDouble(kotlin.math.abs(savingsRate), "%.1f")}% more than your income this month.\nYour wallet is having trust issues!",
                     icon = Icons.Default.Warning,
                     iconColor = Color(0xFFFF9800),
                     backgroundColor = Color(0xFFFFF3E0)
@@ -853,7 +854,7 @@ private fun generateSmartInsights(
                 insights.add(
                     SmartInsight(
                         title = "Category Spotlight: ${topCategory.first} 🌟",
-                        description = "${String.format("%.1f", topCategoryPercentage)}% of your expenses went to ${topCategory.first}.\n${topCategory.first} is clearly your favorite!",
+                        description = "${DateFormatUtils.formatDouble(topCategoryPercentage, "%.1f")}% of your expenses went to ${topCategory.first}.\n${topCategory.first} is clearly your favorite!",
                         icon = Icons.Default.PieChart,
                         iconColor = Color(0xFF9C27B0),
                         backgroundColor = Color(0xFFF3E5F5)
@@ -864,7 +865,7 @@ private fun generateSmartInsights(
                 insights.add(
                     SmartInsight(
                         title = "Top Spending Category 📊",
-                        description = "${topCategory.first} leads your expenses at ${String.format("%.1f", topCategoryPercentage)}%.\nThe ${topCategory.first} category is living its best life!",
+                        description = "${topCategory.first} leads your expenses at ${DateFormatUtils.formatDouble(topCategoryPercentage, "%.1f")}%.\nThe ${topCategory.first} category is living its best life!",
                         icon = Icons.Default.TrendingUp,
                         iconColor = Color(0xFF607D8B),
                         backgroundColor = Color(0xFFECEFF1)
@@ -882,7 +883,7 @@ private fun generateSmartInsights(
                 insights.add(
                     SmartInsight(
                         title = "High Spending Mode! 💸",
-                        description = "You've spent ${String.format("%.1f", expenseToIncomeRatio)}% of your income this month.\nYour bank account is working overtime!",
+                        description = "You've spent ${DateFormatUtils.formatDouble(expenseToIncomeRatio, "%.1f")}% of your income this month.\nYour bank account is working overtime!",
                         icon = Icons.Default.Warning,
                         iconColor = Color(0xFFFF5722),
                         backgroundColor = Color(0xFFFFEBEE)
@@ -893,7 +894,7 @@ private fun generateSmartInsights(
                 insights.add(
                     SmartInsight(
                         title = "Financial Efficiency Master! 🎯",
-                        description = "You only spent ${String.format("%.1f", expenseToIncomeRatio)}% of your income this month.\nYour wallet is practically untouched!",
+                        description = "You only spent ${DateFormatUtils.formatDouble(expenseToIncomeRatio, "%.1f")}% of your income this month.\nYour wallet is practically untouched!",
                         icon = Icons.Default.Star,
                         iconColor = Color(0xFFFFC107),
                         backgroundColor = Color(0xFFFFFDE7)
@@ -963,7 +964,7 @@ private fun generateSmartInsights(
             insights.add(
                 SmartInsight(
                     title = "Income Powerhouse! 💰",
-                    description = "Your income is ${String.format("%.1f", (income / expenses))}x your expenses.\nYou're basically a money-making machine!",
+                    description = "Your income is ${formatDouble1Decimal(income / expenses)}x your expenses.\nYou're basically a money-making machine!",
                     icon = Icons.Default.Star,
                     iconColor = Color(0xFFFFC107),
                     backgroundColor = Color(0xFFFFFDE7)
@@ -1248,7 +1249,7 @@ private fun ExpenseCard(expense: ExpenseData, currencySymbol: String = "$") {
             
             // Amount
             Text(
-                text = "-$currencySymbol${String.format("%.2f", expense.amount)}",
+                text = "-$currencySymbol${formatDouble2Decimals(expense.amount)}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFF44336)
@@ -1493,7 +1494,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "$currencySymbol${String.format("%.0f", totalAmount)}",
+                        text = "$currencySymbol${formatDouble0Decimals(totalAmount)}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -1519,7 +1520,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                     
                     // Smart positioning to utilize black spaces on left and right
                     val radius = AppStyleDesignSystem.Sizes.ICON_SIZE_GIANT / 2f
-                    val angleRad = Math.toRadians(segmentAngle.toDouble())
+                    val angleRad = kotlin.math.PI * segmentAngle.toDouble() / 180.0
                     
                     // Determine if segment is on left or right side of chart
                     val isLeftSide = segmentAngle in 90f..270f
@@ -1579,7 +1580,7 @@ private fun SpendingDonutChart(categoryData: List<Pair<String, Double>>, currenc
                             
                             // Amount
                             Text(
-                                text = "$currencySymbol${String.format("%.0f", amount)}",
+                                text = "$currencySymbol${formatDouble0Decimals(amount)}",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
@@ -1655,7 +1656,7 @@ private fun CategorySpendingItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "$currencySymbol${String.format("%.2f", amount)} • $percentage%",
+                    text = "$currencySymbol${formatDouble2Decimals(amount)} • $percentage%",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1746,7 +1747,7 @@ private fun SpendingTrendLineChart(
                 repeat(5) { index ->
                     val value = yAxisMax - (yAxisStep * index)
                     val displayValue = if (value >= 1000) {
-                        "${String.format("%.0f", value / 1000)}k"
+                        "${formatDouble0Decimals(value / 1000)}k"
                     } else {
                         "${value.toInt()}"
                     }
@@ -1953,7 +1954,7 @@ private fun SpendingTrendLineChart(
                                             if (kValue % 1.0 == 0.0) {
                                                 "${kValue.toInt()}k" // Show "2k" for 2000
                                             } else {
-                                                "${String.format("%.1f", kValue)}k" // Show "2.6k" for 2633
+                                                "${formatDouble1Decimal(kValue)}k" // Show "2.6k" for 2633
                                             }
                                         } else {
                                             "${value.toInt()}" // Show "500" for 500
@@ -2121,7 +2122,7 @@ private fun SavingsRateSection(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${String.format("%.1f", rate)}%",
+                        text = "${formatDouble1Decimal(rate)}%",
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (rate >= 0) Color(0xFF4CAF50) else Color(0xFFF44336), // Green for positive, red for negative
                         fontWeight = FontWeight.Medium
@@ -2147,3 +2148,21 @@ data class ExpenseData(
     val iconColor: Color,
     val icon: ImageVector
 )
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
+}
+
+private fun formatDouble1Decimal(value: Double): String {
+    val rounded = (value * 10.0).toLong()
+    val integerPart = rounded / 10
+    val decimalPart = (rounded % 10).toInt()
+    return "$integerPart.$decimalPart"
+}
+
+private fun formatDouble0Decimals(value: Double): String {
+    return value.toLong().toString()
+}

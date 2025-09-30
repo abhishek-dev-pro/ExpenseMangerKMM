@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.TimeUtils
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +60,7 @@ fun AddAccountBottomSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .imePadding()
             .padding(24.dp)
     ) {
         // Subtle top border line
@@ -250,7 +252,7 @@ fun AddAccountBottomSheet(
                 }
                 
                 val account = Account(
-                    id = System.currentTimeMillis().toString(),
+                    id = TimeUtils.currentTimeMillis().toString(),
                     name = capitalizedAccountName,
                     balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
                     icon = when (selectedAccountType) {

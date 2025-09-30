@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -94,33 +96,33 @@ fun SearchTransactionsScreen(
                 try {
                     when (dateRange.predefined) {
                         PredefinedDateRange.TODAY -> {
-                            val today = java.time.LocalDate.now().toString()
+                            val today = DateTimeUtils.getCurrentDate().toString()
                             transaction.date == today
                         }
                         PredefinedDateRange.THIS_WEEK -> {
-                            val today = java.time.LocalDate.now()
-                            val weekStart = today.minusDays(today.dayOfWeek.value.toLong() - 1)
-                            val weekEnd = weekStart.plusDays(6)
+                            val today = DateTimeUtils.getCurrentDate()
+                            val weekStart = today.minus(DatePeriod(days = (today.dayOfWeek.ordinal.toLong() - 1).toInt()))
+                            val weekEnd = weekStart.plus(DatePeriod(days = 6))
                             val transactionDate = parseTransactionDate(transaction.date)
-                            (transactionDate.isAfter(weekStart) || transactionDate.isEqual(weekStart)) && 
-                            (transactionDate.isBefore(weekEnd) || transactionDate.isEqual(weekEnd))
+                            (DateTimeUtils.isDateAfter(transactionDate, weekStart) || DateTimeUtils.isDateEqual(transactionDate, weekStart)) && 
+                            (DateTimeUtils.isDateBefore(transactionDate, weekEnd) || DateTimeUtils.isDateEqual(transactionDate, weekEnd))
                         }
                         PredefinedDateRange.THIS_MONTH -> {
-                            val today = java.time.LocalDate.now()
-                            val monthStart = today.withDayOfMonth(1)
-                            val monthEnd = today.withDayOfMonth(today.lengthOfMonth())
+                            val today = DateTimeUtils.getCurrentDate()
+                            val monthStart = LocalDate(today.year, today.month, 1)
+                            val monthEnd = LocalDate(today.year, today.month, 31) // Simplified - use 31 as max
                             val transactionDate = parseTransactionDate(transaction.date)
                             
                             // Use inclusive comparison: transaction date should be >= monthStart AND <= monthEnd
-                            (transactionDate.isAfter(monthStart) || transactionDate.isEqual(monthStart)) && 
-                            (transactionDate.isBefore(monthEnd) || transactionDate.isEqual(monthEnd))
+                            (DateTimeUtils.isDateAfter(transactionDate, monthStart) || DateTimeUtils.isDateEqual(transactionDate, monthStart)) && 
+                            (DateTimeUtils.isDateBefore(transactionDate, monthEnd) || DateTimeUtils.isDateEqual(transactionDate, monthEnd))
                         }
                         PredefinedDateRange.LAST_3_MONTHS -> {
-                            val today = java.time.LocalDate.now()
-                            val threeMonthsAgo = today.minusMonths(3)
+                            val today = DateTimeUtils.getCurrentDate()
+                            val threeMonthsAgo = today.minus(DatePeriod(months = 3))
                             val transactionDate = parseTransactionDate(transaction.date)
-                            (transactionDate.isAfter(threeMonthsAgo) || transactionDate.isEqual(threeMonthsAgo)) && 
-                            (transactionDate.isBefore(today) || transactionDate.isEqual(today))
+                            (DateTimeUtils.isDateAfter(transactionDate, threeMonthsAgo) || DateTimeUtils.isDateEqual(transactionDate, threeMonthsAgo)) && 
+                            (DateTimeUtils.isDateBefore(transactionDate, today) || DateTimeUtils.isDateEqual(transactionDate, today))
                         }
                         null -> {
                             // Custom date range
@@ -129,8 +131,8 @@ fun SearchTransactionsScreen(
                                     val fromDate = parseCustomDate(dateRange.from)
                                     val toDate = parseCustomDate(dateRange.to)
                                     val transactionDate = parseTransactionDate(transaction.date)
-                                    (transactionDate.isAfter(fromDate) || transactionDate.isEqual(fromDate)) && 
-                                    (transactionDate.isBefore(toDate) || transactionDate.isEqual(toDate))
+                                    (DateTimeUtils.isDateAfter(transactionDate, fromDate) || DateTimeUtils.isDateEqual(transactionDate, fromDate)) && 
+                                    (DateTimeUtils.isDateBefore(transactionDate, toDate) || DateTimeUtils.isDateEqual(transactionDate, toDate))
                                 } catch (e: Exception) {
                                     true // If date parsing fails, include the transaction
                                 }
@@ -657,42 +659,22 @@ private fun FilterSummary(
 }
 
 // Helper functions for date parsing
-private fun parseTransactionDate(dateString: String): java.time.LocalDate {
+private fun parseTransactionDate(dateString: String): LocalDate {
     return try {
         // Try YYYY-MM-DD format first (database format)
-        java.time.LocalDate.parse(dateString)
+        DateTimeUtils.parseDate(dateString) ?: DateTimeUtils.getCurrentDate()
     } catch (e: Exception) {
-        try {
-            // Try MM/DD/YYYY format
-            java.time.LocalDate.parse(dateString, java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy"))
-        } catch (e2: Exception) {
-            try {
-                // Try MM/DD/YYYY format with leading zeros
-                java.time.LocalDate.parse(dateString, java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"))
-            } catch (e3: Exception) {
-                // If all parsing fails, return today's date as fallback
-                java.time.LocalDate.now()
-            }
-        }
+        // If parsing fails, return today's date as fallback
+        DateTimeUtils.getCurrentDate()
     }
 }
 
-private fun parseCustomDate(dateString: String): java.time.LocalDate {
+private fun parseCustomDate(dateString: String): LocalDate {
     return try {
         // Try YYYY-MM-DD format first
-        java.time.LocalDate.parse(dateString)
+        DateTimeUtils.parseDate(dateString) ?: DateTimeUtils.getCurrentDate()
     } catch (e: Exception) {
-        try {
-            // Try MM/DD/YYYY format
-            java.time.LocalDate.parse(dateString, java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy"))
-        } catch (e2: Exception) {
-            try {
-                // Try MM/DD/YYYY format with leading zeros
-                java.time.LocalDate.parse(dateString, java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"))
-            } catch (e3: Exception) {
-                // If all parsing fails, return today's date as fallback
-                java.time.LocalDate.now()
-            }
-        }
+        // If parsing fails, return today's date as fallback
+        DateTimeUtils.getCurrentDate()
     }
 }

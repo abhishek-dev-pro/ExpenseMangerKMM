@@ -16,8 +16,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.DialogProperties
-import java.time.Instant
-import java.time.ZoneId
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
+import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +39,6 @@ import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.ExperimentalTime
 
 // AddLedgerEntryBottomSheet.kt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
@@ -151,7 +151,8 @@ fun AddLedgerEntryBottomSheet(
     ) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .imePadding(),
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -966,16 +967,22 @@ fun AddLedgerEntryBottomSheet(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+private fun formatTime(hour: Int, minute: Int): String {
+    val hourStr = if (hour < 10) "0$hour" else hour.toString()
+    val minuteStr = if (minute < 10) "0$minute" else minute.toString()
+    return "$hourStr:$minuteStr"
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun SimpleDatePickerDialog(
     onDismiss: () -> Unit,
     onDateSelected: (String) -> Unit,
     initialDate: String
 ) {
-    val today = java.time.LocalDate.now()
-    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val today = DateTimeUtils.getCurrentDate()
+    val todayMillis = DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
+    val tomorrowMillis = DateTimeUtils.getStartOfDay(today.plus(DatePeriod(days = 1))).toEpochMilliseconds()
     
     val datePickerState = rememberDatePickerState(
         selectableDates = object : androidx.compose.material3.SelectableDates {
@@ -1041,19 +1048,19 @@ fun SimpleDatePickerDialog(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val date = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
-                            val today = java.time.LocalDate.now()
+                            val date = DateTimeUtils.instantToLocalDate(
+                                Instant.fromEpochMilliseconds(millis)
+                            )
+                            val today = DateTimeUtils.getCurrentDate()
                             
                             // Check if selected date is in the future
-                            if (date.isAfter(today)) {
+                            if (DateTimeUtils.isDateAfter(date, today)) {
                                 // Don't allow future dates - just close dialog without selecting
                                 showDialog = false
                                 return@TextButton
                             }
                             
-                            val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
+                            val dateString = DateTimeUtils.formatDate(date)
                             onDateSelected(dateString)
                         }
                         showDialog = false
@@ -1133,7 +1140,7 @@ fun SimpleTimePickerDialog(
                     onClick = {
                         val hour = timePickerState.hour
                         val minute = timePickerState.minute
-                        val timeString = String.format("%02d:%02d", hour, minute)
+                        val timeString = formatTime(hour, minute)
                         onTimeSelected(timeString)
                         showDialog = false
                     }

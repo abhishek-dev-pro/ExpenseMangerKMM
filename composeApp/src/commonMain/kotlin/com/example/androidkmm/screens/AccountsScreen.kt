@@ -740,7 +740,7 @@ private fun NewAccountCard(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = "$currencySymbol${formatDouble2Decimals(account.balance.toDoubleOrNull() ?: 0.0)}",
                         fontSize = 14.sp,
                         color = AccountsGreenSuccess,
                         fontWeight = FontWeight.Medium
@@ -852,7 +852,7 @@ private fun ArchivedAccountCard(
                     horizontalAlignment = Alignment.End
                 ) {
                     Text(
-                        text = "$currencySymbol${String.format("%.2f", account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = "$currencySymbol${formatDouble2Decimals(account.balance.toDoubleOrNull() ?: 0.0)}",
                         style = AppStyleDesignSystem.Typography.HEADLINE,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1026,7 +1026,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "$currencySymbol${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = "$currencySymbol${formatDouble1Decimal(accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccountsGreenSuccess
@@ -1084,7 +1084,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "+$currencySymbol${String.format("%.1f", accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = "+$currencySymbol${formatDouble1Decimal(accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccountsGreenSuccess
@@ -1100,4 +1100,18 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
             ReadOnlyAccountCard(account = account, currencySymbol = currencySymbol)
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
+}
+
+private fun formatDouble1Decimal(value: Double): String {
+    val rounded = (value * 10.0).toLong()
+    val integerPart = rounded / 10
+    val decimalPart = (rounded % 10).toInt()
+    return "$integerPart.$decimalPart"
 }

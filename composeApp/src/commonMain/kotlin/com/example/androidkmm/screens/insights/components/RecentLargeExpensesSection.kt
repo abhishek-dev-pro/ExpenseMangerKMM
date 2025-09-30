@@ -94,7 +94,7 @@ fun RecentLargeExpensesSection(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "$currencySymbol${String.format("%.2f", expense.amount)}",
+                            text = "$currencySymbol${formatDouble2Decimals(expense.amount)}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.error
@@ -104,4 +104,11 @@ fun RecentLargeExpensesSection(
             }
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }

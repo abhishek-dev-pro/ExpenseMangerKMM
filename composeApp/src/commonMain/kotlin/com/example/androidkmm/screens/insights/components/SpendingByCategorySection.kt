@@ -92,7 +92,7 @@ fun SpendingByCategorySection(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "$currencySymbol${String.format("%.2f", amount)}",
+                            text = "$currencySymbol${formatDouble2Decimals(amount)}",
                             style = AppStyleDesignSystem.Typography.CALL_OUT.copy(
                                 fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                             ),
@@ -103,4 +103,11 @@ fun SpendingByCategorySection(
             }
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }

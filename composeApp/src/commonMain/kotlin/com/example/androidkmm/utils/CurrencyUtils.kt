@@ -1,5 +1,7 @@
 package com.example.androidkmm.utils
 
+import com.example.androidkmm.utils.DateFormatUtils
+
 /**
  * Utility functions for currency operations
  */
@@ -39,13 +41,13 @@ object CurrencyUtils {
      * Formats a double value to 2 decimal places
      */
     fun formatDouble(value: Double): String {
-        return String.format("%.2f", value)
+        return DateFormatUtils.formatDouble(value, "%.2f")
     }
     
     /**
      * Formats a double value with custom decimal places (for backward compatibility)
      */
     fun formatDouble(value: Double, decimalPlaces: Int = 2): String {
-        return String.format("%.${decimalPlaces}f", value)
+        return DateFormatUtils.formatDouble(value, "%.${decimalPlaces}f")
     }
 }

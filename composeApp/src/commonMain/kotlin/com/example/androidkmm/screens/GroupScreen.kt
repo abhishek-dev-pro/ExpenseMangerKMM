@@ -1,5 +1,6 @@
 package com.example.androidkmm.screens
 
+import com.example.androidkmm.utils.TimeUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -479,7 +480,7 @@ fun GroupCard(
 // Helper function to format date for group display
 fun formatDateForGroup(timestamp: Long): String {
     // For now, return a simple format. We can enhance this later
-    val currentTime = System.currentTimeMillis() / 1000L
+    val currentTime = TimeUtils.currentTimeMillis() / 1000L
     val daysDiff = ((currentTime - timestamp) / (24L * 60L * 60L)).toInt()
     
     return when {

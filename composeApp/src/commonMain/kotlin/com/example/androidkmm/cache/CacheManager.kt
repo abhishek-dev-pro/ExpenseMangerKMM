@@ -1,6 +1,7 @@
 package com.example.androidkmm.cache
 
 import com.example.androidkmm.utils.Logger
+import com.example.androidkmm.utils.TimeUtils
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Duration
@@ -44,12 +45,12 @@ class CacheManager<T> {
         val accessCount: Long = 0
     ) {
         fun isExpired(): Boolean {
-            return (System.currentTimeMillis() - createdAt) > ttl.inWholeMilliseconds
+            return (TimeUtils.currentTimeMillis() - createdAt) > ttl.inWholeMilliseconds
         }
         
         fun updateAccess(): CacheEntry<T> {
             return copy(
-                lastAccessed = System.currentTimeMillis(),
+                lastAccessed = TimeUtils.currentTimeMillis(),
                 accessCount = accessCount + 1
             )
         }
@@ -124,8 +125,8 @@ class CacheManager<T> {
         mutex.withLock {
             val entry = CacheEntry(
                 value = value,
-                createdAt = System.currentTimeMillis(),
-                lastAccessed = System.currentTimeMillis(),
+                createdAt = TimeUtils.currentTimeMillis(),
+                lastAccessed = TimeUtils.currentTimeMillis(),
                 ttl = ttl ?: defaultTtl,
                 accessCount = 0
             )

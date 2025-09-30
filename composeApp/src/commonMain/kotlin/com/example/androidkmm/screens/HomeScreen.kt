@@ -107,9 +107,9 @@ private fun GroupHighlights(
             
             val isPositive = userBalance >= 0
             val amountText = if (isPositive) {
-                "+$currencySymbol${String.format("%.2f", userBalance)}"
+                "+$currencySymbol${formatDouble2Decimals(userBalance)}"
             } else {
-                "$currencySymbol${String.format("%.2f", -userBalance)}"
+                "$currencySymbol${formatDouble2Decimals(-userBalance)}"
             }
             
             val chipText = if (isPositive) "You get" else "You owe"
@@ -204,4 +204,11 @@ private fun GroupHighlights(
             }
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }

@@ -3,6 +3,9 @@ package com.example.androidkmm.screens.ledger.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
+import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -10,16 +13,16 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.LedgerTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun SimpleDatePickerDialog(
     onDismiss: () -> Unit,
     onDateSelected: (String) -> Unit,
     initialDate: String
 ) {
-    val today = java.time.LocalDate.now()
-    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val today = DateTimeUtils.getCurrentDate()
+    val todayMillis = DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
+    val tomorrowMillis = DateTimeUtils.getStartOfDay(today.plus(DatePeriod(days = 1))).toEpochMilliseconds()
     
     val datePickerState = rememberDatePickerState(
         selectableDates = object : androidx.compose.material3.SelectableDates {
@@ -85,19 +88,19 @@ fun SimpleDatePickerDialog(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val date = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
-                            val today = java.time.LocalDate.now()
+                            val date = DateTimeUtils.instantToLocalDate(
+                                Instant.fromEpochMilliseconds(millis)
+                            )
+                            val today = DateTimeUtils.getCurrentDate()
                             
                             // Check if selected date is in the future
-                            if (date.isAfter(today)) {
+                            if (DateTimeUtils.isDateAfter(date, today)) {
                                 // Don't allow future dates - just close dialog without selecting
                                 showDialog = false
                                 return@TextButton
                             }
                             
-                            val dateString = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
+                            val dateString = DateTimeUtils.formatDate(date)
                             onDateSelected(dateString)
                         }
                         showDialog = false

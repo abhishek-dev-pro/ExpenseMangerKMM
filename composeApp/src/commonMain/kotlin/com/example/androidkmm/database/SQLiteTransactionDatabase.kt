@@ -66,7 +66,7 @@ class SQLiteTransactionDatabase(
     }
     
     fun getAllTransactions(): Flow<List<Transaction>> {
-        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.IO).map { list ->
+        return database.categoryDatabaseQueries.selectAllTransactions().asFlow().mapToList(Dispatchers.Default).map { list ->
             try {
                 // Use parallel processing for large datasets
                 if (list.size > 100) {
@@ -426,7 +426,7 @@ class SQLiteTransactionDatabase(
                 onSuccess()
             } catch (error: Exception) {
                 println("DEBUG: Exception caught in addTransactionWithBalanceUpdate: ${error.message}")
-                println("DEBUG: Exception type: ${error.javaClass.simpleName}")
+                println("DEBUG: Exception type: ${error::class.simpleName}")
                 error.printStackTrace()
                 
                 // Rollback the transaction if balance update fails
@@ -621,7 +621,7 @@ class SQLiteTransactionDatabase(
             println("DEBUG: updateAccountBalancesForTransaction completed successfully")
         } catch (e: Exception) {
             println("ERROR: Failed to update account balances for transaction ${transaction.id}: ${e.message}")
-            println("ERROR: Exception type: ${e.javaClass.simpleName}")
+            println("ERROR: Exception type: ${e::class.simpleName}")
             e.printStackTrace()
             Logger.error("Failed to update account balances", "SQLiteTransactionDatabase", e)
             throw e

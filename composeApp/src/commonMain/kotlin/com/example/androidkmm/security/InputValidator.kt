@@ -1,7 +1,7 @@
 package com.example.androidkmm.security
 
 import com.example.androidkmm.utils.Logger
-import java.util.regex.Pattern
+// Removed java.util.regex.Pattern import - using Kotlin Regex instead
 
 /**
  * Comprehensive input validation for security and data integrity

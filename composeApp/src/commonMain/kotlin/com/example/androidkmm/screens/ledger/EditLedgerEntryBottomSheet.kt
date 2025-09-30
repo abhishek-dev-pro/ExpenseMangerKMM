@@ -11,10 +11,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import java.time.Instant
-import java.time.ZoneId
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -146,7 +148,8 @@ fun EditLedgerEntryBottomSheet(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(LedgerTheme.backgroundColor())
-                    .navigationBarsPadding(),
+                    .navigationBarsPadding()
+                    .imePadding(),
                 contentPadding = PaddingValues(24.dp),
                 verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_XXL)
             ) {
@@ -563,15 +566,14 @@ fun EditLedgerEntryBottomSheet(
                     val month = currentDate[1].toInt()
                     val day = currentDate[2].toInt()
                     
-                    val today = java.time.LocalDate.now()
-                    val todayMillis = today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    val tomorrowMillis = today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val today = DateTimeUtils.getCurrentDate()
+                    val todayMillis = DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
+                    val tomorrowMillis = DateTimeUtils.getStartOfDay(today.plus(DatePeriod(days = 1))).toEpochMilliseconds()
                     
                     val datePickerState = rememberDatePickerState(
-                        initialSelectedDateMillis = java.time.LocalDate.of(year, month, day)
-                            .atStartOfDay(java.time.ZoneId.systemDefault())
-                            .toInstant()
-                            .toEpochMilli(),
+                        initialSelectedDateMillis = DateTimeUtils.createDate(year, month, day)?.let { date ->
+                            DateTimeUtils.getStartOfDay(date).toEpochMilliseconds()
+                        },
                         selectableDates = object : androidx.compose.material3.SelectableDates {
                             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                                 // Allow dates up to and including today
@@ -595,19 +597,19 @@ fun EditLedgerEntryBottomSheet(
                     Button(
                         onClick = {
                             datePickerState.selectedDateMillis?.let { millis ->
-                                val date = java.time.Instant.ofEpochMilli(millis)
-                                    .atZone(java.time.ZoneId.systemDefault())
-                                    .toLocalDate()
-                                val today = java.time.LocalDate.now()
+                                val date = DateTimeUtils.instantToLocalDate(
+                                    Instant.fromEpochMilliseconds(millis)
+                                )
+                                val today = DateTimeUtils.getCurrentDate()
                                 
                                 // Check if selected date is in the future
-                                if (date.isAfter(today)) {
+                                if (DateTimeUtils.isDateAfter(date, today)) {
                                     // Don't allow future dates - just close dialog without selecting
                                     showDatePicker = false
                                     return@Button
                                 }
                                 
-                                selectedDate = "${date.year}-${date.monthValue.toString().padStart(2, '0')}-${date.dayOfMonth.toString().padStart(2, '0')}"
+                                selectedDate = DateTimeUtils.formatDate(date)
                             }
                             showDatePicker = false
                         },

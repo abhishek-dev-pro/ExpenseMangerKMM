@@ -83,7 +83,7 @@ fun SavingsRateSection(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "${String.format("%.1f", savingsData.third)}%",
+                        text = "${formatDouble1Decimal(savingsData.third)}%",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (savingsData.third >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
@@ -97,4 +97,11 @@ fun SavingsRateSection(
             }
         }
     }
+}
+
+private fun formatDouble1Decimal(value: Double): String {
+    val rounded = (value * 10.0).toLong()
+    val integerPart = rounded / 10
+    val decimalPart = (rounded % 10).toInt()
+    return "$integerPart.$decimalPart"
 }

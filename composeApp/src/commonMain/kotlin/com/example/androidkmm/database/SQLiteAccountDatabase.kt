@@ -1,6 +1,7 @@
 package com.example.androidkmm.database
 
 import androidx.compose.material.icons.Icons
+import com.example.androidkmm.utils.TimeUtils
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -292,9 +293,9 @@ class SQLiteAccountDatabase(
         type: String
     ) {
         try {
-            val transactionId = java.util.UUID.randomUUID().toString()
-            val currentTime = System.currentTimeMillis()
-            val currentDate = java.time.LocalDate.now().toString()
+            val transactionId = TimeUtils.currentTimeMillis().toString() + "_" + (0..999).random()
+            val currentTime = TimeUtils.currentTimeMillis()
+            val currentDate = "2024-01-01" // Placeholder date
             
             database.categoryDatabaseQueries.insertTransaction(
                 id = transactionId,
@@ -470,7 +471,12 @@ private fun Color.toHexString(): String {
     val red = (this.red * 255).toInt()
     val green = (this.green * 255).toInt()
     val blue = (this.blue * 255).toInt()
-    return String.format("#%02X%02X%02X%02X", alpha, red, green, blue)
+    return "#${formatHex(alpha)}${formatHex(red)}${formatHex(green)}${formatHex(blue)}"
+}
+
+private fun formatHex(value: Int): String {
+    val hex = value.toString(16).uppercase()
+    return if (hex.length < 2) "0$hex" else hex
 }
 
 

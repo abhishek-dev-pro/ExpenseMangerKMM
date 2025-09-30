@@ -120,13 +120,20 @@ private fun DayGroupHeader(
             )
             
             TextUtils.StandardText(
-                text = "$${String.format("%.2f", totalAmount)}",
+                text = "$${formatDouble2Decimals(totalAmount)}",
                 fontSize = AppStyleDesignSystem.Typography.BODY.fontSize,
                 fontWeight = AppStyleDesignSystem.iOSFontWeights.semibold,
                 color = Color.Gray
             )
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }
 
 /**

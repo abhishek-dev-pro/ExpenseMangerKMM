@@ -1,5 +1,7 @@
 package com.example.androidkmm.utils
 
+import com.example.androidkmm.utils.TimeUtils
+
 /**
  * Centralized logging utility for the Android KMM application
  * 
@@ -96,11 +98,26 @@ object Logger {
      */
     private fun getCurrentTimestamp(): String {
         return try {
-            // Simple timestamp without complex time API
-            val now = System.currentTimeMillis()
-            val date = java.util.Date(now)
-            val formatter = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-            formatter.format(date)
+            // Simple timestamp using platform-agnostic time
+            val now = TimeUtils.currentTimeMillis()
+            val seconds = now / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+            
+            val year = 1970 + (days / 365)
+            val month = ((days % 365) / 30) + 1
+            val day = (days % 365) % 30 + 1
+            val hour = (hours % 24)
+            val minute = (minutes % 60)
+            val second = (seconds % 60)
+            
+            DateFormatUtils.formatInt(year.toInt(), "%04d") + "-" +
+            DateFormatUtils.formatInt(month.toInt(), "%02d") + "-" +
+            DateFormatUtils.formatInt(day.toInt(), "%02d") + " " +
+            DateFormatUtils.formatInt(hour.toInt(), "%02d") + ":" +
+            DateFormatUtils.formatInt(minute.toInt(), "%02d") + ":" +
+            DateFormatUtils.formatInt(second.toInt(), "%02d")
         } catch (e: Exception) {
             "Unknown"
         }

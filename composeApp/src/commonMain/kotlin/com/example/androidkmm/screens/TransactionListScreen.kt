@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
+import com.example.androidkmm.utils.DateFormatUtils
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -25,6 +26,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
+import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +68,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 // Color definitions matching the iOS design
 object TransactionColors {
@@ -369,7 +372,7 @@ fun TransactionsScreen(
                     onError = { error ->
                         println("DEBUG: TransactionListScreen - onError callback called")
                         println("DEBUG: TransactionListScreen - Error message: ${error.message}")
-                        println("DEBUG: TransactionListScreen - Error type: ${error.javaClass.simpleName}")
+                        println("DEBUG: TransactionListScreen - Error type: ${error::class.simpleName}")
                         error.printStackTrace()
 
                         // Check if it's an insufficient balance error
@@ -1372,6 +1375,7 @@ fun AddTransactionScreen(
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
+                .imePadding()
                 .padding(top = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL),
             contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.SECTION_SPACING)
@@ -3224,18 +3228,18 @@ private fun getSampleCategories(): List<TransactionCategory> {
 }
 
 // Date Picker Dialog
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 private fun DatePickerDialog(
     onDismiss: () -> Unit,
     onDateSelected: (String) -> Unit,
     initialDate: String = ""
 ) {
-    val today = java.time.LocalDate.now()
-    val todayMillis =
-        today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val tomorrowMillis =
-        today.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val today = DateTimeUtils.getCurrentDate()
+    val todayMillis = 
+        DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
+    val tomorrowMillis = 
+        DateTimeUtils.getStartOfDay(today.plus(DatePeriod(days = 1))).toEpochMilliseconds()
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
@@ -3245,13 +3249,14 @@ private fun DatePickerDialog(
                     val year = parts[0].toInt()
                     val month = parts[1].toInt()
                     val day = parts[2].toInt()
-                    val selectedDate = java.time.LocalDate.of(year, month, day)
+                    val selectedDate = DateTimeUtils.createDate(year, month, day)
                     // If the initial date is in the future, use today instead
-                    if (selectedDate.isAfter(today)) {
+                    if (selectedDate != null && DateTimeUtils.isDateAfter(selectedDate, today)) {
                         todayMillis
                     } else {
-                        selectedDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
-                            .toEpochMilli()
+                        selectedDate?.let { date ->
+                            DateTimeUtils.getStartOfDay(date).toEpochMilliseconds()
+                        } ?: todayMillis
                     }
                 } else null
             } catch (e: Exception) {
@@ -3274,15 +3279,15 @@ private fun DatePickerDialog(
     // Additional validation to prevent future date selection
     LaunchedEffect(datePickerState.selectedDateMillis) {
         datePickerState.selectedDateMillis?.let { selectedMillis ->
-            val selectedDate = java.time.Instant.ofEpochMilli(selectedMillis)
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate()
-            val today = java.time.LocalDate.now()
+            val selectedDate = DateTimeUtils.instantToLocalDate(
+                Instant.fromEpochMilliseconds(selectedMillis)
+            )
+            val today = DateTimeUtils.getCurrentDate()
 
             // If a future date is somehow selected, reset to today
-            if (selectedDate.isAfter(today)) {
+            if (DateTimeUtils.isDateAfter(selectedDate, today)) {
                 datePickerState.selectedDateMillis =
-                    today.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
             }
         }
     }
@@ -3338,21 +3343,19 @@ private fun DatePickerDialog(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val date = java.time.Instant.ofEpochMilli(millis)
-                                .atZone(java.time.ZoneId.systemDefault())
-                                .toLocalDate()
-                            val today = java.time.LocalDate.now()
+                            val date = DateTimeUtils.instantToLocalDate(
+                                Instant.fromEpochMilliseconds(millis)
+                            )
+                            val today = DateTimeUtils.getCurrentDate()
 
                             // Check if selected date is in the future
-                            if (date.isAfter(today)) {
+                            if (DateTimeUtils.isDateAfter(date, today)) {
                                 // Don't allow future dates - just close dialog without selecting
                                 showDialog = false
                                 return@TextButton
                             }
 
-                            val dateString = "${date.year}-${
-                                date.monthValue.toString().padStart(2, '0')
-                            }-${date.dayOfMonth.toString().padStart(2, '0')}"
+                            val dateString = DateTimeUtils.formatDate(date)
                             onDateSelected(dateString)
                         }
                         showDialog = false
@@ -3451,7 +3454,7 @@ private fun TimePickerDialog(
                     onClick = {
                         val hour = timePickerState.hour
                         val minute = timePickerState.minute
-                        val timeString = String.format("%02d:%02d", hour, minute)
+                        val timeString = DateFormatUtils.formatInt(hour, "%02d") + ":" + DateFormatUtils.formatInt(minute, "%02d")
                         onTimeSelected(timeString)
                         showDialog = false
                     }
@@ -4151,6 +4154,8 @@ fun AddCategoryBottomSheetForTransaction(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .imePadding()
             .padding(24.dp)
     ) {
         Row(
@@ -4432,9 +4437,9 @@ private fun getAccountTypeColor(type: String): Color {
 
             // Right side - Amount (single line with ellipsis)
             val amountText = when (transaction.type) {
-                TransactionType.INCOME -> "+$currencySymbol${String.format("%.2f", transaction.amount)}"
-                TransactionType.EXPENSE -> "-$currencySymbol${String.format("%.2f", transaction.amount)}"
-                TransactionType.TRANSFER -> "$currencySymbol${String.format("%.2f", transaction.amount)}"
+                TransactionType.INCOME -> "+$currencySymbol${DateFormatUtils.formatDouble(transaction.amount, "%.2f")}"
+                TransactionType.EXPENSE -> "-$currencySymbol${DateFormatUtils.formatDouble(transaction.amount, "%.2f")}"
+                TransactionType.TRANSFER -> "$currencySymbol${DateFormatUtils.formatDouble(transaction.amount, "%.2f")}"
             }
 
             val amountColor = when (transaction.type) {

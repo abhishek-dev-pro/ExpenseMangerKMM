@@ -1,7 +1,5 @@
 package com.example.androidkmm.utils
 
-import java.util.regex.Pattern
-
 /**
  * Input Sanitization Utilities
  * 
@@ -174,11 +172,11 @@ object InputSanitizer {
      */
     fun validateAndSanitizeEmail(input: String): Pair<String, String?> {
         val sanitized = sanitizeEmail(input)
-        val emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")
+        val emailPattern = Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")
         
         return when {
             sanitized.isEmpty() -> Pair(sanitized, "Email is required")
-            !emailPattern.matcher(sanitized).matches() -> Pair(sanitized, "Invalid email format")
+            !emailPattern.matches(sanitized) -> Pair(sanitized, "Invalid email format")
             else -> Pair(sanitized, null)
         }
     }

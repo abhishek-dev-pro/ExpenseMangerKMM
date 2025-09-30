@@ -90,7 +90,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$currencySymbol${String.format("%.2f", monthlyData.first)}",
+                        text = "$currencySymbol${formatDouble2Decimals(monthlyData.first)}",
                         style = AppStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -106,7 +106,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$currencySymbol${String.format("%.2f", monthlyData.second)}",
+                        text = "$currencySymbol${formatDouble2Decimals(monthlyData.second)}",
                         style = AppStyleDesignSystem.Typography.BODY,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -122,7 +122,7 @@ fun MonthlySummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "$currencySymbol${String.format("%.2f", monthlyData.third)}",
+                        text = "$currencySymbol${formatDouble2Decimals(monthlyData.third)}",
                         style = AppStyleDesignSystem.Typography.BODY,
                         color = if (monthlyData.third >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                     )
@@ -130,4 +130,11 @@ fun MonthlySummaryCard(
             }
         }
     }
+}
+
+private fun formatDouble2Decimals(value: Double): String {
+    val rounded = (value * 100.0).toLong()
+    val integerPart = rounded / 100
+    val decimalPart = (rounded % 100).toInt()
+    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
 }

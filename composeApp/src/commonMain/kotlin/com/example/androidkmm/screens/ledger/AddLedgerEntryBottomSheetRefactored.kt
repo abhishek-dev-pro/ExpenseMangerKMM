@@ -132,7 +132,8 @@ fun AddLedgerEntryBottomSheetRefactored(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .imePadding(),
             contentPadding = PaddingValues(AppStyleDesignSystem.Padding.XXS),
             verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.ARRANGEMENT_MEDIUM)
         ) {

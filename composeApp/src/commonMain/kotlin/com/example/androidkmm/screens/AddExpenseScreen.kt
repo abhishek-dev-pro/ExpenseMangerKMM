@@ -113,6 +113,7 @@ fun AddExpenseScreen(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
+                .imePadding()
                 .padding(horizontal = 24.dp)
         ) {
             Spacer(Modifier.height(24.dp))

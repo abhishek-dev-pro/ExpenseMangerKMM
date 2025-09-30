@@ -18,6 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.DateTimeUtils
+import kotlinx.datetime.*
+import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,6 +78,7 @@ object FilterColors {
     val transfer = Color(0xFF3B82F6)
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun FilterTransactionsBottomSheet(
     isVisible: Boolean,
@@ -1241,7 +1245,7 @@ private fun ActionButtons(
 }
 
 // Date Picker Dialog for Filter
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 private fun FilterDatePickerDialog(
     onDismiss: () -> Unit,
@@ -1256,10 +1260,9 @@ private fun FilterDatePickerDialog(
                     val year = parts[0].toInt()
                     val month = parts[1].toInt()
                     val day = parts[2].toInt()
-                    java.time.LocalDate.of(year, month, day)
-                        .atStartOfDay(java.time.ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    DateTimeUtils.createDate(year, month, day)?.let { date ->
+                        DateTimeUtils.getStartOfDay(date).toEpochMilliseconds()
+                    }
                 } else null
             } catch (e: Exception) {
                 null
@@ -1273,9 +1276,9 @@ private fun FilterDatePickerDialog(
     // Update display when date changes
     LaunchedEffect(datePickerState.selectedDateMillis) {
         datePickerState.selectedDateMillis?.let { millis ->
-            val localDate = java.time.Instant.ofEpochMilli(millis)
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate()
+            val localDate = DateTimeUtils.instantToLocalDate(
+                Instant.fromEpochMilliseconds(millis)
+            )
             selectedDateDisplay = "${localDate.dayOfMonth} ${localDate.month.name.lowercase().replaceFirstChar { it.uppercase() }}, ${localDate.year}"
         }
     }
@@ -1325,10 +1328,10 @@ private fun FilterDatePickerDialog(
             Button(
                 onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        val localDate = java.time.Instant.ofEpochMilli(millis)
-                            .atZone(java.time.ZoneId.systemDefault())
-                            .toLocalDate()
-                        val formattedDate = "${localDate.year}-${localDate.monthValue.toString().padStart(2, '0')}-${localDate.dayOfMonth.toString().padStart(2, '0')}"
+                        val localDate = DateTimeUtils.instantToLocalDate(
+                            Instant.fromEpochMilliseconds(millis)
+                        )
+                        val formattedDate = DateTimeUtils.formatDate(localDate)
                         onDateSelected(formattedDate)
                     }
                 },

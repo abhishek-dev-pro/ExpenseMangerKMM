@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.example.androidkmm.utils.TimeUtils
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
@@ -34,7 +35,7 @@ import kotlin.time.ExperimentalTime
  */
 data class NavigationState(
     val screen: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = TimeUtils.currentTimeMillis()
 )
 
 /**

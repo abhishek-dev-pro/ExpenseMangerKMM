@@ -59,7 +59,8 @@ fun SharedAccountSelectionBottomSheet(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .imePadding(),
             contentPadding = PaddingValues(0.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
