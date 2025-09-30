@@ -30,12 +30,15 @@ import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 import com.example.androidkmm.utils.Logger
 import com.example.androidkmm.utils.TextUtils
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import com.example.androidkmm.utils.DateFormatUtils
 
 /**
  * Balance card component showing total balance and monthly change
  */
+@OptIn(ExperimentalTime::class)
 @Composable
 fun BalanceCard(
     totalBalance: String? = null,
@@ -56,7 +59,14 @@ fun BalanceCard(
     
     // Get today's transactions for today's change calculation
     // Use a simple date string for now - in production, use proper date handling
-    val todayString = "2024-01-01" // Placeholder date
+    val todayString = remember {
+        // Get current date dynamically - using the same approach as other parts of the codebase
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val currentDate = now.date
+        val dateString = "${currentDate.year}-${currentDate.monthNumber.toString().padStart(2, '0')}-${currentDate.dayOfMonth.toString().padStart(2, '0')}"
+        println("DEBUG: BalanceCard - Using date: $dateString")
+        dateString
+    }
     
     // Use a more explicit state management for real-time updates
     var todaysTransactions by remember { mutableStateOf<List<Transaction>>(emptyList()) }
