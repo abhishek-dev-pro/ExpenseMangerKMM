@@ -1,7 +1,12 @@
 package com.example.androidkmm.screens.ledger.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -12,7 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.LedgerPerson
 import com.example.androidkmm.screens.ledger.LedgerTheme
@@ -37,39 +45,56 @@ fun PersonInputSection(
         Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.ARRANGEMENT_TINY))
 
         Column {
-            TextField(
-                value = personName,
-                onValueChange = { newValue ->
-                    // Limit to 20 characters
-                    if (newValue.length <= 20) {
-                        onPersonNameChanged(newValue)
-                        onShowSuggestionsChanged(newValue.isNotBlank() && suggestions.isNotEmpty())
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = LedgerTheme.textSecondary(),
+                    modifier = Modifier.padding(end = 12.dp)
+                )
+                val interactionSource = remember { MutableInteractionSource() }
+                val isFocused by interactionSource.collectIsFocusedAsState()
+                
+                BasicTextField(
+                    value = personName,
+                    onValueChange = { newValue ->
+                        // Limit to 20 characters
+                        if (newValue.length <= 20) {
+                            onPersonNameChanged(newValue)
+                            onShowSuggestionsChanged(newValue.isNotBlank() && suggestions.isNotEmpty())
+                        }
+                    },
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 16.sp
+                    ),
+                    singleLine = true,
+                    interactionSource = interactionSource,
+                    cursorBrush = SolidColor(Color.White),
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(
+                            Color.Transparent,
+                            RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = Color.White.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                ) { innerTextField ->
+                    if (personName.isEmpty() && !isFocused) {
+                        Text(
+                            text = "Enter name",
+                            color = LedgerTheme.textSecondary()
+                        )
                     }
-                },
-                placeholder = {
-                    Text(
-                        text = "Enter name",
-                        color = LedgerTheme.textSecondary()
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = LedgerTheme.textSecondary()
-                    )
-                },
-                colors = TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unfocusedTextColor = LedgerTheme.textPrimary(),
-                    focusedTextColor = LedgerTheme.textPrimary(),
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
-                modifier = Modifier.fillMaxWidth()
-            )
+                    innerTextField()
+                }
+            }
             
             // Show suggestions dropdown
             if (showSuggestions && suggestions.isNotEmpty()) {

@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -23,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -220,7 +225,19 @@ fun AddLedgerEntryBottomSheet(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Column {
-                            TextField(
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = LedgerTheme.textSecondary(),
+                                modifier = Modifier.padding(end = 12.dp)
+                            )
+                            val interactionSource = remember { MutableInteractionSource() }
+                            val isFocused by interactionSource.collectIsFocusedAsState()
+                            
+                            BasicTextField(
                                 value = personName,
                                 onValueChange = { newValue ->
                                     // Limit to 20 characters
@@ -229,30 +246,35 @@ fun AddLedgerEntryBottomSheet(
                                         showSuggestions = newValue.isNotBlank() && suggestions.isNotEmpty()
                                     }
                                 },
-                                placeholder = {
+                                textStyle = TextStyle(
+                                    color = Color.White,
+                                    fontSize = 16.sp
+                                ),
+                                singleLine = true,
+                                interactionSource = interactionSource,
+                                cursorBrush = SolidColor(Color.White),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(
+                                        Color.Transparent,
+                                        RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.White.copy(alpha = 0.3f),
+                                        shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                                    )
+                                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                            ) { innerTextField ->
+                                if (personName.isEmpty() && !isFocused) {
                                     Text(
                                         text = "Enter name",
                                         color = LedgerTheme.textSecondary()
                                     )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = null,
-                                        tint = LedgerTheme.textSecondary()
-                                    )
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    unfocusedTextColor = LedgerTheme.textPrimary(),
-                                    focusedTextColor = LedgerTheme.textPrimary(),
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent
-                                ),
-                                shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                                }
+                                innerTextField()
+                            }
+                        }
                             
                             // Show suggestions dropdown
                             if (showSuggestions && suggestions.isNotEmpty()) {
@@ -459,7 +481,10 @@ fun AddLedgerEntryBottomSheet(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Column {
-                        TextField(
+                        val amountInteractionSource = remember { MutableInteractionSource() }
+                        val isAmountFocused by amountInteractionSource.collectIsFocusedAsState()
+                        
+                        BasicTextField(
                             value = amount,
                             onValueChange = { newValue ->
                                 // Allow only numbers and one decimal point, max 2 decimal places
@@ -478,30 +503,35 @@ fun AddLedgerEntryBottomSheet(
                                     amount = filtered
                                 }
                             },
-                            placeholder = {
-                                Text(
-                                    text = "Enter amount",
-                                    color = LedgerTheme.textSecondary()
-                                )
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedContainerColor = Color(0xFF1F1F1F),
-                                unfocusedTextColor = LedgerTheme.textPrimary(),
-                                focusedTextColor = LedgerTheme.textPrimary(),
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent
+                            textStyle = TextStyle(
+                                color = LedgerTheme.textPrimary(),
+                                fontSize = 16.sp
                             ),
-                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            interactionSource = amountInteractionSource,
+                            cursorBrush = SolidColor(Color.White),
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .background(
+                                    Color(0xFF1F1F1F),
+                                    RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                                )
                                 .border(
                                     width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
-                                ),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                        )
+                                )
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                        ) { innerTextField ->
+                            if (amount.isEmpty() && !isAmountFocused) {
+                                Text(
+                                    text = "Enter amount",
+                                    color = LedgerTheme.textSecondary()
+                                )
+                            }
+                            innerTextField()
+                        }
                         
                         // Show error message
                         validationErrors["amount"]?.let { error ->
@@ -527,34 +557,41 @@ fun AddLedgerEntryBottomSheet(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Column {
-                        TextField(
+                        val descriptionInteractionSource = remember { MutableInteractionSource() }
+                        val isDescriptionFocused by descriptionInteractionSource.collectIsFocusedAsState()
+                        
+                        BasicTextField(
                             value = description,
                             onValueChange = { description = it },
-                            placeholder = {
-                                Text(
-                                    text = "e.g., Dinner split, Uber ride share (optional)",
-                                    color = LedgerTheme.textSecondary()
-                                )
-                            },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedContainerColor = Color(0xFF1F1F1F),
-                                unfocusedTextColor = LedgerTheme.textPrimary(),
-                                focusedTextColor = LedgerTheme.textPrimary(),
-                                unfocusedIndicatorColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent
+                            textStyle = TextStyle(
+                                color = LedgerTheme.textPrimary(),
+                                fontSize = 16.sp
                             ),
-                            shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL),
+                            interactionSource = descriptionInteractionSource,
+                            cursorBrush = SolidColor(Color.White),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .defaultMinSize(minHeight = AppStyleDesignSystem.Sizes.INPUT_HEIGHT)
+                                .background(
+                                    Color(0xFF1F1F1F),
+                                    RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
+                                )
                                 .border(
                                     width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
                                     color = Color.White.copy(alpha = 0.2f),
                                     shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
-                                ),
+                                )
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
                             maxLines = 3
-                        )
+                        ) { innerTextField ->
+                            if (description.isEmpty() && !isDescriptionFocused) {
+                                Text(
+                                    text = "e.g., Dinner split, Uber ride share (optional)",
+                                    color = LedgerTheme.textSecondary()
+                                )
+                            }
+                            innerTextField()
+                        }
                         
                         // Show error message
                         validationErrors["description"]?.let { error ->
