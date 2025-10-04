@@ -89,6 +89,10 @@ fun PersonLedgerDetailScreen(
     var showEditBottomSheet by remember { mutableStateOf(false) }
     var transactionToEdit by remember { mutableStateOf<LedgerTransaction?>(null) }
     var selectedTransactionType by remember { mutableStateOf("sent") } // "sent" or "received"
+    
+    // Delete confirmation dialog state
+    var showDeleteTransactionDialog by remember { mutableStateOf(false) }
+    var transactionToDelete by remember { mutableStateOf<LedgerTransaction?>(null) }
 
     Column(
         modifier = Modifier
@@ -409,53 +413,9 @@ fun PersonLedgerDetailScreen(
                         showEditBottomSheet = true
                     },
                     onDelete = {
-                        coroutineScope.launch {
-                            try {
-                                // Create a transaction object to reverse the account balance
-                                val transactionToReverse = com.example.androidkmm.models.Transaction(
-                                    id = "main_${transaction.id}",
-                                    title = transaction.description,
-                                    amount = transaction.amount,
-                                    category = "",
-                                    categoryIcon = Icons.Default.Category,
-                                    categoryColor = Color.Transparent,
-                                    account = transaction.account ?: "Cash", // Use the account from the ledger transaction
-                                    accountIcon = Icons.Default.Wallet,
-                                    accountColor = Color.Transparent,
-                                    time = transaction.time,
-                                    type = if (transaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) 
-                                        com.example.androidkmm.models.TransactionType.EXPENSE 
-                                    else 
-                                        com.example.androidkmm.models.TransactionType.INCOME,
-                                    description = transaction.description,
-                                    date = transaction.date
-                                )
-                                
-                                // Use the account database manager from the top level
-                                
-                                // Reverse the account balance changes
-                                transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
-                                    transaction = transactionToReverse,
-                                    accountDatabaseManager = accountDatabaseManager,
-                                    onSuccess = {
-                                        println("DEBUG: Account balance reversed successfully for transaction ${transaction.id}")
-                                    },
-                                    onError = { error ->
-                                        println("DEBUG: Error reversing account balance: ${error.message}")
-                                    }
-                                )
-                                
-                                // Delete the ledger transaction and update person balance
-                                ledgerDatabaseManager.deleteLedgerTransactionAndUpdatePerson(
-                                    transactionId = transaction.id,
-                                    personId = person.id
-                                )
-                                
-                                println("DEBUG: Ledger transaction deleted successfully")
-                            } catch (e: Exception) {
-                                println("DEBUG: Error deleting ledger transaction: ${e.message}")
-                            }
-                        }
+                        // Show confirmation dialog before deleting
+                        transactionToDelete = transaction
+                        showDeleteTransactionDialog = true
                     }
                 )
 
@@ -514,6 +474,117 @@ fun PersonLedgerDetailScreen(
             },
             transaction = transactionToEdit!!,
             person = updatedPerson
+        )
+    }
+    
+    // Delete Transaction Confirmation Dialog
+    if (showDeleteTransactionDialog && transactionToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteTransactionDialog = false
+                transactionToDelete = null
+            },
+            title = {
+                Text(
+                    text = "Delete Transaction",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete this transaction? This action cannot be undone and will update your account balance.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            try {
+                                val transaction = transactionToDelete!!
+                                
+                                // Create a transaction object to reverse the account balance
+                                val transactionToReverse = com.example.androidkmm.models.Transaction(
+                                    id = "main_${transaction.id}",
+                                    title = transaction.description,
+                                    amount = transaction.amount,
+                                    category = "",
+                                    categoryIcon = Icons.Default.Category,
+                                    categoryColor = Color.Transparent,
+                                    account = transaction.account ?: "Cash",
+                                    accountIcon = Icons.Default.Wallet,
+                                    accountColor = Color.Transparent,
+                                    time = transaction.time,
+                                    type = if (transaction.type == com.example.androidkmm.screens.ledger.TransactionType.SENT) 
+                                        com.example.androidkmm.models.TransactionType.EXPENSE 
+                                    else 
+                                        com.example.androidkmm.models.TransactionType.INCOME,
+                                    description = transaction.description,
+                                    date = transaction.date
+                                )
+                                
+                                // Reverse the account balance changes
+                                transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
+                                    transaction = transactionToReverse,
+                                    accountDatabaseManager = accountDatabaseManager,
+                                    onSuccess = {
+                                        println("DEBUG: Account balance reversed successfully for transaction ${transaction.id}")
+                                    },
+                                    onError = { error ->
+                                        println("DEBUG: Error reversing account balance: ${error.message}")
+                                    }
+                                )
+                                
+                                // Delete the ledger transaction and update person balance
+                                ledgerDatabaseManager.deleteLedgerTransactionAndUpdatePerson(
+                                    transactionId = transaction.id,
+                                    personId = person.id
+                                )
+                                
+                                println("DEBUG: Ledger transaction deleted successfully")
+                                
+                                // Close dialog and refresh person data
+                                showDeleteTransactionDialog = false
+                                transactionToDelete = null
+                                
+                                // Refresh person data
+                                val latestPerson = ledgerDatabaseManager.getLedgerPersonById(person.id)
+                                if (latestPerson != null) {
+                                    updatedPerson = latestPerson
+                                }
+                            } catch (e: Exception) {
+                                println("DEBUG: Error deleting ledger transaction: ${e.message}")
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Delete",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteTransactionDialog = false
+                        transactionToDelete = null
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         )
     }
 }
