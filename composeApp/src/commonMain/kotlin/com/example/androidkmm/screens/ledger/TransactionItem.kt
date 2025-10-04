@@ -54,29 +54,35 @@ fun TransactionItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Left colored square with amount
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(amountColor.copy(alpha = 0.15f))
-                .border(
-                    width = 1.dp,                // thin border
-            color = Color.LightGray.copy(alpha = 0.15f),     // light color border
-            shape = RoundedCornerShape(4.dp)
-            ),
-                contentAlignment = Alignment.Center
-            ) {
-                if(transaction.type == TransactionType.RECEIVED) {
-                    Text(
-                        text = "${transaction.amount.toInt()}",
-                        color = amountColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            if (transaction.type == TransactionType.RECEIVED) {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(amountColor.copy(alpha = 0.15f))
+                        .border(
+                            width = 1.dp,                // thin border
+                            color = Color.LightGray.copy(alpha = 0.15f),     // light color border
+                            shape = RoundedCornerShape(4.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (transaction.type == TransactionType.RECEIVED) {
+                        Text(
+                            text = "${transaction.amount.toInt()}",
+                            color = amountColor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                )
             }
             Spacer(Modifier.width(4.dp))
-
 
 
             // Middle content - FIXED LAYOUT
@@ -92,7 +98,7 @@ fun TransactionItem(
                         shape = RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
-            )  {
+            ) {
                 // First row: Description and Balance
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -150,6 +156,7 @@ fun TransactionItem(
 
 
             // Right colored square with amount
+            if (transaction.type == TransactionType.SENT) {
             Box(
                 modifier = Modifier
                     .size(72.dp)
@@ -162,7 +169,7 @@ fun TransactionItem(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if(transaction.type == TransactionType.SENT) {
+                if (transaction.type == TransactionType.SENT) {
 
                     Text(
                         text = "${transaction.amount.toInt()}",
@@ -172,6 +179,11 @@ fun TransactionItem(
                     )
                 }
             }
+        }else {
+        Box(
+            modifier = Modifier
+                .size(72.dp))
+    }
         }
     }
 }
