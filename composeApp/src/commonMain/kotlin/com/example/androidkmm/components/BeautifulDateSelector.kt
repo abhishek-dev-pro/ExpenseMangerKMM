@@ -360,18 +360,21 @@ private fun CalendarDateSelector(
     val today = DateTimeUtils.getCurrentDate()
     var currentMonth by remember { mutableStateOf(selectedDate) }
     
-    Column {
-        // Month Navigation
-        MonthNavigation(
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Enhanced Month Navigation with beautiful header
+        BeautifulMonthHeader(
             currentMonth = currentMonth,
             onMonthChange = { currentMonth = it },
-            maxDate = maxDate
+            maxDate = maxDate,
+            selectedDate = selectedDate
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         
-        // Calendar Grid
-        CalendarGrid(
+        // Enhanced Calendar Grid with better styling
+        BeautifulCalendarGrid(
             month = currentMonth,
             selectedDate = selectedDate,
             onDateSelected = onDateSelected,
@@ -381,56 +384,146 @@ private fun CalendarDateSelector(
 }
 
 @Composable
-private fun MonthNavigation(
+private fun BeautifulMonthHeader(
     currentMonth: LocalDate,
     onMonthChange: (LocalDate) -> Unit,
-    maxDate: LocalDate
+    maxDate: LocalDate,
+    selectedDate: LocalDate
 ) {
-    Row(
+    val today = DateTimeUtils.getCurrentDate()
+    val isCurrentMonth = currentMonth.year == today.year && currentMonth.monthNumber == today.monthNumber
+    
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = {
-                val newMonth = DateTimeUtils.addDays(currentMonth, -30)
-                if (!DateTimeUtils.isDateAfter(newMonth, maxDate)) {
-                    onMonthChange(newMonth)
-                }
-            },
-            enabled = !DateTimeUtils.isDateAfter(DateTimeUtils.addDays(currentMonth, -30), maxDate)
-        ) {
-            Icon(
-                imageVector = Icons.Default.ChevronLeft,
-                contentDescription = "Previous Month",
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-        
-        Text(
-            text = "${currentMonth.year} ${getMonthName(currentMonth.monthNumber)}",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        
-        IconButton(
-            onClick = {
-                val newMonth = DateTimeUtils.addDays(currentMonth, 30)
-                onMonthChange(newMonth)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentMonth) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             }
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Next Month",
-                tint = MaterialTheme.colorScheme.primary
-            )
+            // Month and Year with beautiful styling
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Previous month button
+                IconButton(
+                    onClick = {
+                        val newMonth = DateTimeUtils.addDays(currentMonth, -30)
+                        if (!DateTimeUtils.isDateAfter(newMonth, maxDate)) {
+                            onMonthChange(newMonth)
+                        }
+                    },
+                    enabled = !DateTimeUtils.isDateAfter(DateTimeUtils.addDays(currentMonth, -30), maxDate),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronLeft,
+                        contentDescription = "Previous Month",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                // Month and Year with gradient text
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = getMonthName(currentMonth.monthNumber),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isCurrentMonth) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                    Text(
+                        text = currentMonth.year.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isCurrentMonth) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
+                
+                // Next month button
+                IconButton(
+                    onClick = {
+                        val newMonth = DateTimeUtils.addDays(currentMonth, 30)
+                        onMonthChange(newMonth)
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "Next Month",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Selected date info
+            if (selectedDate.year == currentMonth.year && selectedDate.monthNumber == currentMonth.monthNumber) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Event,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Selected: ${DateTimeUtils.formatDate(selectedDate)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun CalendarGrid(
+private fun BeautifulCalendarGrid(
     month: LocalDate,
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
@@ -440,39 +533,51 @@ private fun CalendarGrid(
     val firstDayOfMonth = LocalDate(month.year, month.monthNumber, 1)
     val lastDayOfMonth = firstDayOfMonth.plus(DatePeriod(months = 1)).minus(DatePeriod(days = 1))
     
-    // Generate calendar days
+    // Generate calendar days with enhanced information
     val calendarDays = remember(month) {
-        val days = mutableListOf<CalendarDay>()
+        val days = mutableListOf<EnhancedCalendarDay>()
         
         // Add days from previous month
         val startDate = firstDayOfMonth.minus(DatePeriod(days = firstDayOfMonth.dayOfWeek.ordinal))
         for (i in 0 until firstDayOfMonth.dayOfWeek.ordinal) {
             val date = startDate.plus(DatePeriod(days = i))
-            days.add(CalendarDay(date, false, false))
+            val isPast = DateTimeUtils.isDateAfter(today, date)
+            val isSelectable = !DateTimeUtils.isDateAfter(date, maxDate)
+            days.add(EnhancedCalendarDay(date, false, isSelectable, isPast, false))
         }
         
         // Add days of current month
         for (day in 1..lastDayOfMonth.dayOfMonth) {
             val date = LocalDate(month.year, month.monthNumber, day)
             val isToday = date == today
+            val isPast = DateTimeUtils.isDateAfter(today, date)
             val isSelectable = !DateTimeUtils.isDateAfter(date, maxDate)
-            days.add(CalendarDay(date, isToday, isSelectable))
+            val isCurrentMonth = true
+            days.add(EnhancedCalendarDay(date, isToday, isSelectable, isPast, isCurrentMonth))
         }
         
         // Add days from next month to complete the grid
         val remainingDays = 42 - days.size
         for (i in 1..remainingDays) {
             val date = lastDayOfMonth.plus(DatePeriod(days = i))
-            days.add(CalendarDay(date, false, false))
+            val isPast = DateTimeUtils.isDateAfter(today, date)
+            val isSelectable = !DateTimeUtils.isDateAfter(date, maxDate)
+            days.add(EnhancedCalendarDay(date, false, isSelectable, isPast, false))
         }
         
         days
     }
     
     Column {
-        // Day headers
+        // Beautiful day headers with enhanced styling
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(vertical = 12.dp)
         ) {
             listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
                 Box(
@@ -481,19 +586,19 @@ private fun CalendarGrid(
                 ) {
                     Text(
                         text = day,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
-        // Calendar grid
+        // Enhanced calendar grid
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             items(6) { week ->
                 Row(
@@ -502,7 +607,7 @@ private fun CalendarGrid(
                 ) {
                     for (dayIndex in 0..6) {
                         val day = calendarDays[week * 7 + dayIndex]
-                        CalendarDayItem(
+                        BeautifulCalendarDayItem(
                             day = day,
                             isSelected = day.date == selectedDate,
                             onClick = { if (day.isSelectable) onDateSelected(day.date) }
@@ -515,13 +620,13 @@ private fun CalendarGrid(
 }
 
 @Composable
-private fun CalendarDayItem(
-    day: CalendarDay,
+private fun BeautifulCalendarDayItem(
+    day: EnhancedCalendarDay,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     val animatedScale by animateFloatAsState(
-        targetValue = if (isSelected) 1.1f else 1f,
+        targetValue = if (isSelected) 1.15f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -529,38 +634,80 @@ private fun CalendarDayItem(
         label = "day_scale"
     )
     
-    Box(
+    val animatedElevation by animateDpAsState(
+        targetValue = if (isSelected) 8.dp else 2.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "day_elevation"
+    )
+    
+    Card(
         modifier = Modifier
-            .size(40.dp)
+            .size(44.dp)
             .scale(animatedScale)
-            .clickable(enabled = day.isSelectable) { onClick() }
-            .background(
-                color = when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                    else -> Color.Transparent
-                },
-                shape = CircleShape
-            )
-            .border(
-                width = if (day.isToday && !isSelected) 2.dp else 0.dp,
-                color = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
-            ),
-        contentAlignment = Alignment.Center
+            .clickable(enabled = day.isSelectable) { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primary
+                day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                day.isPast && day.isCurrentMonth -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                !day.isCurrentMonth -> MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                else -> Color.Transparent
+            }
+        ),
+        shape = CircleShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation),
+        border = when {
+            isSelected -> BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
+            day.isToday && !isSelected -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            day.isPast && day.isCurrentMonth -> BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+            else -> null
+        }
     ) {
-        Text(
-            text = day.date.dayOfMonth.toString(),
-            color = when {
-                isSelected -> MaterialTheme.colorScheme.onPrimary
-                !day.isSelectable -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                day.isToday -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.onSurface
-            },
-            fontWeight = if (isSelected || day.isToday) FontWeight.SemiBold else FontWeight.Normal,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = day.date.dayOfMonth.toString(),
+                    color = when {
+                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                        !day.isSelectable -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        day.isToday -> MaterialTheme.colorScheme.primary
+                        day.isPast && day.isCurrentMonth -> MaterialTheme.colorScheme.onSurfaceVariant
+                        !day.isCurrentMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        else -> MaterialTheme.colorScheme.onSurface
+                    },
+                    fontWeight = when {
+                        isSelected -> FontWeight.Bold
+                        day.isToday -> FontWeight.SemiBold
+                        day.isPast && day.isCurrentMonth -> FontWeight.Medium
+                        else -> FontWeight.Normal
+                    },
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+                
+                // Add a small indicator for today
+                if (day.isToday && !isSelected) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(4.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -576,6 +723,14 @@ private data class CalendarDay(
     val date: LocalDate,
     val isToday: Boolean,
     val isSelectable: Boolean
+)
+
+private data class EnhancedCalendarDay(
+    val date: LocalDate,
+    val isToday: Boolean,
+    val isSelectable: Boolean,
+    val isPast: Boolean,
+    val isCurrentMonth: Boolean
 )
 
 private enum class DateSelectorTab(
