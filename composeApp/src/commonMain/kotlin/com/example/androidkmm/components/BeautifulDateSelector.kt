@@ -96,9 +96,9 @@ private fun DateSelectorTabs(
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             )
-            .padding(4.dp)
+            .padding(2.dp)
     ) {
         DateSelectorTab.values().forEach { tab ->
             val isSelected = selectedTab == tab
@@ -122,14 +122,14 @@ private fun DateSelectorTabs(
                         } else {
                             Color.Transparent
                         },
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(6.dp)
                     )
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 8.dp, horizontal = 4.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
                         imageVector = tab.icon,
@@ -139,7 +139,7 @@ private fun DateSelectorTabs(
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(14.dp)
                     )
                     Text(
                         text = tab.title,
@@ -149,7 +149,7 @@ private fun DateSelectorTabs(
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                        fontSize = 14.sp
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -215,7 +215,7 @@ private fun QuickDateSelector(
     }
     
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(quickOptions) { option ->
             QuickDateOptionCard(
@@ -263,29 +263,29 @@ private fun QuickDateOptionCard(
                 MaterialTheme.colorScheme.surface
             }
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation),
         border = if (isSelected) {
-            BorderStroke(2.dp, option.color.copy(alpha = 0.6f))
+            BorderStroke(1.5.dp, option.color.copy(alpha = 0.6f))
         } else {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
         }
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Icon with gradient background
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(32.dp)
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
@@ -301,7 +301,7 @@ private fun QuickDateOptionCard(
                         imageVector = option.icon,
                         contentDescription = null,
                         tint = option.color,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 
@@ -314,7 +314,7 @@ private fun QuickDateOptionCard(
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-                        fontSize = 16.sp
+                        fontSize = 14.sp
                     )
                     Text(
                         text = DateTimeUtils.formatDate(option.date),
@@ -323,7 +323,7 @@ private fun QuickDateOptionCard(
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         },
-                        fontSize = 14.sp
+                        fontSize = 12.sp
                     )
                 }
             }
@@ -332,7 +332,7 @@ private fun QuickDateOptionCard(
             if (isSelected) {
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(20.dp)
                         .background(
                             color = option.color,
                             shape = CircleShape
@@ -343,7 +343,7 @@ private fun QuickDateOptionCard(
                         imageVector = Icons.Default.Check,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(12.dp)
                     )
                 }
             }
@@ -402,13 +402,13 @@ private fun BeautifulMonthHeader(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             }
         ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
             // Month and Year with beautiful styling
             Row(
@@ -426,7 +426,7 @@ private fun BeautifulMonthHeader(
                     },
                     enabled = !DateTimeUtils.isDateAfter(DateTimeUtils.addDays(currentMonth, -30), maxDate),
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(32.dp)
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             shape = CircleShape
@@ -436,7 +436,7 @@ private fun BeautifulMonthHeader(
                         imageVector = Icons.Default.ChevronLeft,
                         contentDescription = "Previous Month",
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 
@@ -446,7 +446,7 @@ private fun BeautifulMonthHeader(
                 ) {
                     Text(
                         text = getMonthName(currentMonth.monthNumber),
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = if (isCurrentMonth) {
                             MaterialTheme.colorScheme.primary
@@ -456,7 +456,7 @@ private fun BeautifulMonthHeader(
                     )
                     Text(
                         text = currentMonth.year.toString(),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = if (isCurrentMonth) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
@@ -473,7 +473,7 @@ private fun BeautifulMonthHeader(
                         onMonthChange(newMonth)
                     },
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(32.dp)
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             shape = CircleShape
@@ -483,12 +483,12 @@ private fun BeautifulMonthHeader(
                         imageVector = Icons.Default.ChevronRight,
                         contentDescription = "Next Month",
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             
             // Selected date info
             if (selectedDate.year == currentMonth.year && selectedDate.monthNumber == currentMonth.monthNumber) {
@@ -497,9 +497,9 @@ private fun BeautifulMonthHeader(
                         .fillMaxWidth()
                         .background(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(6.dp)
                         )
-                        .padding(12.dp),
+                        .padding(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -507,12 +507,12 @@ private fun BeautifulMonthHeader(
                         imageVector = Icons.Default.Event,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Selected: ${DateTimeUtils.formatDate(selectedDate)}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -575,9 +575,9 @@ private fun BeautifulCalendarGrid(
                 .fillMaxWidth()
                 .background(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(8.dp)
                 )
-                .padding(vertical = 12.dp)
+                .padding(vertical = 8.dp)
         ) {
             listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
                 Box(
@@ -586,7 +586,7 @@ private fun BeautifulCalendarGrid(
                 ) {
                     Text(
                         text = day,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -594,11 +594,11 @@ private fun BeautifulCalendarGrid(
             }
         }
         
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         
         // Enhanced calendar grid
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(6) { week ->
                 Row(
@@ -645,7 +645,7 @@ private fun BeautifulCalendarDayItem(
     
     Card(
         modifier = Modifier
-            .size(44.dp)
+            .size(36.dp)
             .scale(animatedScale)
             .clickable(enabled = day.isSelectable) { onClick() },
         colors = CardDefaults.cardColors(
@@ -690,16 +690,16 @@ private fun BeautifulCalendarDayItem(
                         day.isPast && day.isCurrentMonth -> FontWeight.Medium
                         else -> FontWeight.Normal
                     },
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     textAlign = TextAlign.Center
                 )
                 
                 // Add a small indicator for today
                 if (day.isToday && !isSelected) {
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(1.dp))
                     Box(
                         modifier = Modifier
-                            .size(4.dp)
+                            .size(3.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = CircleShape
