@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalFocusManager
 import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
@@ -68,6 +71,9 @@ fun SearchTransactionsScreen(
     var showFilterBottomSheet by remember { mutableStateOf(false) }
     var filteredTransactions by remember { mutableStateOf(allTransactions) }
     var selectedTransactionForDetails by remember { mutableStateOf<Transaction?>(null) }
+    
+    // Focus manager for keyboard dismissal
+    val focusManager = LocalFocusManager.current
     
     // Update filtered transactions when search query, filter options, or all transactions change
     LaunchedEffect(searchQuery, filterOptions, allTransactions) {
@@ -170,6 +176,12 @@ fun SearchTransactionsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                focusManager.clearFocus()
+            }
     ) {
         // Header Section
 //        SearchHeader(

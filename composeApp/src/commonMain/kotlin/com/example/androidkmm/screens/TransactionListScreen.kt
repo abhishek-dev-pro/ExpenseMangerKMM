@@ -200,12 +200,16 @@ fun TransactionsScreen(
         )
     }
 
+    // Delete confirmation dialog state
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
+
     // Track scroll state for showing compact summary
     val listState = rememberLazyListState()
     var showCompactSummary by remember { mutableStateOf(false) }
 
     // Track when any sheet is visible to hide bottom navigation
-    val isAnySheetVisible = showAddSheet || showSearchScreen || showInsufficientBalanceDialog
+    val isAnySheetVisible = showAddSheet || showSearchScreen || showInsufficientBalanceDialog || showDeleteConfirmationDialog
     
     // Notify parent when sheet visibility changes
     LaunchedEffect(isAnySheetVisible) {
@@ -327,7 +331,11 @@ fun TransactionsScreen(
                         transactionDatabaseManager = transactionDatabaseManager,
                         categoryDatabaseManager = categoryDatabaseManager,
                         accountDatabaseManager = accountDatabaseManager,
-                        onNavigateToLedger = onNavigateToLedger
+                        onNavigateToLedger = onNavigateToLedger,
+                        onShowDeleteConfirmation = { transaction ->
+                            transactionToDelete = transaction
+                            showDeleteConfirmationDialog = true
+                        }
                     )
                 }
                 item {
@@ -524,6 +532,73 @@ fun TransactionsScreen(
                 ) {
                     Text(
                         text = "Got it",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        )
+    }
+
+    // Delete Confirmation Dialog
+    if (showDeleteConfirmationDialog && transactionToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmationDialog = false
+                transactionToDelete = null
+            },
+            title = {
+                Text(
+                    text = "Delete Transaction",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete this transaction? This action cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Delete transaction from database with balance updates
+                        transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
+                            transaction = transactionToDelete!!,
+                            accountDatabaseManager = accountDatabaseManager,
+                            onSuccess = {
+                                println("Transaction deleted successfully")
+                                showDeleteConfirmationDialog = false
+                                transactionToDelete = null
+                            },
+                            onError = { error ->
+                                println("Error deleting transaction: ${error.message}")
+                            }
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Delete",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmationDialog = false
+                        transactionToDelete = null
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Cancel",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -944,7 +1019,8 @@ private fun DayGroupSection(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase,
     categoryDatabaseManager: com.example.androidkmm.database.SQLiteCategoryDatabase,
     accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase,
-    onNavigateToLedger: (String, String) -> Unit = { _, _ -> }
+    onNavigateToLedger: (String, String) -> Unit = { _, _ -> },
+    onShowDeleteConfirmation: (Transaction) -> Unit = {}
 ) {
     var selectedTransaction by remember {
         mutableStateOf<Transaction?>(
@@ -1027,19 +1103,10 @@ private fun DayGroupSection(
                 )
             },
             onDelete = {
-                // Delete transaction from database with balance updates
-                transactionDatabaseManager.deleteTransactionWithBalanceUpdate(
-                    transaction = transaction,
-                    accountDatabaseManager = accountDatabaseManager,
-                    onSuccess = {
-                        println("Transaction deleted successfully")
-                        showBottomSheet = false
-                        selectedTransaction = null
-                    },
-                    onError = { error ->
-                        println("Error deleting transaction: ${error.message}")
-                    }
-                )
+                // Close the bottom sheet first, then show confirmation dialog
+                showBottomSheet = false
+                selectedTransaction = null
+                onShowDeleteConfirmation(transaction)
             },
             onNavigateToLedger = { personName, transactionId ->
                 onNavigateToLedger(
