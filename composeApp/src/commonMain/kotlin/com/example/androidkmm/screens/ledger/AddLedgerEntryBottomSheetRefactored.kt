@@ -23,6 +23,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.components.*
+import com.example.androidkmm.utils.DateTimeUtils
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -70,11 +71,11 @@ fun AddLedgerEntryBottomSheetRefactored(
     
     // Get current date and time
     val currentDate = remember {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        "${now.date.year}-${now.date.monthNumber.toString().padStart(2, '0')}-${now.date.dayOfMonth.toString().padStart(2, '0')}"
+        val now = DateTimeUtils.getCurrentDateTime()
+        DateTimeUtils.formatDate(now.date)
     }
     val currentTime = remember {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val now = DateTimeUtils.getCurrentDateTime()
         val time = now.time
         val hour = time.hour
         val minute = time.minute

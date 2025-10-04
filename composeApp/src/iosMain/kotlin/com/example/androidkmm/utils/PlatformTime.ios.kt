@@ -1,13 +1,11 @@
 package com.example.androidkmm.utils
 
-import kotlin.random.Random
+import platform.Foundation.NSDate
+import platform.Foundation.timeIntervalSince1970
 
 actual object PlatformTime {
-    private var counter = 0L
-    
     actual fun currentTimeMillis(): Long {
-        // Use a counter-based approach for unique IDs on iOS
-        counter++
-        return 1704067200000L + counter
+        // Use NSDate for actual system time on iOS
+        return (NSDate().timeIntervalSince1970 * 1000).toLong()
     }
 }

@@ -26,6 +26,7 @@ import com.example.androidkmm.database.SQLiteAccountDatabase
 import com.example.androidkmm.database.SQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.*
+import com.example.androidkmm.utils.DateTimeUtils
 import androidx.compose.runtime.collectAsState
 import kotlinx.datetime.toLocalDateTime
 import com.example.androidkmm.components.SharedAccountSelectionBottomSheet
@@ -53,11 +54,11 @@ fun AddExpenseScreen(
 
     // Get current date and time
     val currentDate = remember {
-        val now = kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
-        "${now.date.year}-${now.date.monthNumber.toString().padStart(2, '0')}-${now.date.dayOfMonth.toString().padStart(2, '0')}"
+        val now = DateTimeUtils.getCurrentDateTime()
+        DateTimeUtils.formatDate(now.date)
     }
     val currentTime = remember {
-        val now = kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+        val now = DateTimeUtils.getCurrentDateTime()
         "${now.time.hour.toString().padStart(2, '0')}:${now.time.minute.toString().padStart(2, '0')}"
     }
 
@@ -416,7 +417,7 @@ fun AddExpenseScreen(
                 onClick = {
                     if (isFormValid) {
                         val transaction = Transaction(
-                            id = "${kotlin.time.Clock.System.now().toEpochMilliseconds()}",
+                            id = "${DateTimeUtils.getCurrentTimeMillis()}",
                             title = title,
                             amount = amount.toDoubleOrNull() ?: 0.0,
                             category = selectedCategory!!.name,

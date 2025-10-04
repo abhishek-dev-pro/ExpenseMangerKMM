@@ -19,8 +19,10 @@ object DateTimeUtils {
 
     // 2. Get current local date and time
     fun getCurrentDateTime(): LocalDateTime {
-        // Simplified implementation for iOS compatibility
-        return LocalDateTime(2024, 1, 1, 12, 0, 0)
+        // Use platform-specific time and convert to LocalDateTime
+        val currentMillis = TimeUtils.currentTimeMillis()
+        val instant = Instant.fromEpochMilliseconds(currentMillis)
+        return instant.toLocalDateTime(TimeZone.currentSystemDefault())
     }
 
     // 3. Get current date only
@@ -132,7 +134,7 @@ object DateTimeUtils {
 
     // 18. Convert instant to local date time
     fun instantToLocalDateTime(instant: Instant): LocalDateTime {
-        return LocalDateTime(2024, 1, 1, 12, 0, 0) // Simplified implementation
+        return instant.toLocalDateTime(TimeZone.currentSystemDefault())
     }
 
     // 19. Convert local date to instant

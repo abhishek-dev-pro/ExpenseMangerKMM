@@ -89,11 +89,11 @@ fun AddLedgerEntryBottomSheet(
     
     // Get current date and time
     val currentDate = remember {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        "${now.date.year}-${now.date.monthNumber.toString().padStart(2, '0')}-${now.date.dayOfMonth.toString().padStart(2, '0')}"
+        val now = DateTimeUtils.getCurrentDateTime()
+        DateTimeUtils.formatDate(now.date)
     }
     val currentTime = remember {
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val now = DateTimeUtils.getCurrentDateTime()
         val time = now.time
         val hour = time.hour
         val minute = time.minute
