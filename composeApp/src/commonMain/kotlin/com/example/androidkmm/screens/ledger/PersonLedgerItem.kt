@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
@@ -26,7 +28,8 @@ import androidx.compose.runtime.collectAsState
 @Composable
 fun PersonLedgerItem(
     person: LedgerPerson,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongPress: (LedgerPerson) -> Unit = {}
 ) {
     // Get currency symbol from settings
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
@@ -36,6 +39,13 @@ fun PersonLedgerItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onLongPress(person)
+                    }
+                )
+            }
             .clip(RoundedCornerShape(AppStyleDesignSystem.CornerRadius.MEDIUM))
             .border(
                 width = 0.5.dp, // very thin border

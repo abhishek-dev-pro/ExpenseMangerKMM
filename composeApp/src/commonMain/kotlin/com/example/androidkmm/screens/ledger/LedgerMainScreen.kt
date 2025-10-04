@@ -2,12 +2,15 @@ package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -29,6 +32,8 @@ import com.example.androidkmm.database.rememberSQLiteLedgerDatabase
 import com.example.androidkmm.design.AppStyleDesignSystem
 import androidx.compose.runtime.collectAsState
 import kotlin.time.ExperimentalTime
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 // LedgerMainScreen.kt
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
@@ -48,8 +53,18 @@ fun LedgerMainScreen(
     var searchText by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
     
+    // New state variables for improvements
+    var showDeletePersonDialog by remember { mutableStateOf(false) }
+    var personToDelete by remember { mutableStateOf<LedgerPerson?>(null) }
+    
+    // Focus manager for keyboard dismissal
+    val focusManager = LocalFocusManager.current
+    
+    // Coroutine scope for async operations
+    val coroutineScope = rememberCoroutineScope()
+    
     // Track when any sheet is visible to hide bottom navigation
-    val isAnySheetVisible = showAddBottomSheet
+    val isAnySheetVisible = showAddBottomSheet || showDeletePersonDialog || selectedPerson != null
     
     // Notify parent when sheet visibility changes
     LaunchedEffect(isAnySheetVisible) {
@@ -87,7 +102,8 @@ fun LedgerMainScreen(
     val filterOptions = listOf(
         "All" to "All contacts",
         "Get Back" to "Money people will return to me",
-        "Give Back" to "Money I have to return"
+        "Give Back" to "Money I have to return",
+        "Settled" to "Completely settled ledgers"
     )
     
     // Filter people based on search text and filter option
@@ -105,6 +121,7 @@ fun LedgerMainScreen(
         when (selectedFilter) {
             "Get Back" -> filteredPeople = filteredPeople.filter { it.balance < 0 } // You owe them (red/negative balance)
             "Give Back" -> filteredPeople = filteredPeople.filter { it.balance > 0 } // They owe you (green/positive balance)
+            "Settled" -> filteredPeople = filteredPeople.filter { it.balance == 0.0 } // Completely settled (zero balance)
             // "All" -> no additional filtering
         }
         
@@ -133,7 +150,13 @@ fun LedgerMainScreen(
             .fillMaxSize()
             .background(LedgerTheme.backgroundColor())
             .padding(horizontal = AppStyleDesignSystem.Padding.SCREEN_HORIZONTAL)
-            .padding(top = AppStyleDesignSystem.Padding.SCREEN_VERTICAL),
+            .padding(top = AppStyleDesignSystem.Padding.SCREEN_VERTICAL)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                focusManager.clearFocus()
+            },
     ) {
         // Header
         Row(
@@ -634,7 +657,8 @@ fun LedgerMainScreen(
                 items(people) { person ->
                     PersonLedgerItem(
                         person = person,
-                        onClick = { selectedPerson = person }
+                        onClick = { selectedPerson = person },
+                        onLongPress = { personToDelete = it; showDeletePersonDialog = true }
                     )
                     if (person != people.last()) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -662,6 +686,73 @@ fun LedgerMainScreen(
         AddLedgerEntryBottomSheet(
             onDismiss = { showAddBottomSheet = false },
             person = selectedPerson
+        )
+    }
+    
+    // Delete Person Confirmation Dialog
+    if (showDeletePersonDialog && personToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeletePersonDialog = false
+                personToDelete = null
+            },
+            title = {
+                Text(
+                    text = "Delete Person",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete ${personToDelete!!.name} and all their ledger transactions? This action cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        // Delete person and all their transactions
+                        coroutineScope.launch {
+                            try {
+                                // First delete all transactions for this person
+                                ledgerDatabaseManager.deleteLedgerTransactionsByPerson(personToDelete!!.id)
+                                // Then delete the person
+                                ledgerDatabaseManager.deleteLedgerPerson(personToDelete!!.id)
+                                showDeletePersonDialog = false
+                                personToDelete = null
+                            } catch (e: Exception) {
+                                println("Error deleting person: ${e.message}")
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Delete",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeletePersonDialog = false
+                        personToDelete = null
+                    },
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         )
     }
 }

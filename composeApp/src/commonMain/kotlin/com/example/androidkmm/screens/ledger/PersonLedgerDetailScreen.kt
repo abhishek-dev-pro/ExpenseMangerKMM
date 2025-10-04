@@ -102,17 +102,6 @@ fun PersonLedgerDetailScreen(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.Default.ChevronLeft,
-                    contentDescription = "Back",
-                    tint = LedgerTheme.textPrimary(),
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
             // Avatar
             Box(
                 modifier = Modifier
@@ -149,15 +138,6 @@ fun PersonLedgerDetailScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = LedgerTheme.textPrimary(),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
         }
 
         // Balance Card
