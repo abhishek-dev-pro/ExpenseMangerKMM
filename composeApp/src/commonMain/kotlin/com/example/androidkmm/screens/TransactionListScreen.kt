@@ -86,7 +86,8 @@ object TransactionColors {
 @OptIn(ExperimentalTime::class)
 @Composable
 fun TransactionsScreen(
-    onNavigateToLedger: (String, String) -> Unit = { _, _ -> }
+    onNavigateToLedger: (String, String) -> Unit = { _, _ -> },
+    onBottomSheetVisibilityChange: (Boolean) -> Unit = {}
 ) {
     val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
@@ -202,6 +203,14 @@ fun TransactionsScreen(
     // Track scroll state for showing compact summary
     val listState = rememberLazyListState()
     var showCompactSummary by remember { mutableStateOf(false) }
+
+    // Track when any sheet is visible to hide bottom navigation
+    val isAnySheetVisible = showAddSheet || showSearchScreen || showInsufficientBalanceDialog
+    
+    // Notify parent when sheet visibility changes
+    LaunchedEffect(isAnySheetVisible) {
+        onBottomSheetVisibilityChange(isAnySheetVisible)
+    }
 
     // Reset compact summary when month changes or when there are few transactions
     LaunchedEffect(selectedMonth, selectedYear, filteredTransactions.size) {

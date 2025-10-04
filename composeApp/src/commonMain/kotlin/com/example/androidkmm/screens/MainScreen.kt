@@ -65,7 +65,8 @@ fun MainScreen() {
     
     // Track when bottom sheets are visible to hide bottom navigation
     var isHomeScreenBottomSheetVisible by remember { mutableStateOf(false) }
-    val isBottomSheetVisible = showAddTransactionSheet || showAddLedgerEntrySheet || showCreateGroupScreen || showAddExpenseScreen || isHomeScreenBottomSheetVisible
+    var isTransactionListScreenBottomSheetVisible by remember { mutableStateOf(false) }
+    val isBottomSheetVisible = showAddTransactionSheet || showAddLedgerEntrySheet || showCreateGroupScreen || showAddExpenseScreen || isHomeScreenBottomSheetVisible || isTransactionListScreenBottomSheetVisible
     
     // Handle back navigation
     fun handleBackNavigation(): Boolean {
@@ -187,6 +188,9 @@ fun MainScreen() {
                             navigateToLedgerPerson = personName
                             navigateToLedgerTransaction = transactionId
                             selectedTab = 2 // Switch to ledger tab
+                        },
+                        onBottomSheetVisibilityChange = { isVisible ->
+                            isTransactionListScreenBottomSheetVisible = isVisible
                         }
                     )
                     2 -> LedgerMainScreen(
