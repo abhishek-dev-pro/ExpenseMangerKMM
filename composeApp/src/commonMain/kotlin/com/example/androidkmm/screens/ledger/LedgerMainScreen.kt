@@ -36,7 +36,8 @@ import kotlin.time.ExperimentalTime
 fun LedgerMainScreen(
     navigateToPerson: String? = null,
     navigateToTransaction: String? = null,
-    onPersonNavigated: () -> Unit = {}
+    onPersonNavigated: () -> Unit = {},
+    onBottomSheetVisibilityChange: (Boolean) -> Unit = {}
 ) {
     val ledgerDatabaseManager = rememberSQLiteLedgerDatabase()
     val peopleState = ledgerDatabaseManager.getAllLedgerPersons().collectAsState(initial = emptyList<LedgerPerson>())
@@ -46,6 +47,14 @@ fun LedgerMainScreen(
     var showAddBottomSheet by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
+    
+    // Track when any sheet is visible to hide bottom navigation
+    val isAnySheetVisible = showAddBottomSheet
+    
+    // Notify parent when sheet visibility changes
+    LaunchedEffect(isAnySheetVisible) {
+        onBottomSheetVisibilityChange(isAnySheetVisible)
+    }
     
     // Handle navigation to specific person
     LaunchedEffect(navigateToPerson, allPeople) {

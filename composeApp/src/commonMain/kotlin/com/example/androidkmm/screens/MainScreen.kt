@@ -66,7 +66,8 @@ fun MainScreen() {
     // Track when bottom sheets are visible to hide bottom navigation
     var isHomeScreenBottomSheetVisible by remember { mutableStateOf(false) }
     var isTransactionListScreenBottomSheetVisible by remember { mutableStateOf(false) }
-    val isBottomSheetVisible = showAddTransactionSheet || showAddLedgerEntrySheet || showCreateGroupScreen || showAddExpenseScreen || isHomeScreenBottomSheetVisible || isTransactionListScreenBottomSheetVisible
+    var isLedgerScreenBottomSheetVisible by remember { mutableStateOf(false) }
+    val isBottomSheetVisible = showAddTransactionSheet || showAddLedgerEntrySheet || showCreateGroupScreen || showAddExpenseScreen || isHomeScreenBottomSheetVisible || isTransactionListScreenBottomSheetVisible || isLedgerScreenBottomSheetVisible
     
     // Handle back navigation
     fun handleBackNavigation(): Boolean {
@@ -199,6 +200,9 @@ fun MainScreen() {
                         onPersonNavigated = { 
                             navigateToLedgerPerson = null
                             navigateToLedgerTransaction = null
+                        },
+                        onBottomSheetVisibilityChange = { isVisible ->
+                            isLedgerScreenBottomSheetVisible = isVisible
                         }
                     )
                     3 -> InsightsScreen(transactionDatabaseManager = transactionDatabaseManager)
