@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.components.BeautifulDateSelector
 import kotlinx.datetime.*
 import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
@@ -3228,8 +3229,8 @@ private fun getSampleCategories(): List<TransactionCategory> {
     )
 }
 
-// Date Picker Dialog
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+// Beautiful Date Picker Dialog
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun DatePickerDialog(
     onDismiss: () -> Unit,
@@ -3237,149 +3238,68 @@ private fun DatePickerDialog(
     initialDate: String = ""
 ) {
     val today = DateTimeUtils.getCurrentDate()
-    val todayMillis = 
-        DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
-    val tomorrowMillis = 
-        DateTimeUtils.getStartOfDay(today.plus(DatePeriod(days = 1))).toEpochMilliseconds()
 
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
-            try {
-                val parts = initialDate.split("-")
-                if (parts.size == 3) {
-                    val year = parts[0].toInt()
-                    val month = parts[1].toInt()
-                    val day = parts[2].toInt()
-                    val selectedDate = DateTimeUtils.createDate(year, month, day)
-                    // If the initial date is in the future, use today instead
-                    if (selectedDate != null && DateTimeUtils.isDateAfter(selectedDate, today)) {
-                        todayMillis
-                    } else {
-                        selectedDate?.let { date ->
-                            DateTimeUtils.getStartOfDay(date).toEpochMilliseconds()
-                        } ?: todayMillis
-                    }
-                } else null
-            } catch (e: Exception) {
-                null
-            }
-        } else null,
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                // Allow dates up to and including today
-                return utcTimeMillis < tomorrowMillis
-            }
+    // Parse initial date or use today
+    val initialParsedDate = if (initialDate.isNotEmpty()) {
+        DateTimeUtils.parseDate(initialDate) ?: today
+    } else {
+        today
+    }
+    
+    var selectedDate by remember { mutableStateOf(initialParsedDate) }
 
-            override fun isSelectableYear(year: Int): Boolean {
-                // Only allow current year and previous years
-                return year <= today.year
-            }
-        }
-    )
-
-    // Additional validation to prevent future date selection
-    LaunchedEffect(datePickerState.selectedDateMillis) {
-        datePickerState.selectedDateMillis?.let { selectedMillis ->
-            val selectedDate = DateTimeUtils.instantToLocalDate(
-                Instant.fromEpochMilliseconds(selectedMillis)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.8f),
+        title = {
+            Text(
+                text = "Select Date",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
             )
-            val today = DateTimeUtils.getCurrentDate()
-
-            // If a future date is somehow selected, reset to today
-            if (DateTimeUtils.isDateAfter(selectedDate, today)) {
-                datePickerState.selectedDateMillis =
-                    DateTimeUtils.getStartOfDay(today).toEpochMilliseconds()
-            }
-        }
-    }
-
-    var showDialog by remember { mutableStateOf(true) }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.8f),
-            title = {
-                Text(
-                    text = "Select Date",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            },
-            text = {
-                DatePicker(
-                    state = datePickerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(horizontal = 0.dp),
-                    colors = DatePickerDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        headlineContentColor = MaterialTheme.colorScheme.onBackground,
-                        weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        yearContentColor = MaterialTheme.colorScheme.onBackground,
-                        currentYearContentColor = MaterialTheme.colorScheme.onBackground,
-                        selectedYearContentColor = Color.White,
-                        selectedYearContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
-                        dayContentColor = MaterialTheme.colorScheme.onBackground,
-                        disabledDayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        selectedDayContentColor = Color.White,
-                        disabledSelectedDayContentColor = Color.White,
-                        selectedDayContainerColor = Color(0xFF2196F3), // Blue accent for better visibility
-                        disabledSelectedDayContainerColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        todayContentColor = Color(0xFF2196F3), // Blue accent for today
-                        todayDateBorderColor = Color(0xFF2196F3),
-                        dayInSelectionRangeContentColor = MaterialTheme.colorScheme.onBackground,
-                        dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val date = DateTimeUtils.instantToLocalDate(
-                                Instant.fromEpochMilliseconds(millis)
-                            )
-                            val today = DateTimeUtils.getCurrentDate()
-
-                            // Check if selected date is in the future
-                            if (DateTimeUtils.isDateAfter(date, today)) {
-                                // Don't allow future dates - just close dialog without selecting
-                                showDialog = false
-                                return@TextButton
-                            }
-
-                            val dateString = DateTimeUtils.formatDate(date)
-                            onDateSelected(dateString)
-                        }
-                        showDialog = false
+        },
+        text = {
+            BeautifulDateSelector(
+                selectedDate = selectedDate,
+                onDateSelected = { selectedDate = it },
+                maxDate = today
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    // Check if selected date is in the future
+                    if (DateTimeUtils.isDateAfter(selectedDate, today)) {
+                        // Don't allow future dates - just close dialog without selecting
+                        onDismiss()
+                        return@TextButton
                     }
-                ) {
-                    Text(
-                        text = "OK",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Medium
-                    )
+
+                    val dateString = DateTimeUtils.formatDate(selectedDate)
+                    onDateSelected(dateString)
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismiss) {
-                    Text(
-                        text = "Cancel",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface
-        )
-    }
+            ) {
+                Text(
+                    text = "OK",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "Cancel",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface
+    )
 }
 
 // Time Picker Dialog
