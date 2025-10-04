@@ -38,9 +38,9 @@ fun PersonLedgerItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
             .pointerInput(Unit) {
                 detectTapGestures(
+                    onTap = { onClick() },
                     onLongPress = {
                         onLongPress(person)
                     }
