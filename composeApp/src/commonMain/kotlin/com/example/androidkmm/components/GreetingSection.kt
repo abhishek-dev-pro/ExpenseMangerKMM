@@ -60,6 +60,8 @@ fun GreetingSection() {
                     style = AppStyleDesignSystem.Typography.MAIN_PAGE_SUBHEADING_TITLE
                 )
             }
+            // Commented out bell icon for now
+            /*
             Icon(
                 imageVector = Icons.Outlined.Notifications,
                 contentDescription = "Notifications",
@@ -70,6 +72,7 @@ fun GreetingSection() {
                         showToast = true
                     }
             )
+            */
         }
         
         // Toast message

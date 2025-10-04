@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.androidkmm.screens
 
 import androidx.compose.foundation.clickable
@@ -6,13 +8,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.androidkmm.components.BalanceCard
 import com.example.androidkmm.components.GreetingSection
@@ -23,7 +27,11 @@ import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.data.GroupData
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
+import com.example.androidkmm.database.rememberSQLiteCategoryDatabase
+import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.models.Transaction
 
 /**
  * Home screen content component
@@ -36,8 +44,23 @@ fun HomeScreenContent(
     onNavigateToGroups: () -> Unit = {},
     onNavigateToLedger: () -> Unit = {},
     onNavigateToAddTransaction: () -> Unit = {},
-    refreshTrigger: Int = 0
+    refreshTrigger: Int = 0,
+    onBottomSheetVisibilityChange: (Boolean) -> Unit = {}
 ) {
+    // State for transaction details bottom sheet
+    var selectedTransaction by remember { mutableStateOf<Transaction?>(null) }
+    var showTransactionDetails by remember { mutableStateOf(false) }
+    
+    // Database managers for transaction details
+    val transactionDatabaseManager = rememberSQLiteTransactionDatabase()
+    val categoryDatabaseManager = rememberSQLiteCategoryDatabase()
+    val accountDatabaseManager = rememberSQLiteAccountDatabase()
+    
+    // Notify parent when bottom sheet visibility changes
+    LaunchedEffect(showTransactionDetails) {
+        onBottomSheetVisibilityChange(showTransactionDetails)
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -68,11 +91,144 @@ fun HomeScreenContent(
                 }
             )
         }
-        item { RecentTransactionsSection(onViewAllClick = onNavigateToTransactions, refreshTrigger = refreshTrigger) }
+        item { 
+            RecentTransactionsSection(
+                onViewAllClick = onNavigateToTransactions, 
+                refreshTrigger = refreshTrigger,
+                onTransactionClick = { transaction ->
+                    selectedTransaction = transaction
+                    showTransactionDetails = true
+                }
+            ) 
+        }
 //        item { GroupHighlights(onViewAllClick = onNavigateToGroups) }
 //        item { ProgressCard() }
 
         item { Spacer(Modifier.height(AppStyleDesignSystem.Padding.SECTION_SPACING)) }
+    }
+    
+    // Simple Transaction Details Bottom Sheet
+    if (showTransactionDetails && selectedTransaction != null) {
+        val transaction = selectedTransaction!!
+        val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+        val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+        val currencySymbol = appSettings.currencySymbol
+        
+        val bottomSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+        
+        ModalBottomSheet(
+            onDismissRequest = {
+                showTransactionDetails = false
+                selectedTransaction = null
+            },
+            sheetState = bottomSheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Transaction Details",
+                        style = AppStyleDesignSystem.Typography.HEADLINE,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    IconButton(
+                        onClick = {
+                            showTransactionDetails = false
+                            selectedTransaction = null
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Transaction details
+                Text(
+                    text = transaction.title,
+                    style = AppStyleDesignSystem.Typography.BODY,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "${currencySymbol}${transaction.amount}",
+                    style = AppStyleDesignSystem.Typography.BODY,
+                    color = when (transaction.type) {
+                        com.example.androidkmm.models.TransactionType.INCOME -> Color(0xFF4CAF50)
+                        com.example.androidkmm.models.TransactionType.EXPENSE -> Color(0xFFE53935)
+                        com.example.androidkmm.models.TransactionType.TRANSFER -> Color(0xFF3B82F6)
+                    }
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "Account: ${transaction.account}",
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "Date: ${transaction.date} ${transaction.time}",
+                    style = AppStyleDesignSystem.Typography.CALL_OUT,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            // Edit functionality - for now just close
+                            showTransactionDetails = false
+                            selectedTransaction = null
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Edit")
+                    }
+                    
+                    Button(
+                        onClick = {
+                            // Delete functionality
+                            transactionDatabaseManager.deleteTransaction(transaction)
+                            showTransactionDetails = false
+                            selectedTransaction = null
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red
+                        )
+                    ) {
+                        Text("Delete")
+                    }
+                }
+            }
+        }
     }
 }
 

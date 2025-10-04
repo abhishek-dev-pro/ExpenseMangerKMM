@@ -63,7 +63,7 @@ private fun QuickActionCard(
 ) {
     Surface(
         modifier = modifier
-            .height(56.dp) // Fixed height to make buttons more substantial
+            .height(48.dp) // Reduced height for more compact buttons
             .clickable { onClick() },
         color = color.copy(alpha = 0.15f),
         contentColor = color,
@@ -75,7 +75,7 @@ private fun QuickActionCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 12.dp) // More generous padding
+                .padding(horizontal = 16.dp, vertical = 8.dp) // Reduced vertical padding
         ) {
             Icon(
                 imageVector = icon,

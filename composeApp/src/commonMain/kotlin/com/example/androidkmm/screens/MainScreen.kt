@@ -63,6 +63,10 @@ fun MainScreen() {
     // Navigation stack for proper back navigation
     var navigationStack by remember { mutableStateOf(listOf<NavigationState>()) }
     
+    // Track when bottom sheets are visible to hide bottom navigation
+    var isHomeScreenBottomSheetVisible by remember { mutableStateOf(false) }
+    val isBottomSheetVisible = showAddTransactionSheet || showAddLedgerEntrySheet || showCreateGroupScreen || showAddExpenseScreen || isHomeScreenBottomSheetVisible
+    
     // Handle back navigation
     fun handleBackNavigation(): Boolean {
         return when {
@@ -131,10 +135,12 @@ fun MainScreen() {
     AppTheme {
         Scaffold(
             bottomBar = {
-                BottomNavigationBar(
-                    selected = selectedTab,
-                    onSelect = { handleTabSelection(it) }
-                )
+                if (!isBottomSheetVisible) {
+                    BottomNavigationBar(
+                        selected = selectedTab,
+                        onSelect = { handleTabSelection(it) }
+                    )
+                }
             },
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
@@ -170,7 +176,10 @@ fun MainScreen() {
                             println("MainScreen: Navigating to add transaction")
                             showAddTransactionSheet = true
                         },
-                        refreshTrigger = homeScreenRefreshTrigger
+                        refreshTrigger = homeScreenRefreshTrigger,
+                        onBottomSheetVisibilityChange = { isVisible ->
+                            isHomeScreenBottomSheetVisible = isVisible
+                        }
                     )
                     1 -> TransactionsScreen(
                         onNavigateToLedger = { personName, transactionId ->

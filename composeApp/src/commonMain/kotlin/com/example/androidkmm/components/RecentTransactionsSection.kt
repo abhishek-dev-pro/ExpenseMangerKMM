@@ -29,7 +29,8 @@ import kotlin.time.ExperimentalTime
 fun RecentTransactionsSection(
     onViewAllClick: () -> Unit,
     onRetry: () -> Unit = {},
-    refreshTrigger: Int = 0
+    refreshTrigger: Int = 0,
+    onTransactionClick: (Transaction) -> Unit = {}
 ) {
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val appSettings by rememberSQLiteSettingsDatabase().getAppSettings().collectAsState(initial = AppSettings())
@@ -179,7 +180,11 @@ fun RecentTransactionsSection(
                 verticalArrangement = Arrangement.spacedBy(0.8.dp)
             ) {
                 recentTransactions.forEach { transaction ->
-                    RecentTransactionItem(transaction = transaction, currencySymbol = currencySymbol)
+                    RecentTransactionItem(
+                        transaction = transaction, 
+                        currencySymbol = currencySymbol,
+                        onClick = { onTransactionClick(transaction) }
+                    )
                 }
             }
         }
@@ -188,11 +193,14 @@ fun RecentTransactionsSection(
 
 @Composable
 private fun RecentTransactionItem(
-transaction: Transaction,
-currencySymbol: String
+    transaction: Transaction,
+    currencySymbol: String,
+    onClick: () -> Unit = {}
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp)
     ) {
