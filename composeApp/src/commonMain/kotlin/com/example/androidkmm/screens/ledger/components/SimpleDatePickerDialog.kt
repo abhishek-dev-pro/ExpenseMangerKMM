@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.LedgerTheme
+import com.example.androidkmm.components.BeautifulDateSelector
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -58,7 +59,7 @@ fun SimpleDatePickerDialog(
                 )
             },
             text = {
-                CustomDatePicker(
+                BeautifulDateSelector(
                     selectedDate = selectedDate,
                     onDateSelected = { selectedDate = it },
                     maxDate = today

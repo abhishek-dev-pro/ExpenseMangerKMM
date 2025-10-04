@@ -42,6 +42,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.components.AddAccountBottomSheet
+import com.example.androidkmm.components.BeautifulDateSelector
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -1047,7 +1048,7 @@ fun SimpleDatePickerDialog(
                 )
             },
             text = {
-                CustomDatePicker(
+                BeautifulDateSelector(
                     selectedDate = selectedDate,
                     onDateSelected = { selectedDate = it },
                     maxDate = today
