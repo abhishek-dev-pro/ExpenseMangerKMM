@@ -114,9 +114,9 @@ fun TransactionItem(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Description with limited width
+                    // Title with limited width
                     Text(
-                        text = "${transaction.description} - ${if (isSent) "Sent" else "Received"}",
+                        text = transaction.title,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,

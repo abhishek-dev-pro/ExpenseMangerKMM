@@ -116,6 +116,7 @@ class SQLiteLedgerDatabase(
                 id = ledgerTransaction.id,
                 ledger_person_id = ledgerTransaction.personId,
                 amount = ledgerTransaction.amount,
+                title = ledgerTransaction.title,
                 description = ledgerTransaction.description,
                 date = ledgerTransaction.date,
                 time = ledgerTransaction.time,
@@ -130,6 +131,7 @@ class SQLiteLedgerDatabase(
         withContext(Dispatchers.Default) {
             database.categoryDatabaseQueries.updateLedgerTransaction(
                 amount = ledgerTransaction.amount,
+                title = ledgerTransaction.title,
                 description = ledgerTransaction.description,
                 date = ledgerTransaction.date,
                 time = ledgerTransaction.time,
@@ -187,8 +189,8 @@ class SQLiteLedgerDatabase(
                 // Create corresponding transaction entry in main transaction history
                 transactionDatabaseManager?.let { txDb ->
                     val (transactionTitle, transactionType) = when (ledgerTransaction.type) {
-                        TransactionType.SENT -> "Sent to ${person.name} - Transfer" to MainTransactionType.EXPENSE
-                        TransactionType.RECEIVED -> "Received from ${person.name} - Transfer" to MainTransactionType.INCOME
+                        TransactionType.SENT -> ledgerTransaction.title.ifBlank { "Sent to ${person.name} - Transfer" } to MainTransactionType.EXPENSE
+                        TransactionType.RECEIVED -> ledgerTransaction.title.ifBlank { "Received from ${person.name} - Transfer" } to MainTransactionType.INCOME
                     }
                     
                     val mainTransaction = Transaction(
@@ -291,6 +293,7 @@ private fun com.example.androidkmm.database.Ledger_transactions.toLedgerTransact
         id = id,
         personId = ledger_person_id,
         amount = amount,
+        title = title,
         description = description,
         date = date,
         time = time,

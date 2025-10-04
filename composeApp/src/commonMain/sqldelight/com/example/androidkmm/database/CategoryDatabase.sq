@@ -52,6 +52,7 @@ CREATE TABLE ledger_transactions (
     id TEXT PRIMARY KEY,
     ledger_person_id TEXT NOT NULL,
     amount REAL NOT NULL,
+    title TEXT NOT NULL,
     description TEXT NOT NULL,
     date TEXT NOT NULL,
     time TEXT NOT NULL,
@@ -270,12 +271,12 @@ selectLedgerTransactionById:
 SELECT * FROM ledger_transactions WHERE id = ?;
 
 insertLedgerTransaction:
-INSERT INTO ledger_transactions (id, ledger_person_id, amount, description, date, time, type, account_name, balance_at_time)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ledger_transactions (id, ledger_person_id, amount, title, description, date, time, type, account_name, balance_at_time)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateLedgerTransaction:
 UPDATE ledger_transactions 
-SET amount = ?, description = ?, date = ?, time = ?, type = ?, account_name = ?, balance_at_time = ?
+SET amount = ?, title = ?, description = ?, date = ?, time = ?, type = ?, account_name = ?, balance_at_time = ?
 WHERE id = ?;
 
 deleteLedgerTransaction:

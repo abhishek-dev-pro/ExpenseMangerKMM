@@ -17,6 +17,7 @@ data class LedgerTransaction(
     val id: String,
     val personId: String,
     val amount: Double,
+    val title: String,
     val description: String,
     val date: String,
     val time: String,
