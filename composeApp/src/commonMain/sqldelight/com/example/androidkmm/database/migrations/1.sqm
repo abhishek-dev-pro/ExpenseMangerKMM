@@ -1,0 +1,2 @@
+-- Migration to add title column to ledger_transactions table
+ALTER TABLE ledger_transactions ADD COLUMN title TEXT NOT NULL DEFAULT '';

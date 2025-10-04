@@ -108,6 +108,7 @@ sqldelight {
     databases {
         create("CategoryDatabase") {
             packageName.set("com.example.androidkmm.database")
+            migrationOutputDirectory.set(file("src/commonMain/sqldelight/com/example/androidkmm/database/migrations"))
         }
     }
 }
