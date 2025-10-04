@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.components.BeautifulDateSelector
 import kotlinx.datetime.*
 import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
@@ -1252,36 +1253,16 @@ private fun FilterDatePickerDialog(
     onDateSelected: (String) -> Unit,
     initialDate: String = ""
 ) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = if (initialDate.isNotEmpty()) {
-            try {
-                val parts = initialDate.split("-")
-                if (parts.size == 3) {
-                    val year = parts[0].toInt()
-                    val month = parts[1].toInt()
-                    val day = parts[2].toInt()
-                    DateTimeUtils.createDate(year, month, day)?.let { date ->
-                        DateTimeUtils.getStartOfDay(date).toEpochMilliseconds()
-                    }
-                } else null
-            } catch (e: Exception) {
-                null
-            }
-        } else null
-    )
-
-    // Track selected date for display
-    var selectedDateDisplay by remember { mutableStateOf("") }
+    val today = DateTimeUtils.getCurrentDate()
     
-    // Update display when date changes
-    LaunchedEffect(datePickerState.selectedDateMillis) {
-        datePickerState.selectedDateMillis?.let { millis ->
-            val localDate = DateTimeUtils.instantToLocalDate(
-                Instant.fromEpochMilliseconds(millis)
-            )
-            selectedDateDisplay = "${localDate.dayOfMonth} ${localDate.month.name.lowercase().replaceFirstChar { it.uppercase() }}, ${localDate.year}"
-        }
+    // Parse initial date or use today
+    val initialParsedDate = if (initialDate.isNotEmpty()) {
+        DateTimeUtils.parseDate(initialDate) ?: today
+    } else {
+        today
     }
+    
+    var selectedDate by remember { mutableStateOf(initialParsedDate) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1290,50 +1271,25 @@ private fun FilterDatePickerDialog(
             .fillMaxWidth()
             .fillMaxHeight(0.8f),
         title = {
-            Column {
-                Text(
-                    text = "Select Date",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-                if (selectedDateDisplay.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = selectedDateDisplay,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
+            Text(
+                text = "Select Date",
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         },
         text = {
-            DatePicker(
-                state = datePickerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(horizontal = 0.dp),
-                colors = DatePickerDefaults.colors(
-                    selectedYearContainerColor = Color(0xFF2196F3),
-                    selectedDayContainerColor = Color(0xFF2196F3),
-                    todayContentColor = Color(0xFF2196F3),
-                    todayDateBorderColor = Color(0xFF2196F3),
-                    dayInSelectionRangeContainerColor = Color(0xFF2196F3).copy(alpha = 0.3f)
-                )
+            BeautifulDateSelector(
+                selectedDate = selectedDate,
+                onDateSelected = { selectedDate = it },
+                maxDate = today
             )
         },
         confirmButton = {
             Button(
                 onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val localDate = DateTimeUtils.instantToLocalDate(
-                            Instant.fromEpochMilliseconds(millis)
-                        )
-                        val formattedDate = DateTimeUtils.formatDate(localDate)
-                        onDateSelected(formattedDate)
-                    }
+                    val formattedDate = DateTimeUtils.formatDate(selectedDate)
+                    onDateSelected(formattedDate)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF2196F3)

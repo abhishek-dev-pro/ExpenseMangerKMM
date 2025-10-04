@@ -4,6 +4,9 @@ package com.example.androidkmm.screens
 
 import androidx.compose.foundation.background
 import com.example.androidkmm.utils.TimeUtils
+import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.components.BeautifulDateSelector
+import kotlinx.datetime.LocalDate
 import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -17,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -54,24 +58,8 @@ fun EditTransferTransactionScreen(
     val accounts by accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList())
     
     // Date and Time picker states
-    // Use placeholder dates for now
-    val todayMillis = TimeUtils.currentTimeMillis()
-    val tomorrowMillis = TimeUtils.currentTimeMillis() + 24 * 60 * 60 * 1000L
-    
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = TimeUtils.currentTimeMillis(),
-        selectableDates = object : androidx.compose.material3.SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                // Allow dates up to and including today
-                return utcTimeMillis < tomorrowMillis
-            }
-            
-            override fun isSelectableYear(year: Int): Boolean {
-                // Only allow current year and previous years
-                return year <= 2024 // Placeholder year
-            }
-        }
-    )
+    val today = DateTimeUtils.getCurrentDate()
+    var selectedDateState by remember { mutableStateOf(today) }
     val timePickerState = rememberTimePickerState(
         initialHour = 12,
         initialMinute = 0
@@ -646,41 +634,60 @@ fun EditTransferTransactionScreen(
         }
     }
     
-    // Date Picker
+    // Beautiful Date Picker
     if (showDatePicker) {
-        DatePickerDialog(
+        AlertDialog(
             onDismissRequest = { showDatePicker = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.8f),
+            title = {
+                Text(
+                    text = "Select Date",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            },
+            text = {
+                BeautifulDateSelector(
+                    selectedDate = selectedDateState,
+                    onDateSelected = { selectedDateState = it },
+                    maxDate = today
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            // Use placeholder date handling
-                            val date = "2024-01-01" // Placeholder date
-                            // Use placeholder date comparison
-                            
-                            // Check if selected date is in the future
-                            if (false) { // Simplified date validation
-                                // Don't allow future dates - just close dialog without selecting
-                                showDatePicker = false
-                                return@TextButton
-                            }
-                            
-                            selectedDate = date.toString()
+                        // Check if selected date is in the future
+                        if (DateTimeUtils.isDateAfter(selectedDateState, today)) {
+                            // Don't allow future dates - just close dialog without selecting
+                            showDatePicker = false
+                            return@TextButton
                         }
+                        
+                        selectedDate = DateTimeUtils.formatDate(selectedDateState)
                         showDatePicker = false
                     }
                 ) {
-                    Text("OK")
+                    Text(
+                        text = "OK",
+                        color = Color.White,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(
+                        text = "Cancel",
+                        color = Color.Gray
+                    )
                 }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
+            },
+            containerColor = Color(0xFF1F1F1F)
+        )
     }
     
     // Time Picker Dialog
