@@ -2,6 +2,7 @@ package com.example.androidkmm.screens.ledger
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +35,7 @@ fun TransactionItem(
     modifier: Modifier = Modifier,
     onDelete: () -> Unit = {},
     onEdit: () -> Unit = {},
+    onLongPress: () -> Unit = {},
     isHighlighted: Boolean = false
 ) {
     val isSent = transaction.type == TransactionType.SENT
@@ -41,7 +44,14 @@ fun TransactionItem(
 
     Card(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        onLongPress()
+                    }
+                )
+            },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent // No background

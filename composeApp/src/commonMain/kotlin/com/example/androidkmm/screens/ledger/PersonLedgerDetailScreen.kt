@@ -106,26 +106,6 @@ fun PersonLedgerDetailScreen(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Back Button
-            IconButton(
-                onClick = { onBack() },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Color(0xFF2A2A2A),
-                        CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
             // Avatar
             Box(
                 modifier = Modifier
@@ -162,6 +142,24 @@ fun PersonLedgerDetailScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
+
+            // Back Button (moved to right side)
+            IconButton(
+                onClick = { onBack() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2A2A2A),
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         // Balance Card
@@ -434,6 +432,11 @@ fun PersonLedgerDetailScreen(
                     },
                     onDelete = {
                         // Show confirmation dialog before deleting
+                        transactionToDelete = transaction
+                        showDeleteTransactionDialog = true
+                    },
+                    onLongPress = {
+                        // Show confirmation dialog before deleting on long press
                         transactionToDelete = transaction
                         showDeleteTransactionDialog = true
                     }
