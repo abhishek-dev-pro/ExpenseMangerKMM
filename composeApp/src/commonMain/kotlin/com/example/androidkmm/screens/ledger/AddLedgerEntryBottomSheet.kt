@@ -534,7 +534,7 @@ fun AddLedgerEntryBottomSheet(
                         ) { innerTextField ->
                             if (title.isEmpty() && !isTitleFocused) {
                                 Text(
-                                    text = "e.g., Dinner with friends, Loan repayment",
+                                    text = "Give title",
                                     color = LedgerTheme.textSecondary()
                                 )
                             }
