@@ -106,6 +106,26 @@ fun PersonLedgerDetailScreen(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Back Button
+            IconButton(
+                onClick = { onBack() },
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        Color(0xFF2A2A2A),
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             // Avatar
             Box(
                 modifier = Modifier
