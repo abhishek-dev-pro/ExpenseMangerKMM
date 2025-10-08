@@ -74,7 +74,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.moneymate.app"
+    namespace = "com.crewhub.moneymate"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
