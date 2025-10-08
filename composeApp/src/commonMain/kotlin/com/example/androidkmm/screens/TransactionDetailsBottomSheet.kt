@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -368,7 +369,14 @@ private fun TagRow(
     ) {
         Icon(icon, contentDescription = label, tint = bgColor, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(value, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
+        Text(
+            value, 
+            color = MaterialTheme.colorScheme.onSurface, 
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

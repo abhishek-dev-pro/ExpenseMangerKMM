@@ -27,6 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.clickable
 
 @Composable
 fun TransactionItem(
@@ -63,7 +67,7 @@ fun TransactionItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Left colored square with amount
+            // Left slot: amount for RECEIVED, delete icon for SENT
             if (transaction.type == TransactionType.RECEIVED) {
                 Box(
                     modifier = Modifier
@@ -77,19 +81,22 @@ fun TransactionItem(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (transaction.type == TransactionType.RECEIVED) {
-                        Text(
-                            text = "${transaction.amount.toInt()}",
-                            color = amountColor,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(
+                        text = "${transaction.amount.toInt()}",
+                        color = amountColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             } else {
-                Box(
+                // Empty space for SENT - just show delete icon floating in space
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.Gray.copy(alpha = 0.5f),
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(20.dp)
+                        .clickable { onDelete() }
                 )
             }
             Spacer(Modifier.width(4.dp))
@@ -114,9 +121,13 @@ fun TransactionItem(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Title with limited width
+                    // Title with limited width - show "Sent"/"Received" if no description, else description
                     Text(
-                        text = transaction.title,
+                        text = if (transaction.description.isBlank()) {
+                            if (transaction.type == TransactionType.SENT) "Sent" else "Received"
+                        } else {
+                            transaction.description
+                        },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,
@@ -125,15 +136,6 @@ fun TransactionItem(
                         modifier = Modifier.weight(1f)
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    // Balance with fixed width
-                    Text(
-                        text = "Bal: ${balanceAtTransaction.toInt()}",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        maxLines = 1
-                    )
                 }
 
 
@@ -165,22 +167,20 @@ fun TransactionItem(
             Spacer(Modifier.width(4.dp))
 
 
-            // Right colored square with amount
+            // Right slot: amount for SENT, delete icon for RECEIVED
             if (transaction.type == TransactionType.SENT) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(amountColor.copy(alpha = 0.15f))
-                    .border(
-                        width = 1.dp,                // thin border
-                        color = Color.LightGray.copy(alpha = 0.15f),     // light color border
-                        shape = RoundedCornerShape(4.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                if (transaction.type == TransactionType.SENT) {
-
+                Box(
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(amountColor.copy(alpha = 0.15f))
+                        .border(
+                            width = 1.dp,                // thin border
+                            color = Color.LightGray.copy(alpha = 0.15f),     // light color border
+                            shape = RoundedCornerShape(4.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = "${transaction.amount.toInt()}",
                         color = amountColor,
@@ -188,12 +188,17 @@ fun TransactionItem(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            } else {
+                // Empty space for RECEIVED - just show delete icon floating in space
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.Gray.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable { onDelete() }
+                )
             }
-        }else {
-        Box(
-            modifier = Modifier
-                .size(72.dp))
-    }
         }
     }
 }

@@ -87,7 +87,6 @@ fun AddLedgerEntryBottomSheet(
             allPeople.filter { it.name.contains(personName, ignoreCase = true) }
         }
     }
-    var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     
@@ -125,9 +124,6 @@ fun AddLedgerEntryBottomSheet(
             errors["personName"] = "Person name is required"
         }
         
-        if (title.isBlank()) {
-            errors["title"] = "Title is required"
-        }
         
         val amountValue = amount.toDoubleOrNull()
         if (amount.isBlank() || amountValue == null || amountValue <= 0) {
@@ -146,7 +142,6 @@ fun AddLedgerEntryBottomSheet(
     
     // Check if form is valid for button state
     val isFormValid = personName.isNotBlank() && 
-                     title.isNotBlank() &&
                      amount.isNotBlank() && 
                      amount.toDoubleOrNull() != null && 
                      amount.toDoubleOrNull()!! > 0 &&
@@ -489,69 +484,6 @@ fun AddLedgerEntryBottomSheet(
                     }
                 }
 
-                item {
-                    // Title
-                    Text(
-                        text = "Title",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = LedgerTheme.textPrimary()
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Column {
-                        val titleInteractionSource = remember { MutableInteractionSource() }
-                        val isTitleFocused by titleInteractionSource.collectIsFocusedAsState()
-                        
-                        BasicTextField(
-                            value = title,
-                            onValueChange = { newValue ->
-                                // Limit to 50 characters
-                                if (newValue.length <= 50) {
-                                    title = newValue
-                                }
-                            },
-                            textStyle = TextStyle(
-                                color = Color.White,
-                                fontSize = 16.sp
-                            ),
-                            singleLine = true,
-                            interactionSource = titleInteractionSource,
-                            cursorBrush = SolidColor(Color.White),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Color(0xFF1F1F1F),
-                                    RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
-                                )
-                                .border(
-                                    width = AppStyleDesignSystem.Sizes.BORDER_NORMAL,
-                                    color = Color.White.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(AppStyleDesignSystem.Padding.ARRANGEMENT_XL)
-                                )
-                                .padding(horizontal = 16.dp, vertical = 16.dp)
-                        ) { innerTextField ->
-                            if (title.isEmpty() && !isTitleFocused) {
-                                Text(
-                                    text = "Give title",
-                                    color = LedgerTheme.textSecondary()
-                                )
-                            }
-                            innerTextField()
-                        }
-                        
-                        // Show error message
-                        validationErrors["title"]?.let { error ->
-                            Text(
-                                text = error,
-                                color = LedgerTheme.redAmount,
-                                fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
-                                modifier = Modifier.padding(top = AppStyleDesignSystem.Padding.ARRANGEMENT_TINY, start = AppStyleDesignSystem.Padding.MEDIUM_LARGE)
-                            )
-                        }
-                    }
-                }
 
                 item {
                     // Amount
@@ -933,7 +865,7 @@ fun AddLedgerEntryBottomSheet(
                                                 id = "transaction_${Clock.System.now().toEpochMilliseconds()}_${++transactionCounter}",
                                                 personId = existingPerson.id,
                                                 amount = amount.toDoubleOrNull() ?: 0.0,
-                                                title = title,
+                                                title = "",
                                                 description = description,
                                                 date = selectedDate,
                                                 time = selectedTime,
@@ -960,7 +892,7 @@ fun AddLedgerEntryBottomSheet(
                                                 id = "transaction_${Clock.System.now().toEpochMilliseconds()}_${++transactionCounter}",
                                                 personId = newPerson.id,
                                                 amount = amount.toDoubleOrNull() ?: 0.0,
-                                                title = title,
+                                                title = "",
                                                 description = description,
                                                 date = selectedDate,
                                                 time = selectedTime,
