@@ -745,10 +745,19 @@ private fun NewAccountCard(
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
+                    val balanceValue = account.balance.toDoubleOrNull() ?: 0.0
+                    val isNegative = balanceValue < 0
+                    val absoluteValue = kotlin.math.abs(balanceValue)
+                    val formattedBalance = if (isNegative) {
+                        "-$currencySymbol${String.format("%.2f", absoluteValue)}"
+                    } else {
+                        "$currencySymbol${String.format("%.2f", absoluteValue)}"
+                    }
+                    
                     Text(
-                        text = "$currencySymbol${formatDouble2Decimals(account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = formattedBalance,
                         fontSize = 14.sp,
-                        color = AccountsGreenSuccess,
+                        color = if (isNegative) AccountsRedError else AccountsGreenSuccess,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -857,10 +866,19 @@ private fun ArchivedAccountCard(
                 Column(
                     horizontalAlignment = Alignment.End
                 ) {
+                    val balanceValue = account.balance.toDoubleOrNull() ?: 0.0
+                    val isNegative = balanceValue < 0
+                    val absoluteValue = kotlin.math.abs(balanceValue)
+                    val formattedBalance = if (isNegative) {
+                        "-$currencySymbol${String.format("%.2f", absoluteValue)}"
+                    } else {
+                        "$currencySymbol${String.format("%.2f", absoluteValue)}"
+                    }
+                    
                     Text(
-                        text = "$currencySymbol${formatDouble2Decimals(account.balance.toDoubleOrNull() ?: 0.0)}",
+                        text = formattedBalance,
                         style = AppStyleDesignSystem.Typography.HEADLINE,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isNegative) AccountsRedError else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -935,19 +953,24 @@ private fun ReadOnlyAccountCard(account: Account, currencySymbol: String = "₹"
                 }
             }
 
-            // Balance with different styling
+            // Balance with proper negative sign handling
+            val balanceValue = account.balance.toDoubleOrNull() ?: 0.0
+            val isNegative = balanceValue < 0
+            val absoluteValue = kotlin.math.abs(balanceValue)
+            val formattedBalance = if (isNegative) {
+                "-$currencySymbol${String.format("%.2f", absoluteValue)}"
+            } else {
+                "$currencySymbol${String.format("%.2f", absoluteValue)}"
+            }
+            
             Text(
-                text = if (account.balance.startsWith("+") || account.balance.startsWith(currencySymbol)) {
-                    account.balance // Already has currency symbol
-                } else {
-                    "$currencySymbol${account.balance}"
-                },
+                text = formattedBalance,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (account.balance.startsWith("+") || account.balance.startsWith(currencySymbol)) {
-                    Color(0xFF4CAF50)
+                color = if (isNegative) {
+                    Color(0xFFF44336) // Red for negative
                 } else {
-                    Color(0xFFF44336)
+                    Color(0xFF4CAF50) // Green for positive
                 }
             )
         }

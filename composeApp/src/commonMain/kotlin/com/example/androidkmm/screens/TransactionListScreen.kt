@@ -2995,12 +2995,11 @@ private fun AnimatedSummaryCard(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 Text(
-                    text = if (total >= 0) "+$currencySymbol${
-                        formatDouble(
-                            total,
-                            2
-                        )
-                    }" else "$currencySymbol${formatDouble(total, 2)}",
+                    text = if (total >= 0) {
+                        "$currencySymbol${formatDouble(total, 2)}"
+                    } else {
+                        "-$currencySymbol${formatDouble(kotlin.math.abs(total), 2)}"
+                    },
                     color = if (total >= 0) TransactionColors.income else TransactionColors.expense,
                     fontSize = animatedAmountSize.sp,
                     fontWeight = FontWeight.Normal
@@ -3095,12 +3094,11 @@ private fun CompactSummaryCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (total >= 0) "+$currencySymbol${
-                        formatDouble(
-                            total,
-                            2
-                        )
-                    }" else "$currencySymbol${formatDouble(total, 2)}",
+                    text = if (total >= 0) {
+                        "$currencySymbol${formatDouble(total, 2)}"
+                    } else {
+                        "-$currencySymbol${formatDouble(kotlin.math.abs(total), 2)}"
+                    },
                     color = if (total >= 0) TransactionColors.income else TransactionColors.expense,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
