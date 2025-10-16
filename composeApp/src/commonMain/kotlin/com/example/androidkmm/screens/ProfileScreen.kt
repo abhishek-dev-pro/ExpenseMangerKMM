@@ -17,6 +17,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -1878,14 +1881,29 @@ fun AddCategoryBottomSheet(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
+        val interactionSource = remember { MutableInteractionSource() }
+        val isFocused = interactionSource.collectIsFocusedAsState()
+        
         BasicTextField(
             value = categoryName,
             onValueChange = { categoryName = it },
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp),
+            textStyle = TextStyle(
+                color = MaterialTheme.colorScheme.onSurface, 
+                fontSize = 16.sp
+            ),
+            cursorBrush = SolidColor(Color.White),
+            interactionSource = interactionSource,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                .background(
+                    if (isFocused.value) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant, 
+                    RoundedCornerShape(12.dp)
+                )
+                .border(
+                    width = if (isFocused.value) 2.dp else 1.dp, 
+                    color = if (isFocused.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, 
+                    shape = RoundedCornerShape(12.dp)
+                )
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 if (categoryName.isEmpty()) {
