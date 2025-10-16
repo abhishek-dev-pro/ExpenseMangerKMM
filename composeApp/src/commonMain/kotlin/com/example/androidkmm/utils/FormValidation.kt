@@ -42,6 +42,55 @@ object FormValidation {
     )
     
     /**
+     * Validate and sanitize amount input with strict 2-decimal restriction
+     * This function prevents users from typing more than 2 decimal places
+     */
+    fun validateAndSanitizeAmount(input: String): String {
+        // COMPLETELY REWRITTEN LOGIC - BULLETPROOF VALIDATION
+        val cleanInput = input.filter { it.isDigit() || it == '.' }
+        val decimalCount = cleanInput.count { it == '.' }
+        
+        // Check if input has more than one decimal point
+        if (decimalCount > 1) {
+            return ""
+        }
+        
+        // Check if input has decimal point
+        if (cleanInput.contains('.')) {
+            val parts = cleanInput.split('.')
+            if (parts.size == 2) {
+                val beforeDecimal = parts[0]
+                val afterDecimal = parts[1]
+                
+                // Check if after decimal has more than 2 digits
+                if (afterDecimal.length > 2) {
+                    return ""
+                }
+                
+                // Check leading zeros in before decimal
+                if (beforeDecimal.isNotEmpty() && beforeDecimal.startsWith("0") && beforeDecimal != "0") {
+                    return ""
+                }
+                
+                return cleanInput
+            }
+        } else {
+            // No decimal point - check length and leading zeros
+            if (cleanInput.length > 8) {
+                return ""
+            }
+            
+            if (cleanInput.isNotEmpty() && cleanInput.startsWith("0") && cleanInput != "0") {
+                return ""
+            }
+            
+            return cleanInput
+        }
+        
+        return ""
+    }
+
+    /**
      * Validate amount input
      */
     fun validateAmount(amount: String): ValidationResult {

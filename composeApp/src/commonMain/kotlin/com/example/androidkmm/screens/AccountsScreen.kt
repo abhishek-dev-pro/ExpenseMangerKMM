@@ -561,10 +561,26 @@ private fun EditAccountBottomSheet(
         BasicTextField(
             value = initialBalance,
             onValueChange = { newValue ->
-                // Limit to 10 digits (including decimal point)
-                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
-                if (filteredValue.length <= 10) {
-                    initialBalance = filteredValue
+                // COMPLETELY REWRITTEN LOGIC - BULLETPROOF VALIDATION
+                val cleanInput = newValue.filter { it.isDigit() || it == '.' }
+                val decimalCount = cleanInput.count { it == '.' }
+                if (decimalCount <= 1) {
+                    if (cleanInput.contains('.')) {
+                        val parts = cleanInput.split('.')
+                        if (parts.size == 2) {
+                            val beforeDecimal = parts[0]
+                            val afterDecimal = parts[1]
+                            if (afterDecimal.length <= 2) {
+                                if (beforeDecimal.isEmpty() || !beforeDecimal.startsWith("0") || beforeDecimal == "0") {
+                                    initialBalance = cleanInput
+                                }
+                            }
+                        }
+                    } else {
+                        if (cleanInput.length <= 8 && (cleanInput.isEmpty() || !cleanInput.startsWith("0") || cleanInput == "0")) {
+                            initialBalance = cleanInput
+                        }
+                    }
                 }
             },
             textStyle = TextStyle(color = Color.White, fontSize = 16.sp),

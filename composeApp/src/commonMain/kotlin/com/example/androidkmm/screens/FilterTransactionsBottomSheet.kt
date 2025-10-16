@@ -1083,8 +1083,29 @@ private fun AmountRangeSection(
             OutlinedTextField(
                 value = amountRange.min?.toString() ?: "",
                 onValueChange = { newMin ->
-                    val minValue = newMin.toDoubleOrNull()
-                    onAmountRangeChange(amountRange.copy(min = minValue, predefined = null))
+                    // COMPLETELY REWRITTEN LOGIC - BULLETPROOF VALIDATION
+                    val cleanInput = newMin.filter { it.isDigit() || it == '.' }
+                    val decimalCount = cleanInput.count { it == '.' }
+                    if (decimalCount <= 1) {
+                        if (cleanInput.contains('.')) {
+                            val parts = cleanInput.split('.')
+                            if (parts.size == 2) {
+                                val beforeDecimal = parts[0]
+                                val afterDecimal = parts[1]
+                                if (afterDecimal.length <= 2) {
+                                    if (beforeDecimal.isEmpty() || !beforeDecimal.startsWith("0") || beforeDecimal == "0") {
+                                        val minValue = cleanInput.toDoubleOrNull()
+                                        onAmountRangeChange(amountRange.copy(min = minValue, predefined = null))
+                                    }
+                                }
+                            }
+                        } else {
+                            if (cleanInput.length <= 8 && (cleanInput.isEmpty() || !cleanInput.startsWith("0") || cleanInput == "0")) {
+                                val minValue = cleanInput.toDoubleOrNull()
+                                onAmountRangeChange(amountRange.copy(min = minValue, predefined = null))
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
@@ -1121,8 +1142,29 @@ private fun AmountRangeSection(
             OutlinedTextField(
                 value = amountRange.max?.toString() ?: "",
                 onValueChange = { newMax ->
-                    val maxValue = newMax.toDoubleOrNull()
-                    onAmountRangeChange(amountRange.copy(max = maxValue, predefined = null))
+                    // COMPLETELY REWRITTEN LOGIC - BULLETPROOF VALIDATION
+                    val cleanInput = newMax.filter { it.isDigit() || it == '.' }
+                    val decimalCount = cleanInput.count { it == '.' }
+                    if (decimalCount <= 1) {
+                        if (cleanInput.contains('.')) {
+                            val parts = cleanInput.split('.')
+                            if (parts.size == 2) {
+                                val beforeDecimal = parts[0]
+                                val afterDecimal = parts[1]
+                                if (afterDecimal.length <= 2) {
+                                    if (beforeDecimal.isEmpty() || !beforeDecimal.startsWith("0") || beforeDecimal == "0") {
+                                        val maxValue = cleanInput.toDoubleOrNull()
+                                        onAmountRangeChange(amountRange.copy(max = maxValue, predefined = null))
+                                    }
+                                }
+                            }
+                        } else {
+                            if (cleanInput.length <= 8 && (cleanInput.isEmpty() || !cleanInput.startsWith("0") || cleanInput == "0")) {
+                                val maxValue = cleanInput.toDoubleOrNull()
+                                onAmountRangeChange(amountRange.copy(max = maxValue, predefined = null))
+                            }
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {

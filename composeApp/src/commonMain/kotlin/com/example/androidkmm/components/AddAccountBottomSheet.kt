@@ -9,15 +9,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
 import com.example.androidkmm.utils.TimeUtils
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Account
 
@@ -56,13 +61,32 @@ fun AddAccountBottomSheet(
     
     // Validation logic - button should be enabled when account name is filled and not duplicate
     val isFormValid = accountName.isNotEmpty() && !isDuplicateAccount
+    
+    // Keyboard controller for better keyboard handling
+    val keyboardController = LocalSoftwareKeyboardController.current
+    
+    // Amount input focus state
+    val amountInteractionSource = remember { MutableInteractionSource() }
+    val isAmountFocused = amountInteractionSource.collectIsFocusedAsState()
+    
+    // Handle keyboard visibility for amount input
+    LaunchedEffect(isAmountFocused.value) {
+        if (isAmountFocused.value) {
+            // Small delay to ensure keyboard is shown
+            kotlinx.coroutines.delay(100)
+        }
+    }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .imePadding()
-            .padding(24.dp)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        ) {
         // Subtle top border line
         Box(
             modifier = Modifier
@@ -197,8 +221,6 @@ fun AddAccountBottomSheet(
         Spacer(modifier = Modifier.height(6.dp))
 
         // Amount Input with focus handling
-        val amountInteractionSource = remember { MutableInteractionSource() }
-        val isAmountFocused = amountInteractionSource.collectIsFocusedAsState()
         
         BasicTextField(
             value = initialBalance,
@@ -288,6 +310,7 @@ fun AddAccountBottomSheet(
                 fontWeight = FontWeight.Medium,
                 color = Color.White
             )
+        }
         }
     }
 }

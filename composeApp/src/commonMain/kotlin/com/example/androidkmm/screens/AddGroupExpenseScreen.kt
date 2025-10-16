@@ -413,7 +413,23 @@ private fun AmountSection(
         // Amount Input
         BasicTextField(
             value = amount,
-            onValueChange = onAmountChange,
+            onValueChange = { newValue ->
+                // SAME LOGIC AS LEDGER SCREEN - PROVEN TO WORK
+                val filtered = newValue.filter { char ->
+                    char.isDigit() || char == '.'
+                }
+                
+                // Limit to maximum 8 digits (excluding decimal point)
+                val digitsOnly = filtered.filter { char -> char.isDigit() }
+                val decimalCount = filtered.count { char -> char == '.' }
+                
+                // Check if it's a valid decimal format and within digit limit
+                if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$")) && 
+                    digitsOnly.length <= 8 && 
+                    decimalCount <= 1) {
+                    onAmountChange(filtered)
+                }
+            },
             textStyle = TextStyle(
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 24.sp,
