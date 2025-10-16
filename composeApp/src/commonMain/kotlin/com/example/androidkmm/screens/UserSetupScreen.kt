@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.database.InitializeDatabase
+import com.example.androidkmm.utils.FormValidation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -32,6 +33,8 @@ fun UserSetupScreen(
     var isLoading by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var nameValidationError by remember { mutableStateOf("") }
+    var emailValidationError by remember { mutableStateOf("") }
     
     val coroutineScope = rememberCoroutineScope()
     
@@ -99,8 +102,14 @@ fun UserSetupScreen(
             OutlinedTextField(
                 value = userName,
                 onValueChange = { 
-                    userName = it
-                    showError = false
+                    // Limit to 22 characters
+                    if (it.length <= 22) {
+                        userName = it
+                        showError = false
+                        // Validate name in real-time
+                        val validation = FormValidation.validatePersonName(it)
+                        nameValidationError = if (validation.isValid) "" else validation.errors["name"] ?: ""
+                    }
                 },
                 label = { Text("Your Name", color = Color.Gray) },
                 leadingIcon = {
@@ -110,13 +119,17 @@ fun UserSetupScreen(
                         tint = Color.Gray
                     )
                 },
+                isError = nameValidationError.isNotEmpty(),
+                supportingText = if (nameValidationError.isNotEmpty()) {
+                    { Text(nameValidationError, color = Color.Red, fontSize = 12.sp) }
+                } else null,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.Gray,
+                    focusedBorderColor = if (nameValidationError.isNotEmpty()) Color.Red else MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = if (nameValidationError.isNotEmpty()) Color.Red else Color.Gray,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = if (nameValidationError.isNotEmpty()) Color.Red else MaterialTheme.colorScheme.primary,
                     unfocusedLabelColor = Color.Gray
                 ),
                 singleLine = true
@@ -128,8 +141,14 @@ fun UserSetupScreen(
             OutlinedTextField(
                 value = userEmail,
                 onValueChange = { 
-                    userEmail = it
-                    showError = false
+                    // Limit to 50 characters
+                    if (it.length <= 50) {
+                        userEmail = it
+                        showError = false
+                        // Validate email in real-time
+                        val validation = FormValidation.validateEmail(it)
+                        emailValidationError = if (validation.isValid) "" else validation.errors["email"] ?: ""
+                    }
                 },
                 label = { Text("Email (Optional)", color = Color.Gray) },
                 leadingIcon = {
@@ -139,13 +158,17 @@ fun UserSetupScreen(
                         tint = Color.Gray
                     )
                 },
+                isError = emailValidationError.isNotEmpty(),
+                supportingText = if (emailValidationError.isNotEmpty()) {
+                    { Text(emailValidationError, color = Color.Red, fontSize = 12.sp) }
+                } else null,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = Color.Gray,
+                    focusedBorderColor = if (emailValidationError.isNotEmpty()) Color.Red else MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = if (emailValidationError.isNotEmpty()) Color.Red else Color.Gray,
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    focusedLabelColor = if (emailValidationError.isNotEmpty()) Color.Red else MaterialTheme.colorScheme.primary,
                     unfocusedLabelColor = Color.Gray
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -183,11 +206,24 @@ fun UserSetupScreen(
                     println("DEBUG: Get Started button clicked!")
                     println("DEBUG: userName = '$userName'")
                     
-                    if (userName.isBlank()) {
-                        println("DEBUG: Name is blank, showing error")
+                    // Validate name using the new validation function
+                    val nameValidation = FormValidation.validatePersonName(userName)
+                    if (!nameValidation.isValid) {
+                        println("DEBUG: Name validation failed: ${nameValidation.errors}")
                         showError = true
-                        errorMessage = "Please enter your name"
+                        errorMessage = nameValidation.errors["name"] ?: "Please enter a valid name"
                         return@Button
+                    }
+                    
+                    // Validate email if provided
+                    if (userEmail.isNotBlank()) {
+                        val emailValidation = FormValidation.validateEmail(userEmail)
+                        if (!emailValidation.isValid) {
+                            println("DEBUG: Email validation failed: ${emailValidation.errors}")
+                            showError = true
+                            errorMessage = emailValidation.errors["email"] ?: "Please enter a valid email"
+                            return@Button
+                        }
                     }
                     
                     println("DEBUG: Starting setup process...")
@@ -212,13 +248,7 @@ fun UserSetupScreen(
                             }
                             
                             // Format name: first letter capitalized, rest lowercase
-                            val formattedName = trimmedName.split(" ").joinToString(" ") { word ->
-                                if (word.isNotEmpty()) {
-                                    word.first().uppercaseChar() + word.drop(1).lowercase()
-                                } else {
-                                    word
-                                }
-                            }
+                            val formattedName = FormValidation.capitalizeName(trimmedName)
                             
                             println("DEBUG: Saving formatted name: '$formattedName'")
                             // Save user name to settings
@@ -227,7 +257,8 @@ fun UserSetupScreen(
                             
                             // Save email if provided, otherwise auto-generate
                             val finalEmail = if (trimmedEmail.isNotBlank()) {
-                                trimmedEmail
+                                // Normalize email (trim and convert to lowercase)
+                                FormValidation.normalizeEmail(trimmedEmail)
                             } else {
                                 // Auto-generate email from name: "firstname"@moneymate.com
                                 val firstName = trimmedName.split(" ").firstOrNull()?.lowercase() ?: "user"

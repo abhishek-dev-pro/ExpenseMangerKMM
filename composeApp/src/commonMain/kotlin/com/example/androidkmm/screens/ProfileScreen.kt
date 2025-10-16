@@ -53,6 +53,7 @@ import com.example.androidkmm.models.Account
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.theme.AppTheme
 import com.example.androidkmm.theme.AppColors
+import com.example.androidkmm.utils.FormValidation
 
 // Account data class is now defined in models/AccountModels.kt
 
@@ -397,6 +398,8 @@ fun ProfileScreen(
     var isLoading by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+    var nameValidationError by remember { mutableStateOf("") }
+    var emailValidationError by remember { mutableStateOf("") }
     
     val coroutineScope = rememberCoroutineScope()
     
@@ -457,7 +460,9 @@ fun ProfileScreen(
                                 Text(
                                     text = userName,
                                     style = AppStyleDesignSystem.Typography.MAIN_PAGE_HEADING_TITLE,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
 
                                 Spacer(modifier = Modifier.height(AppStyleDesignSystem.Padding.XXS))
@@ -465,7 +470,9 @@ fun ProfileScreen(
                                 Text(
                                     text = userEmail,
                                     style = AppStyleDesignSystem.Typography.CALL_OUT,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                             }
                             
@@ -652,8 +659,14 @@ fun ProfileScreen(
                     OutlinedTextField(
                         value = editName,
                         onValueChange = { 
-                            editName = it
-                            showError = false
+                            // Limit to 22 characters
+                            if (it.length <= 22) {
+                                editName = it
+                                showError = false
+                                // Validate name in real-time
+                                val validation = FormValidation.validatePersonName(it)
+                                nameValidationError = if (validation.isValid) "" else validation.errors["name"] ?: ""
+                            }
                         },
                         label = { Text("Name", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         leadingIcon = {
@@ -663,13 +676,17 @@ fun ProfileScreen(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
+                        isError = nameValidationError.isNotEmpty(),
+                        supportingText = if (nameValidationError.isNotEmpty()) {
+                            { Text(nameValidationError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                        } else null,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = if (nameValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = if (nameValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
                             focusedTextColor = MaterialTheme.colorScheme.onSurface,
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = if (nameValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         singleLine = true
@@ -679,8 +696,14 @@ fun ProfileScreen(
                     OutlinedTextField(
                         value = editEmail,
                         onValueChange = { 
-                            editEmail = it
-                            showError = false
+                            // Limit to 50 characters
+                            if (it.length <= 50) {
+                                editEmail = it
+                                showError = false
+                                // Validate email in real-time
+                                val validation = FormValidation.validateEmail(it)
+                                emailValidationError = if (validation.isValid) "" else validation.errors["email"] ?: ""
+                            }
                         },
                         label = { Text("Email", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         leadingIcon = {
@@ -690,13 +713,17 @@ fun ProfileScreen(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
+                        isError = emailValidationError.isNotEmpty(),
+                        supportingText = if (emailValidationError.isNotEmpty()) {
+                            { Text(emailValidationError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                        } else null,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            focusedBorderColor = if (emailValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = if (emailValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
                             focusedTextColor = MaterialTheme.colorScheme.onSurface,
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = if (emailValidationError.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -717,10 +744,22 @@ fun ProfileScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        if (editName.isBlank()) {
+                        // Validate name using the new validation function
+                        val nameValidation = FormValidation.validatePersonName(editName)
+                        if (!nameValidation.isValid) {
                             showError = true
-                            errorMessage = "Please enter your name"
+                            errorMessage = nameValidation.errors["name"] ?: "Please enter a valid name"
                             return@Button
+                        }
+                        
+                        // Validate email if provided
+                        if (editEmail.isNotBlank()) {
+                            val emailValidation = FormValidation.validateEmail(editEmail)
+                            if (!emailValidation.isValid) {
+                                showError = true
+                                errorMessage = emailValidation.errors["email"] ?: "Please enter a valid email"
+                                return@Button
+                            }
                         }
 
                         isLoading = true
@@ -729,12 +768,16 @@ fun ProfileScreen(
                                 val trimmedName = editName.trim()
                                 val trimmedEmail = editEmail.trim()
 
+                                // Capitalize name before saving
+                                val capitalizedName = FormValidation.capitalizeName(trimmedName)
+                                
                                 // Save user name to settings
-                                settingsDatabase.updateUserName(trimmedName)
+                                settingsDatabase.updateUserName(capitalizedName)
 
                                 // Save email if provided, otherwise auto-generate
                                 val finalEmail = if (trimmedEmail.isNotBlank()) {
-                                    trimmedEmail
+                                    // Normalize email (trim and convert to lowercase)
+                                    FormValidation.normalizeEmail(trimmedEmail)
                                 } else {
                                     // Auto-generate email from name: "firstname"@moneymate.com
                                     val firstName = trimmedName.split(" ").firstOrNull()?.lowercase() ?: "user"

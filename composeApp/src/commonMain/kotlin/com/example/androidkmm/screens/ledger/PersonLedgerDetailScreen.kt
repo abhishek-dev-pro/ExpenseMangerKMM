@@ -132,7 +132,9 @@ fun PersonLedgerDetailScreen(
                     text = updatedPerson.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = LedgerTheme.textPrimary()
+                    color = LedgerTheme.textPrimary(),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = "${updatedPerson.transactionCount} entr${if (updatedPerson.transactionCount > 1) "ies" else "y"}",

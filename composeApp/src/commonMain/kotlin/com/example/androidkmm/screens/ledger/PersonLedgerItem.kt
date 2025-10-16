@@ -97,7 +97,9 @@ fun PersonLedgerItem(
                     style = AppStyleDesignSystem.Typography.BODY.copy(
                         fontWeight = AppStyleDesignSystem.iOSFontWeights.medium
                     ),
-                    color = LedgerTheme.textPrimary()
+                    color = LedgerTheme.textPrimary(),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = "${person.lastTransactionDate} • ${person.transactionCount} entr${if (person.transactionCount > 1) "ies" else "y"}",

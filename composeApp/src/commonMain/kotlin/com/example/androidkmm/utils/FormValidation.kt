@@ -135,16 +135,88 @@ object FormValidation {
     
     /**
      * Validate email input
+     * Rules: Valid email format, 5-50 characters, trim spaces, convert to lowercase
      */
     fun validateEmail(email: String): ValidationResult {
         val errors = mutableMapOf<String, String>()
+        val trimmedEmail = email.trim()
         
         when {
-            email.isBlank() -> errors["email"] = "Email is required"
-            !isValidEmail(email) -> errors["email"] = "Please enter a valid email"
+            trimmedEmail.isBlank() -> errors["email"] = "Email is required"
+            trimmedEmail.length < 5 -> errors["email"] = "Email must be at least 5 characters"
+            trimmedEmail.length > 50 -> errors["email"] = "Email must be 50 characters or less"
+            !isValidEmailFormat(trimmedEmail) -> errors["email"] = "Please enter a valid email address"
         }
         
         return ValidationResult(errors.isEmpty(), errors)
+    }
+    
+    /**
+     * Check if email format is valid using standard email regex
+     */
+    private fun isValidEmailFormat(email: String): Boolean {
+        val emailPattern = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,24}$")
+        return emailPattern.matches(email)
+    }
+    
+    /**
+     * Normalize email (trim and convert to lowercase)
+     */
+    fun normalizeEmail(email: String): String {
+        return email.trim().lowercase()
+    }
+    
+    /**
+     * Validate person name input
+     * Rules: Only English alphabets and numbers allowed, numbers cannot be at the start
+     * Maximum length: 22 characters
+     */
+    fun validatePersonName(name: String): ValidationResult {
+        val errors = mutableMapOf<String, String>()
+        
+        when {
+            name.isBlank() -> errors["name"] = "Name is required"
+            name.length < 2 -> errors["name"] = "Name must be at least 2 characters"
+            name.length > 22 -> errors["name"] = "Name must be 22 characters or less"
+            !isValidPersonName(name) -> errors["name"] = "Name can only contain English letters and numbers. Numbers cannot be at the start."
+        }
+        
+        return ValidationResult(errors.isEmpty(), errors)
+    }
+    
+    /**
+     * Check if person name is valid
+     * Only English alphabets and numbers allowed, numbers cannot be at the start
+     */
+    private fun isValidPersonName(name: String): Boolean {
+        // Check if name contains only English letters and numbers
+        val namePattern = Regex("^[A-Za-z0-9\\s]+$")
+        if (!namePattern.matches(name)) {
+            return false
+        }
+        
+        // Check if any word starts with a number
+        val words = name.trim().split("\\s+".toRegex())
+        for (word in words) {
+            if (word.isNotEmpty() && word.first().isDigit()) {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    /**
+     * Capitalize the first letter of each word in a name
+     */
+    fun capitalizeName(name: String): String {
+        return name.trim().split("\\s+".toRegex()).joinToString(" ") { word ->
+            if (word.isNotEmpty()) {
+                word.first().uppercaseChar() + word.drop(1).lowercase()
+            } else {
+                word
+            }
+        }
     }
     
     /**

@@ -24,6 +24,7 @@ import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.screens.ledger.components.*
 import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.utils.FormValidation
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
@@ -97,8 +98,10 @@ fun AddLedgerEntryBottomSheetRefactored(
     fun validateForm(): Map<String, String> {
         val errors = mutableMapOf<String, String>()
         
-        if (personName.isBlank()) {
-            errors["personName"] = "Person name is required"
+        // Validate person name using the new validation function
+        val nameValidation = FormValidation.validatePersonName(personName)
+        if (!nameValidation.isValid) {
+            errors["personName"] = nameValidation.errors["name"] ?: "Please enter a valid name"
         }
         
         if (amount.isBlank()) {
@@ -117,7 +120,7 @@ fun AddLedgerEntryBottomSheetRefactored(
         return errors
     }
     
-    val isFormValid = personName.isNotBlank() && 
+    val isFormValid = FormValidation.validatePersonName(personName).isValid && 
                      amount.isNotBlank() && 
                      amount.toDoubleOrNull() != null && 
                      amount.toDoubleOrNull()!! > 0 && 
@@ -170,9 +173,7 @@ fun AddLedgerEntryBottomSheetRefactored(
                                 // Handle form submission
                                 coroutineScope.launch {
                                     try {
-                                        val formattedName = personName.trim().split(" ").joinToString(" ") { word ->
-                                            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-                                        }
+                                        val formattedName = FormValidation.capitalizeName(personName.trim())
                                         
                                         val existingPerson = ledgerDatabaseManager.getLedgerPersonByName(formattedName)
                                         val personToUse = existingPerson ?: run {

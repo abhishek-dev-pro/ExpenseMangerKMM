@@ -23,6 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.utils.FormValidation
 import kotlinx.datetime.*
 import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
@@ -120,10 +121,11 @@ fun AddLedgerEntryBottomSheet(
     fun validateForm(): Boolean {
         val errors = mutableMapOf<String, String>()
         
-        if (personName.isBlank()) {
-            errors["personName"] = "Person name is required"
+        // Validate person name using the new validation function
+        val nameValidation = FormValidation.validatePersonName(personName)
+        if (!nameValidation.isValid) {
+            errors["personName"] = nameValidation.errors["name"] ?: "Please enter a valid name"
         }
-        
         
         val amountValue = amount.toDoubleOrNull()
         if (amount.isBlank() || amountValue == null || amountValue <= 0) {
@@ -141,7 +143,7 @@ fun AddLedgerEntryBottomSheet(
     }
     
     // Check if form is valid for button state
-    val isFormValid = personName.isNotBlank() && 
+    val isFormValid = FormValidation.validatePersonName(personName).isValid && 
                      amount.isNotBlank() && 
                      amount.toDoubleOrNull() != null && 
                      amount.toDoubleOrNull()!! > 0 &&
@@ -255,8 +257,8 @@ fun AddLedgerEntryBottomSheet(
                             BasicTextField(
                                 value = personName,
                                 onValueChange = { newValue ->
-                                    // Limit to 20 characters
-                                    if (newValue.length <= 20) {
+                                    // Limit to 22 characters
+                                    if (newValue.length <= 22) {
                                         personName = newValue
                                         showSuggestions = newValue.isNotBlank() && suggestions.isNotEmpty()
                                     }
@@ -848,13 +850,7 @@ fun AddLedgerEntryBottomSheet(
                                 coroutineScope.launch {
                                     try {
                                         // Format the person name (capitalize first letter of each word)
-                                        val formattedName = personName.trim().split(" ").joinToString(" ") { word ->
-                                            if (word.isNotEmpty()) {
-                                                word.first().uppercaseChar() + word.drop(1).lowercase()
-                                            } else {
-                                                word
-                                            }
-                                        }
+                                        val formattedName = FormValidation.capitalizeName(personName.trim())
                                         
                                         // Check if a person with this name already exists
                                         val existingPerson = ledgerDatabaseManager.getLedgerPersonByName(formattedName)

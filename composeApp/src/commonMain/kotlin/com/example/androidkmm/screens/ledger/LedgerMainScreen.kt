@@ -100,7 +100,7 @@ fun LedgerMainScreen(
     
     // Filter options
     val filterOptions = listOf(
-        "All" to "All contacts",
+        "All" to "All transactions",
         "Get Back" to "Money people will return to me",
         "Give Back" to "Money I have to return",
         "Settled" to "Completely settled ledgers"
@@ -425,7 +425,7 @@ fun LedgerMainScreen(
                         DropdownMenuItem(
                             text = {
                                 Column(
-                                    modifier = Modifier.padding(vertical = 2.dp)
+                                    modifier = Modifier.padding(vertical = 1.dp)
                                 ) {
                                     Text(
                                         text = option,
@@ -436,8 +436,9 @@ fun LedgerMainScreen(
                                     Text(
                                         text = description,
                                         color = LedgerTheme.textSecondary(),
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Normal
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        modifier = Modifier.padding(top = 1.dp)
                                     )
                                 }
                             },

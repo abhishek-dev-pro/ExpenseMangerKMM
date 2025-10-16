@@ -60,8 +60,8 @@ fun PersonInputSection(
                 BasicTextField(
                     value = personName,
                     onValueChange = { newValue ->
-                        // Limit to 20 characters
-                        if (newValue.length <= 20) {
+                        // Limit to 22 characters
+                        if (newValue.length <= 22) {
                             onPersonNameChanged(newValue)
                             onShowSuggestionsChanged(newValue.isNotBlank() && suggestions.isNotEmpty())
                         }
