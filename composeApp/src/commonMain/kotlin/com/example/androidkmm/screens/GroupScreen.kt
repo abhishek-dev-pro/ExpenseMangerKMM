@@ -453,7 +453,7 @@ fun GroupCard(
         ) {
             val currentUserBalance = members.firstOrNull()?.balance ?: 0.0
             val balanceText = if (currentUserBalance < 0) "You owe" else "You get back"
-            val balanceAmount = if (currentUserBalance < 0) "-$${formatDouble(kotlin.math.abs(currentUserBalance))}" else "+$${formatDouble(currentUserBalance)}"
+            val balanceAmount = if (currentUserBalance < 0) "-$${formatDouble(kotlin.math.abs(currentUserBalance))}" else "$${formatDouble(currentUserBalance)}"
             
             Box(
                 modifier = Modifier

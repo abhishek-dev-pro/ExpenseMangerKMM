@@ -1032,10 +1032,14 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "$currencySymbol${formatDouble1Decimal(accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = run {
+                                    val totalAssets = accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 }
+                                    val formattedAmount = formatDouble1Decimal(totalAssets)
+                                    if (totalAssets < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
+                                },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = AccountsGreenSuccess
+                                color = if (accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 } < 0) AccountsRedError else AccountsGreenSuccess
                             )
                         }
 
@@ -1090,10 +1094,14 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                 color = MaterialTheme.colorScheme.onBackground
                             )
                             Text(
-                                text = "+$currencySymbol${formatDouble1Decimal(accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 })}",
+                                text = run {
+                                    val netWorth = accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 }
+                                    val formattedAmount = formatDouble1Decimal(netWorth)
+                                    if (netWorth < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
+                                },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = AccountsGreenSuccess
+                                color = if (accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 } < 0) AccountsRedError else AccountsGreenSuccess
                             )
                         }
                     }
@@ -1116,7 +1124,8 @@ private fun formatDouble2Decimals(value: Double): String {
 }
 
 private fun formatDouble1Decimal(value: Double): String {
-    val rounded = (value * 10.0).toLong()
+    val absValue = kotlin.math.abs(value)
+    val rounded = (absValue * 10.0).toLong()
     val integerPart = rounded / 10
     val decimalPart = (rounded % 10).toInt()
     return "$integerPart.$decimalPart"

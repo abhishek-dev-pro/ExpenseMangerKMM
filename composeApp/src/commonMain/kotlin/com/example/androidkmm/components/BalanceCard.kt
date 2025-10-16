@@ -167,7 +167,8 @@ fun BalanceCard(
                     0.0
                 }
             }
-            "$currencySymbol${DateFormatUtils.formatDouble(total, "%.2f")}"
+            val formattedAmount = DateFormatUtils.formatDouble(total, "%.2f")
+            if (total < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
         } else {
             "$currencySymbol.00"
         }
@@ -230,10 +231,10 @@ fun BalanceCard(
                 println("DEBUG: netAmount: $netAmount, finalAmount: $finalAmount")
                 println("DEBUG: finalAmount >= 0: ${finalAmount >= 0}")
                 
-                val sign = if (finalAmount >= 0) "+" else ""
-                val formattedAmount = "${sign}$currencySymbol${DateFormatUtils.formatDouble(finalAmount, "%.1f")}"
-                println("DEBUG: sign: '$sign', formattedAmount: $formattedAmount")
-                formattedAmount
+                val formattedAmount = DateFormatUtils.formatDouble(finalAmount, "%.1f")
+                val result = if (finalAmount < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
+                println("DEBUG: finalAmount: $finalAmount, formattedAmount: $formattedAmount, result: $result")
+                result
             }
         } catch (e: Exception) {
             println("ERROR: Exception calculating ledger balance: ${e.message}")
