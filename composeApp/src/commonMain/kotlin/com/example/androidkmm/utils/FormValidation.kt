@@ -116,6 +116,7 @@ object FormValidation {
             title.isBlank() -> errors["title"] = "Title is required"
             title.length < 2 -> errors["title"] = "Title must be at least 2 characters"
             title.length > 100 -> errors["title"] = "Title is too long"
+            title.matches(Regex("^[^a-zA-Z0-9].*")) -> errors["title"] = "Title cannot start with special characters"
         }
         
         return ValidationResult(errors.isEmpty(), errors)

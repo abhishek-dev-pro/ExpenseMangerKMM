@@ -130,12 +130,18 @@ object InputSanitizer {
      * Sanitize transaction title
      */
     fun sanitizeTitle(input: String): String {
-        return input
+        var sanitized = input
             .trim()
             .replace(Regex("[<>\"'&]"), "") // Remove HTML/XML characters
             .replace(Regex("[\\x00-\\x1F\\x7F]"), "") // Remove control characters
             .replace(Regex("\\s+"), " ") // Replace multiple spaces with single space
             .take(100) // Limit length
+        
+        // Remove special characters from the start of the title
+        // Allow special characters after spaces (in the middle)
+        sanitized = sanitized.replace(Regex("^[^a-zA-Z0-9\\s]+"), "")
+        
+        return sanitized
     }
     
     /**
@@ -163,6 +169,7 @@ object InputSanitizer {
             sanitized.isEmpty() -> Pair(sanitized, "Title is required")
             sanitized.length < 2 -> Pair(sanitized, "Title must be at least 2 characters")
             sanitized.length > 100 -> Pair(sanitized, "Title is too long")
+            sanitized.matches(Regex("^[^a-zA-Z0-9].*")) -> Pair(sanitized, "Title cannot start with special characters")
             else -> Pair(sanitized, null)
         }
     }

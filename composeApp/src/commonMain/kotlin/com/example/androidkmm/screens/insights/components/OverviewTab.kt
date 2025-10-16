@@ -11,6 +11,7 @@ import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.TransactionType
 import com.example.androidkmm.utils.Logger
 import kotlinx.datetime.LocalDate
+import com.example.androidkmm.utils.DateTimeUtils
 
 /**
  * Overview tab for the insights screen
@@ -39,8 +40,10 @@ fun OverviewTab(
     val appSettings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val actualCurrencySymbol = if (currencySymbol == "$") appSettings.currencySymbol else currencySymbol
     
-    var currentMonth by remember { mutableStateOf(9) } // September = 9
-    var currentYear by remember { mutableStateOf(2025) }
+    // Get current date
+    val currentDate = DateTimeUtils.getCurrentDate()
+    var currentMonth by remember { mutableStateOf(currentDate.monthNumber) }
+    var currentYear by remember { mutableStateOf(currentDate.year) }
     
     // Log overview tab initialization
     Logger.debug("OverviewTab initialized for month $currentMonth, year $currentYear", "OverviewTab")

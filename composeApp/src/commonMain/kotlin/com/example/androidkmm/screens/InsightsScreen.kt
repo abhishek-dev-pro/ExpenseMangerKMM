@@ -32,9 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.AppStyleDesignSystem
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import com.example.androidkmm.utils.DateTimeUtils
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
 
@@ -137,15 +135,16 @@ fun InsightsScreen(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
 private fun OverviewTab(
     transactionDatabaseManager: com.example.androidkmm.database.SQLiteTransactionDatabase? = null,
     currencySymbol: String = "$",
     onCategoryClick: (String, Int, Int) -> Unit = { _, _, _ -> }
 ) {
-    var currentMonth by remember { mutableStateOf(9) } // September = 9
-    var currentYear by remember { mutableStateOf(2025) }
+    // Get current date
+    val currentDate = DateTimeUtils.getCurrentDate()
+    var currentMonth by remember { mutableStateOf(currentDate.monthNumber) }
+    var currentYear by remember { mutableStateOf(currentDate.year) }
     
     // Calculate monthly income for the current month
     val allTransactions = if (transactionDatabaseManager != null) {
@@ -187,8 +186,7 @@ private fun OverviewTab(
                 },
                 onNextMonth = {
                     // Get current date to check if we can go to next month
-                    val now = Clock.System.now()
-                    val currentDate = now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+                    val currentDate = DateTimeUtils.getCurrentDate()
                     val currentMonthNumber = currentDate.monthNumber
                     val currentYearNumber = currentDate.year
                     
@@ -279,7 +277,6 @@ private fun OverviewTab(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
 private fun MonthSelectorCard(
     currentMonth: Int,
@@ -293,8 +290,7 @@ private fun MonthSelectorCard(
     )
     
     // Get current date to determine if we're at the current month
-    val now = Clock.System.now()
-    val currentDate = now.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+    val currentDate = DateTimeUtils.getCurrentDate()
     val currentMonthNumber = currentDate.monthNumber
     val currentYearNumber = currentDate.year
     

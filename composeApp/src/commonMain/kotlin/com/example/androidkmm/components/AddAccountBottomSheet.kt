@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.models.Account
 
@@ -65,13 +67,17 @@ fun AddAccountBottomSheet(
     // Keyboard controller for better keyboard handling
     val keyboardController = LocalSoftwareKeyboardController.current
     
+    // Name input focus state
+    val nameInteractionSource = remember { MutableInteractionSource() }
+    val isNameFocused = nameInteractionSource.collectIsFocusedAsState()
+    
     // Amount input focus state
     val amountInteractionSource = remember { MutableInteractionSource() }
     val isAmountFocused = amountInteractionSource.collectIsFocusedAsState()
     
-    // Handle keyboard visibility for amount input
-    LaunchedEffect(isAmountFocused.value) {
-        if (isAmountFocused.value) {
+    // Handle keyboard visibility for both name and amount inputs
+    LaunchedEffect(isNameFocused.value, isAmountFocused.value) {
+        if (isNameFocused.value || isAmountFocused.value) {
             // Small delay to ensure keyboard is shown
             kotlinx.coroutines.delay(100)
         }
@@ -81,6 +87,7 @@ fun AddAccountBottomSheet(
         modifier = Modifier
             .fillMaxWidth()
             .imePadding()
+            .windowInsetsPadding(WindowInsets.ime)
     ) {
         Column(
             modifier = Modifier
@@ -111,9 +118,6 @@ fun AddAccountBottomSheet(
         Spacer(modifier = Modifier.height(6.dp))
 
         // Account Name Input with focus handling
-        val nameInteractionSource = remember { MutableInteractionSource() }
-        val isNameFocused = nameInteractionSource.collectIsFocusedAsState()
-        
         BasicTextField(
             value = accountName,
             onValueChange = { newValue ->
