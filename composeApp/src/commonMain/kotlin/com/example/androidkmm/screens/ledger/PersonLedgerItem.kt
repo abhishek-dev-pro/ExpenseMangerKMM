@@ -116,7 +116,7 @@ fun PersonLedgerItem(
                     text = when {
                         person.balance == 0.0 -> "$currencySymbol${formatDouble(0.0)}"
                         person.balance > 0 -> "$currencySymbol${formatDouble(person.balance)}"
-                        else -> "-$currencySymbol${formatDouble(kotlin.math.abs(person.balance))}"
+                        else -> "$currencySymbol${formatDouble(kotlin.math.abs(person.balance))}"
                     },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
