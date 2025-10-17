@@ -485,35 +485,58 @@ class SQLiteTransactionDatabase(
                 // Add back old amount, then subtract new amount
                 println("DEBUG: Step 2 - Updating account balance using simplified logic...")
                 
-                if (oldTransaction.account == newTransaction.account && oldTransaction.type == newTransaction.type) {
-                    // Same account and type - just calculate the difference
+                if (oldTransaction.account == newTransaction.account) {
+                    // Same account - handle all type combinations
                     val account = getAccountByName(newTransaction.account)
                     if (account != null) {
                         val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
                         println("DEBUG: Current balance: $currentBalance")
+                        println("DEBUG: Old transaction: ${oldTransaction.type} - ${oldTransaction.amount}")
+                        println("DEBUG: New transaction: ${newTransaction.type} - ${newTransaction.amount}")
                         
-                        when (newTransaction.type) {
-                            com.example.androidkmm.models.TransactionType.INCOME -> {
-                                // For INCOME: subtract old, add new = currentBalance - oldAmount + newAmount
-                                val newBalance = currentBalance - oldTransaction.amount + newTransaction.amount
-                                accountDatabaseManager.updateAccountBalance(account.id, newBalance)
-                                println("DEBUG: INCOME - Updated ${account.name}: $currentBalance - ${oldTransaction.amount} + ${newTransaction.amount} = $newBalance")
+                        val newBalance = when {
+                            // INCOME -> INCOME: subtract old, add new
+                            oldTransaction.type == com.example.androidkmm.models.TransactionType.INCOME && 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.INCOME -> {
+                                currentBalance - oldTransaction.amount + newTransaction.amount
                             }
-                            com.example.androidkmm.models.TransactionType.EXPENSE -> {
-                                // For EXPENSE: add back old, subtract new = currentBalance + oldAmount - newAmount
-                                val newBalance = currentBalance + oldTransaction.amount - newTransaction.amount
-                                accountDatabaseManager.updateAccountBalance(account.id, newBalance)
-                                println("DEBUG: EXPENSE - Updated ${account.name}: $currentBalance + ${oldTransaction.amount} - ${newTransaction.amount} = $newBalance")
+                            // INCOME -> EXPENSE: subtract old, subtract new
+                            oldTransaction.type == com.example.androidkmm.models.TransactionType.INCOME && 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                                currentBalance - oldTransaction.amount - newTransaction.amount
                             }
-                            com.example.androidkmm.models.TransactionType.TRANSFER -> {
-                                // Handle transfer separately
-                                undoTransaction(oldTransaction, accountDatabaseManager)
-                                applyTransaction(newTransaction, accountDatabaseManager)
+                            // EXPENSE -> INCOME: add back old, add new
+                            oldTransaction.type == com.example.androidkmm.models.TransactionType.EXPENSE && 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.INCOME -> {
+                                currentBalance + oldTransaction.amount + newTransaction.amount
                             }
+                            // EXPENSE -> EXPENSE: add back old, subtract new
+                            oldTransaction.type == com.example.androidkmm.models.TransactionType.EXPENSE && 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                                currentBalance + oldTransaction.amount - newTransaction.amount
+                            }
+                            // TRANSFER -> anything: use undo/apply logic
+                            oldTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER || 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                                // Handle transfer separately - this will be handled in the else block
+                                currentBalance
+                            }
+                            else -> currentBalance
+                        }
+                        
+                        if (oldTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER || 
+                            newTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
+                            // Use undo/apply logic for transfers
+                            undoTransaction(oldTransaction, accountDatabaseManager)
+                            applyTransaction(newTransaction, accountDatabaseManager)
+                        } else {
+                            // Update balance with calculated value
+                            accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                            println("DEBUG: Updated ${account.name}: $currentBalance -> $newBalance")
                         }
                     }
                 } else {
-                    // Different account or type - use undo/apply logic
+                    // Different account - use undo/apply logic
                     undoTransaction(oldTransaction, accountDatabaseManager)
                     applyTransaction(newTransaction, accountDatabaseManager)
                 }
