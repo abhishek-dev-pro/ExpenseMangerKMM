@@ -132,7 +132,10 @@ fun AddLedgerEntryBottomSheet(
             errors["amount"] = "Please enter a valid amount"
         }
         
-        // Description is optional, no validation needed
+        // Validate description length (optional but if provided, must be <= 100 characters)
+        if (description.isNotBlank() && description.length > 100) {
+            errors["description"] = "Description must be 100 characters or less"
+        }
         
         if (selectedAccount == null) {
             errors["account"] = "Please select an account"
@@ -580,7 +583,12 @@ fun AddLedgerEntryBottomSheet(
                         
                         BasicTextField(
                             value = description,
-                            onValueChange = { description = it },
+                            onValueChange = { newValue ->
+                                // Limit to 100 characters
+                                if (newValue.length <= 100) {
+                                    description = newValue
+                                }
+                            },
                             textStyle = TextStyle(
                                 color = LedgerTheme.textPrimary(),
                                 fontSize = 16.sp
@@ -779,7 +787,11 @@ fun AddLedgerEntryBottomSheet(
                     }
 
                     Text(
-                        text = "Account from which you sent the money",
+                        text = if (currentTransactionType == TransactionType.SENT) {
+                            "Account from which you sent the money"
+                        } else {
+                            "Account in which you receive money"
+                        },
                         fontSize = AppStyleDesignSystem.Typography.FOOTNOTE.fontSize,
                         color = LedgerTheme.textSecondary(),
                         modifier = Modifier.padding(top = AppStyleDesignSystem.Padding.ARRANGEMENT_TINY)
