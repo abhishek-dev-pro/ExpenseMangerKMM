@@ -145,10 +145,18 @@ class SQLiteAccountDatabase(
                 }
                 
                 println("DEBUG: No duplicate found, proceeding with account insertion")
+                // Format balance to 2 decimal places before storing in database
+                val formattedBalance = try {
+                    val balanceValue = account.balance.toDoubleOrNull() ?: 0.0
+                    String.format("%.2f", balanceValue)
+                } catch (e: Exception) {
+                    "0.00"
+                }
+                
                 database.categoryDatabaseQueries.insertAccount(
                     id = account.id,
                     name = account.name,
-                    balance = account.balance,
+                    balance = formattedBalance,
                     icon_name = getIconName(account.icon),
                     color_hex = account.color.toHexString(),
                     type = account.type,
@@ -278,7 +286,11 @@ class SQLiteAccountDatabase(
                 // Get old account data to track balance changes
                 val oldAccount = database.categoryDatabaseQueries.selectAccountById(accountId).executeAsOneOrNull()
                 
-                database.categoryDatabaseQueries.updateAccountBalance(newBalance.toString(), accountId)
+                // Round balance to 2 decimal places to avoid floating-point precision issues
+                val roundedBalance = kotlin.math.round(newBalance * 100.0) / 100.0
+                // Format to 2 decimal places to ensure consistent storage (e.g., 1.90 not 1.9)
+                val formattedBalance = String.format("%.2f", roundedBalance)
+                database.categoryDatabaseQueries.updateAccountBalance(formattedBalance, accountId)
                 println("DEBUG: Account balance updated successfully: $accountId -> $newBalance")
                 
                 // Create account operation transaction only if explicitly requested

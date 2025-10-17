@@ -280,10 +280,22 @@ fun AddAccountBottomSheet(
                     accountName
                 }
                 
+                // Format balance to 2 decimal places to avoid floating-point precision issues
+                val formattedBalance = if (initialBalance.isEmpty()) {
+                    "0.00"
+                } else {
+                    try {
+                        val balanceValue = initialBalance.toDoubleOrNull() ?: 0.0
+                        String.format("%.2f", balanceValue)
+                    } catch (e: Exception) {
+                        "0.00"
+                    }
+                }
+                
                 val account = Account(
                     id = "${TimeUtils.currentTimeMillis()}_${kotlin.random.Random.nextInt(10000)}",
                     name = capitalizedAccountName,
-                    balance = if (initialBalance.isEmpty()) "0.00" else initialBalance,
+                    balance = formattedBalance,
                     icon = when (selectedAccountType) {
                         "Bank Account" -> Icons.Default.AccountBalance
                         "Credit/Debit Card" -> Icons.Default.CreditCard

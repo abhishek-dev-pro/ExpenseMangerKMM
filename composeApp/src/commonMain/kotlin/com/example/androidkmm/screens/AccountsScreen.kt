@@ -1077,7 +1077,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                         val cleanBalance = removeCurrencySymbols(account.balance)
                                         cleanBalance.toDoubleOrNull() ?: 0.0
                                     }
-                                    val formattedAmount = formatDouble1Decimal(kotlin.math.abs(totalAssets))
+                                    val formattedAmount = formatDouble2Decimals(kotlin.math.abs(totalAssets))
                                     if (totalAssets < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
                                 },
                                 fontSize = 16.sp,
@@ -1145,7 +1145,7 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                                         val cleanBalance = removeCurrencySymbols(account.balance)
                                         cleanBalance.toDoubleOrNull() ?: 0.0
                                     }
-                                    val formattedAmount = formatDouble1Decimal(kotlin.math.abs(netWorth))
+                                    val formattedAmount = formatDouble2Decimals(kotlin.math.abs(netWorth))
                                     if (netWorth < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
                                 },
                                 fontSize = 16.sp,
