@@ -1507,7 +1507,8 @@ fun AddTransactionScreen(
             onAddAccount = { showAddAccountSheet = true },
             excludeAccountId = formData.toAccount?.id,
             transactionType = formData.type.name,
-            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled
+            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled,
+            transactionAmount = formData.amount.toDoubleOrNull()
         )
     }
 
@@ -1525,7 +1526,8 @@ fun AddTransactionScreen(
             onAddAccount = { showAddAccountSheet = true },
             excludeAccountId = formData.account?.id,
             transactionType = formData.type.name,
-            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled
+            negativeBalanceWarningEnabled = appSettings.value.negativeBalanceWarningEnabled,
+            transactionAmount = formData.amount.toDoubleOrNull()
         )
     }
 
@@ -2423,7 +2425,8 @@ fun AccountSelectionBottomSheet(
     onAddAccount: (() -> Unit)? = null,
     excludeAccountId: String? = null,
     transactionType: String? = null,
-    negativeBalanceWarningEnabled: Boolean = true
+    negativeBalanceWarningEnabled: Boolean = true,
+    transactionAmount: Double? = null
 ) {
     SharedAccountSelectionBottomSheet(
         onDismiss = onDismiss,
@@ -2434,7 +2437,8 @@ fun AccountSelectionBottomSheet(
         onAddAccount = onAddAccount,
         excludeAccountId = excludeAccountId,
         transactionType = transactionType,
-        negativeBalanceWarningEnabled = negativeBalanceWarningEnabled
+        negativeBalanceWarningEnabled = negativeBalanceWarningEnabled,
+        transactionAmount = transactionAmount
     )
 }
 

@@ -2566,12 +2566,12 @@ fun NegativeBalanceWarningToggle() {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Zero/Negative Balance Warning",
+                    text = "Insufficient Funds Warning",
                     style = AppStyleDesignSystem.Typography.HEADLINE,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "Show warning when selecting accounts with zero or negative balance for expenses",
+                    text = "Show warning for accounts with negative or insufficient funds while transaction",
                     style = AppStyleDesignSystem.Typography.CALL_OUT,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)

@@ -34,7 +34,8 @@ fun SharedAccountSelectionBottomSheet(
     onAddAccount: (() -> Unit)? = null,
     excludeAccountId: String? = null,
     transactionType: String? = null, // Add transaction type parameter
-    negativeBalanceWarningEnabled: Boolean = true // Add warning setting parameter
+    negativeBalanceWarningEnabled: Boolean = true, // Add warning setting parameter
+    transactionAmount: Double? = null // Add transaction amount parameter
 ) {
     var showNegativeBalanceDialog by remember { mutableStateOf(false) }
     var selectedAccount by remember { mutableStateOf<Account?>(null) }
@@ -114,9 +115,14 @@ fun SharedAccountSelectionBottomSheet(
                 SharedAccountCard(
                     account = account,
                     onClick = { 
-                        // Check if account has zero or negative balance AND transaction type is EXPENSE AND warning is enabled
+                        // Check if account has insufficient funds for expense or transfer transactions
                         val balance = account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
-                        if (balance <= 0 && transactionType == "EXPENSE" && negativeBalanceWarningEnabled) {
+                        val shouldShowWarning = negativeBalanceWarningEnabled && 
+                                              transactionAmount != null &&
+                                              (transactionType == "EXPENSE" || transactionType == "TRANSFER") &&
+                                              (balance <= 0 || balance < transactionAmount)
+                        
+                        if (shouldShowWarning) {
                             selectedAccount = account
                             showNegativeBalanceDialog = true
                         } else {
@@ -196,10 +202,11 @@ fun SharedAccountSelectionBottomSheet(
         }
     }
     
-    // Negative Balance Warning Dialog
+    // Insufficient Funds Warning Dialog
     if (showNegativeBalanceDialog && selectedAccount != null) {
         NegativeBalanceWarningDialog(
             account = selectedAccount!!,
+            transactionAmount = transactionAmount,
             onDismiss = { 
                 showNegativeBalanceDialog = false
                 selectedAccount = null
@@ -309,45 +316,68 @@ private fun getAccountTypeColor(accountType: String): Color {
 @Composable
 private fun NegativeBalanceWarningDialog(
     account: Account,
+    transactionAmount: Double?,
     onDismiss: () -> Unit,
     onProceed: () -> Unit
 ) {
+    val accountBalance = account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "⚠️ Zero/Negative Balance Warning",
+                text = "⚠️ Insufficient Funds Warning",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFFF6B35)
             )
         },
-                    text = {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                text = if (account.balance.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0 == 0.0) {
-                                    "The account \"${account.name}\" has a zero balance."
-                                } else {
-                                    "The account \"${account.name}\" has a negative balance of ${account.balance}."
-                                },
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Are you sure you want to proceed with this account?",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "You can disable this warning from Settings in your profile.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                            )
-                        }
-                    },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Show different messages based on the scenario
+                when {
+                    accountBalance <= 0 -> {
+                        Text(
+                            text = if (accountBalance == 0.0) {
+                                "The account \"${account.name}\" has a zero balance."
+                            } else {
+                                "The account \"${account.name}\" has a negative balance of ${account.balance}."
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    transactionAmount != null && accountBalance < transactionAmount -> {
+                        Text(
+                            text = "The account \"${account.name}\" has insufficient funds.\n\nCurrent balance: ${account.balance}\nRequired amount: ₹${String.format("%.2f", transactionAmount)}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    else -> {
+                        Text(
+                            text = "The account \"${account.name}\" has insufficient funds.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                
+                Text(
+                    text = "Are you sure you want to proceed with this account?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "You can disable this warning from Settings in your profile.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+        },
         confirmButton = {
             Button(
                 onClick = onProceed,
