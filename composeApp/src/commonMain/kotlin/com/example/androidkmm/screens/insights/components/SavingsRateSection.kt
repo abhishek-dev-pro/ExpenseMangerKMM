@@ -100,8 +100,5 @@ fun SavingsRateSection(
 }
 
 private fun formatDouble1Decimal(value: Double): String {
-    val rounded = (value * 10.0).toLong()
-    val integerPart = rounded / 10
-    val decimalPart = (rounded % 10).toInt()
-    return "$integerPart.$decimalPart"
+    return String.format("%.1f", value)
 }

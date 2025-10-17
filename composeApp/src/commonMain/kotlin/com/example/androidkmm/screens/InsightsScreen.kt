@@ -462,7 +462,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${DateFormatUtils.formatDouble(income, "%.0f")}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(income, "%.2f")}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -492,7 +492,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${DateFormatUtils.formatDouble(expenses, "%.0f")}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(expenses, "%.2f")}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
@@ -531,7 +531,7 @@ private fun MonthlySummaryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "$currencySymbol${DateFormatUtils.formatDouble(savings, "%.0f")}",
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(savings, "%.2f")}",
                             color = Color.White,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
@@ -2146,17 +2146,11 @@ data class ExpenseData(
 )
 
 private fun formatDouble2Decimals(value: Double): String {
-    val rounded = (value * 100.0).toLong()
-    val integerPart = rounded / 100
-    val decimalPart = (rounded % 100).toInt()
-    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
+    return String.format("%.2f", value)
 }
 
 private fun formatDouble1Decimal(value: Double): String {
-    val rounded = (value * 10.0).toLong()
-    val integerPart = rounded / 10
-    val decimalPart = (rounded % 10).toInt()
-    return "$integerPart.$decimalPart"
+    return String.format("%.1f", value)
 }
 
 private fun formatDouble0Decimals(value: Double): String {

@@ -130,10 +130,7 @@ private fun DayGroupHeader(
 }
 
 private fun formatDouble2Decimals(value: Double): String {
-    val rounded = (value * 100.0).toLong()
-    val integerPart = rounded / 100
-    val decimalPart = (rounded % 100).toInt()
-    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
+    return String.format("%.2f", value)
 }
 
 /**
