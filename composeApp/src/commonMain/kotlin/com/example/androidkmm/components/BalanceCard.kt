@@ -167,7 +167,7 @@ fun BalanceCard(
                     0.0
                 }
             }
-            val formattedAmount = DateFormatUtils.formatDouble(total, "%.2f")
+            val formattedAmount = DateFormatUtils.formatDouble(kotlin.math.abs(total), "%.2f")
             if (total < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
         } else {
             "$currencySymbol.00"
@@ -232,7 +232,7 @@ fun BalanceCard(
                 println("DEBUG: finalAmount >= 0: ${finalAmount >= 0}")
                 
                 // Ensure proper zero formatting - if amount is effectively zero, show 0.0
-                val displayAmount = if (kotlin.math.abs(finalAmount) < 0.01) "0.0" else DateFormatUtils.formatDouble(finalAmount, "%.1f")
+                val displayAmount = if (kotlin.math.abs(finalAmount) < 0.01) "0.0" else DateFormatUtils.formatDouble(kotlin.math.abs(finalAmount), "%.1f")
                 val result = if (finalAmount < 0) "-$currencySymbol$displayAmount" else "$currencySymbol$displayAmount"
                 println("DEBUG: finalAmount: $finalAmount, displayAmount: $displayAmount, result: $result")
                 result

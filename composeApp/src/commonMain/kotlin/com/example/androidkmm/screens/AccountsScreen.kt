@@ -41,6 +41,7 @@ import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.components.AddAccountBottomSheet
 import com.example.androidkmm.components.AccountDeletionDialog
 import com.example.androidkmm.design.AppStyleDesignSystem
+import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 
 // Color definitions for AccountsScreen - now using MaterialTheme
 internal val AccountsGreenSuccess = Color(0xFF4CAF50)
@@ -1072,13 +1073,19 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                             )
                             Text(
                                 text = run {
-                                    val totalAssets = accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 }
-                                    val formattedAmount = formatDouble1Decimal(totalAssets)
+                                    val totalAssets = accounts.sumOf { account ->
+                                        val cleanBalance = removeCurrencySymbols(account.balance)
+                                        cleanBalance.toDoubleOrNull() ?: 0.0
+                                    }
+                                    val formattedAmount = formatDouble1Decimal(kotlin.math.abs(totalAssets))
                                     if (totalAssets < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
                                 },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 } < 0) AccountsRedError else AccountsGreenSuccess
+                                color = if (accounts.sumOf { account ->
+    val cleanBalance = removeCurrencySymbols(account.balance)
+    cleanBalance.toDoubleOrNull() ?: 0.0
+} < 0) AccountsRedError else AccountsGreenSuccess
                             )
                         }
 
@@ -1134,13 +1141,19 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
                             )
                             Text(
                                 text = run {
-                                    val netWorth = accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 }
-                                    val formattedAmount = formatDouble1Decimal(netWorth)
+                                    val netWorth = accounts.sumOf { account ->
+                                        val cleanBalance = removeCurrencySymbols(account.balance)
+                                        cleanBalance.toDoubleOrNull() ?: 0.0
+                                    }
+                                    val formattedAmount = formatDouble1Decimal(kotlin.math.abs(netWorth))
                                     if (netWorth < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
                                 },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (accounts.sumOf { it.balance.toDoubleOrNull() ?: 0.0 } < 0) AccountsRedError else AccountsGreenSuccess
+                                color = if (accounts.sumOf { account ->
+    val cleanBalance = removeCurrencySymbols(account.balance)
+    cleanBalance.toDoubleOrNull() ?: 0.0
+} < 0) AccountsRedError else AccountsGreenSuccess
                             )
                         }
                     }
@@ -1156,16 +1169,9 @@ private fun OverviewContent(accounts: List<Account>, currencySymbol: String) {
 }
 
 private fun formatDouble2Decimals(value: Double): String {
-    val rounded = (value * 100.0).toLong()
-    val integerPart = rounded / 100
-    val decimalPart = (rounded % 100).toInt()
-    return "$integerPart.${decimalPart.toString().padStart(2, '0')}"
+    return String.format("%.2f", value)
 }
 
 private fun formatDouble1Decimal(value: Double): String {
-    val absValue = kotlin.math.abs(value)
-    val rounded = (absValue * 10.0).toLong()
-    val integerPart = rounded / 10
-    val decimalPart = (rounded % 10).toInt()
-    return "$integerPart.$decimalPart"
+    return String.format("%.1f", value)
 }

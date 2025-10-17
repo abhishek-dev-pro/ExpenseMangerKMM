@@ -43,23 +43,11 @@ object DateFormatUtils {
     
     // Manual formatting functions
     private fun formatDouble2Decimals(value: Double): String {
-        val isNegative = value < 0
-        val absValue = kotlin.math.abs(value)
-        val rounded = (absValue * 100.0).toLong()
-        val integerPart = rounded / 100
-        val decimalPart = (rounded % 100).toInt()
-        val formatted = "$integerPart.${decimalPart.toString().padStart(2, '0')}"
-        return formatted
+        return String.format("%.2f", value)
     }
     
     private fun formatDouble1Decimal(value: Double): String {
-        val isNegative = value < 0
-        val absValue = kotlin.math.abs(value)
-        val rounded = (absValue * 10.0).toLong()
-        val integerPart = rounded / 10
-        val decimalPart = (rounded % 10).toInt()
-        val formatted = "$integerPart.$decimalPart"
-        return formatted
+        return String.format("%.1f", value)
     }
     
     private fun formatInt2Digits(value: Int): String {

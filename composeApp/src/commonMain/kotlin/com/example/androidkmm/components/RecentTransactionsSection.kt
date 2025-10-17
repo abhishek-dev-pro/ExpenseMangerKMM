@@ -280,22 +280,12 @@ private fun RecentTransactionItem(
 }
 
 private fun formatAmount(amount: Double, type: TransactionType, currencySymbol: String): String {
-    val formattedAmount = formatDouble2Decimals(amount)
-    return when (type) {
-        TransactionType.INCOME -> if (amount < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
-        TransactionType.EXPENSE -> if (amount < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
-        TransactionType.TRANSFER -> if (amount < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
-    }
+    val formattedAmount = formatDouble2Decimals(kotlin.math.abs(amount))
+    return if (amount < 0) "-$currencySymbol$formattedAmount" else "$currencySymbol$formattedAmount"
 }
 
 private fun formatDouble2Decimals(value: Double): String {
-    val isNegative = value < 0
-    val absValue = kotlin.math.abs(value)
-    val rounded = (absValue * 100.0).toLong()
-    val integerPart = rounded / 100
-    val decimalPart = (rounded % 100).toInt()
-    val formatted = "$integerPart.${decimalPart.toString().padStart(2, '0')}"
-    return if (isNegative) "-$formatted" else formatted
+    return String.format("%.2f", value)
 }
 
 @OptIn(ExperimentalTime::class)
