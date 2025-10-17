@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.example.androidkmm.utils.DateTimeUtils
+import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
+import com.example.androidkmm.models.TransactionType
 import kotlinx.datetime.*
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties

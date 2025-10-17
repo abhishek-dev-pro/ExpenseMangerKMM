@@ -240,9 +240,18 @@ fun SearchTransactionsScreen(
             isVisible = true,
             onDismiss = { selectedTransactionForDetails = null },
             onEdit = { editedTransaction ->
-                // Update the transaction in the database
-                transactionDatabaseManager.updateTransaction(editedTransaction)
-                selectedTransactionForDetails = null
+                // Update the transaction in the database with balance updates
+                transactionDatabaseManager.updateTransactionWithBalanceUpdate(
+                    oldTransaction = transaction,
+                    newTransaction = editedTransaction,
+                    accountDatabaseManager = accountDatabaseManager,
+                    onSuccess = {
+                        selectedTransactionForDetails = null
+                    },
+                    onError = { error ->
+                        println("Error updating transaction: ${error.message}")
+                    }
+                )
             },
             onDelete = {
                 // Delete the transaction from the database

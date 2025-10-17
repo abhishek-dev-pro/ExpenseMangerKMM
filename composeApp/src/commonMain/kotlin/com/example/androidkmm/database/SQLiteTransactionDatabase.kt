@@ -481,9 +481,42 @@ class SQLiteTransactionDatabase(
                     id = newTransaction.id
                 )
                 
-                // Step 2: Recalculate account balances from scratch to avoid double counting
-                println("DEBUG: Step 2 - Recalculating account balances from scratch...")
-                recalculateAccountBalancesFromTransactions(accountDatabaseManager)
+                // Step 2: For EXPENSE transactions, use simplified logic
+                // Add back old amount, then subtract new amount
+                println("DEBUG: Step 2 - Updating account balance using simplified logic...")
+                
+                if (oldTransaction.account == newTransaction.account && oldTransaction.type == newTransaction.type) {
+                    // Same account and type - just calculate the difference
+                    val account = getAccountByName(newTransaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        println("DEBUG: Current balance: $currentBalance")
+                        
+                        when (newTransaction.type) {
+                            com.example.androidkmm.models.TransactionType.INCOME -> {
+                                // For INCOME: subtract old, add new = currentBalance - oldAmount + newAmount
+                                val newBalance = currentBalance - oldTransaction.amount + newTransaction.amount
+                                accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                                println("DEBUG: INCOME - Updated ${account.name}: $currentBalance - ${oldTransaction.amount} + ${newTransaction.amount} = $newBalance")
+                            }
+                            com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                                // For EXPENSE: add back old, subtract new = currentBalance + oldAmount - newAmount
+                                val newBalance = currentBalance + oldTransaction.amount - newTransaction.amount
+                                accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                                println("DEBUG: EXPENSE - Updated ${account.name}: $currentBalance + ${oldTransaction.amount} - ${newTransaction.amount} = $newBalance")
+                            }
+                            com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                                // Handle transfer separately
+                                undoTransaction(oldTransaction, accountDatabaseManager)
+                                applyTransaction(newTransaction, accountDatabaseManager)
+                            }
+                        }
+                    }
+                } else {
+                    // Different account or type - use undo/apply logic
+                    undoTransaction(oldTransaction, accountDatabaseManager)
+                    applyTransaction(newTransaction, accountDatabaseManager)
+                }
                 
                 println("DEBUG: Transaction updated and balances recalculated successfully")
                 println("DEBUG: === END TRANSACTION EDIT DEBUG ===")
@@ -683,6 +716,168 @@ class SQLiteTransactionDatabase(
         } catch (e: Exception) {
             println("DEBUG: Error getting account by name: ${e.message}")
             null
+        }
+    }
+    
+    private suspend fun undoTransaction(
+        transaction: Transaction,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        try {
+            println("DEBUG: Undoing transaction: ${transaction.title} (${transaction.type}) - ${transaction.amount}")
+            
+            when (transaction.type) {
+                com.example.androidkmm.models.TransactionType.INCOME -> {
+                    // Undo income: subtract the amount (reverse the original addition)
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: UNDO INCOME - Account ${account.name}: $currentBalance -> $newBalance (reversed +${transaction.amount})")
+                    }
+                }
+                com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                    // Undo expense: add the amount back (reverse the original subtraction)
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: UNDO EXPENSE - Account ${account.name}: $currentBalance -> $newBalance (reversed -${transaction.amount})")
+                    }
+                }
+                com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                    // Undo transfer: reverse the source and destination changes
+                    val fromAccount = getAccountByName(transaction.account)
+                    val toAccount = transaction.transferTo?.let { getAccountByName(it) }
+                    
+                    if (fromAccount != null) {
+                        val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
+                        val newFromBalance = currentFromBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                        println("DEBUG: UNDO TRANSFER FROM - Account ${fromAccount.name}: $currentFromBalance -> $newFromBalance (reversed -${transaction.amount})")
+                    }
+                    
+                    if (toAccount != null) {
+                        val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
+                        val newToBalance = currentToBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                        println("DEBUG: UNDO TRANSFER TO - Account ${toAccount.name}: $currentToBalance -> $newToBalance (reversed +${transaction.amount})")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("ERROR: Failed to undo transaction: ${e.message}")
+            throw e
+        }
+    }
+    
+    private suspend fun applyTransaction(
+        transaction: Transaction,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        try {
+            println("DEBUG: Applying transaction: ${transaction.title} (${transaction.type}) - ${transaction.amount}")
+            
+            when (transaction.type) {
+                com.example.androidkmm.models.TransactionType.INCOME -> {
+                    // Apply income: add the amount
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: APPLY INCOME - Account ${account.name}: $currentBalance -> $newBalance (+${transaction.amount})")
+                    }
+                }
+                com.example.androidkmm.models.TransactionType.EXPENSE -> {
+                    // Apply expense: subtract the amount
+                    val account = getAccountByName(transaction.account)
+                    if (account != null) {
+                        val currentBalance = removeCurrencySymbols(account.balance).toDoubleOrNull() ?: 0.0
+                        val newBalance = currentBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(account.id, newBalance)
+                        println("DEBUG: APPLY EXPENSE - Account ${account.name}: $currentBalance -> $newBalance (-${transaction.amount})")
+                    }
+                }
+                com.example.androidkmm.models.TransactionType.TRANSFER -> {
+                    // Apply transfer: subtract from source, add to destination
+                    val fromAccount = getAccountByName(transaction.account)
+                    val toAccount = transaction.transferTo?.let { getAccountByName(it) }
+                    
+                    if (fromAccount != null) {
+                        val currentFromBalance = removeCurrencySymbols(fromAccount.balance).toDoubleOrNull() ?: 0.0
+                        val newFromBalance = currentFromBalance - transaction.amount
+                        accountDatabaseManager.updateAccountBalance(fromAccount.id, newFromBalance)
+                        println("DEBUG: APPLY TRANSFER FROM - Account ${fromAccount.name}: $currentFromBalance -> $newFromBalance (-${transaction.amount})")
+                    }
+                    
+                    if (toAccount != null) {
+                        val currentToBalance = removeCurrencySymbols(toAccount.balance).toDoubleOrNull() ?: 0.0
+                        val newToBalance = currentToBalance + transaction.amount
+                        accountDatabaseManager.updateAccountBalance(toAccount.id, newToBalance)
+                        println("DEBUG: APPLY TRANSFER TO - Account ${toAccount.name}: $currentToBalance -> $newToBalance (+${transaction.amount})")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("ERROR: Failed to apply transaction: ${e.message}")
+            throw e
+        }
+    }
+    
+    private suspend fun recalculateSpecificAccountBalance(
+        accountName: String,
+        accountDatabaseManager: com.example.androidkmm.database.SQLiteAccountDatabase
+    ) {
+        try {
+            println("DEBUG: Recalculating balance for account: $accountName")
+            
+            // Get all transactions for this specific account
+            val allTransactions = database.categoryDatabaseQueries.selectAllTransactions().executeAsList()
+            val accountTransactions = allTransactions.filter { transaction ->
+                transaction.account_name == accountName
+            }
+            
+            println("DEBUG: Found ${accountTransactions.size} transactions for account $accountName")
+            
+            // Calculate balance from transactions
+            var balance = 0.0
+            accountTransactions.forEach { transaction ->
+                when (transaction.type) {
+                    "INCOME" -> balance += transaction.amount
+                    "EXPENSE" -> balance -= transaction.amount
+                    "TRANSFER" -> {
+                        // For transfers, subtract from source account
+                        balance -= transaction.amount
+                    }
+                }
+                println("DEBUG: Transaction ${transaction.title} (${transaction.type}): ${transaction.amount} -> Balance: $balance")
+            }
+            
+            // Also handle transfers TO this account
+            val transfersToThisAccount = allTransactions.filter { transaction ->
+                transaction.type == "TRANSFER" && transaction.transfer_to == accountName
+            }
+            
+            transfersToThisAccount.forEach { transaction ->
+                balance += transaction.amount
+                println("DEBUG: Transfer TO account ${transaction.title}: ${transaction.amount} -> Balance: $balance")
+            }
+            
+            // Get the account and update its balance
+            val account = getAccountByName(accountName)
+            if (account != null) {
+                accountDatabaseManager.updateAccountBalance(account.id, balance)
+                println("DEBUG: Updated account $accountName balance to $balance")
+            } else {
+                println("DEBUG: Account $accountName not found")
+            }
+            
+        } catch (e: Exception) {
+            println("ERROR: Failed to recalculate account balance for $accountName: ${e.message}")
+            throw e
         }
     }
     
