@@ -54,6 +54,7 @@ fun EditTransferTransactionScreen(
     var showToAccountSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showValidationError by remember { mutableStateOf(false) }
     
     val accounts by accountDatabaseManager.getActiveAccounts().collectAsState(initial = emptyList())
     
@@ -238,6 +239,23 @@ fun EditTransferTransactionScreen(
             }
         }
         
+        // Validation Error Message
+        if (showValidationError) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = "⚠️ From Account and To Account must be different",
+                    color = Color(0xFFFF6B35), // Orange color for warning
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+            }
+        }
+        
         // Date & Time
         Column(
             modifier = Modifier
@@ -388,6 +406,13 @@ fun EditTransferTransactionScreen(
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .clickable {
+                        // Validation: Check that both accounts are different
+                        if (selectedFromAccount == selectedToAccount) {
+                            showValidationError = true
+                            return@clickable
+                        }
+                        
+                        showValidationError = false
                         val updatedTransaction = transaction.copy(
                             amount = amount.toDoubleOrNull() ?: 0.0,
                             account = selectedFromAccount,
@@ -484,6 +509,7 @@ fun EditTransferTransactionScreen(
                                 .clickable {
                                     selectedFromAccount = account.name
                                     showFromAccountSheet = false
+                                    showValidationError = false // Clear validation error when account changes
                                 },
                             colors = CardDefaults.cardColors(
                                 containerColor = Color.Black // Black card background
@@ -592,6 +618,7 @@ fun EditTransferTransactionScreen(
                                 .clickable {
                                     selectedToAccount = account.name
                                     showToAccountSheet = false
+                                    showValidationError = false // Clear validation error when account changes
                                 },
                             colors = CardDefaults.cardColors(
                                 containerColor = Color.Black // Black card background

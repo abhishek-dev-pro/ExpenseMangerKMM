@@ -295,9 +295,9 @@ private fun TransactionDetailsContent(
 
         // Tags (category + account or transfer accounts)
         if (transaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                TagRow("From Account", transaction.account, transaction.accountIcon, transaction.accountColor)
-                TagRow("To Account", transaction.transferTo ?: "Unknown", Icons.Default.CreditCard, Color(0xFF757575))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                TagRow("From Account", transaction.account, transaction.accountIcon, transaction.accountColor, Modifier.weight(1f))
+                TagRow("To Account", transaction.transferTo ?: "Unknown", Icons.Default.CreditCard, Color(0xFF757575), Modifier.weight(1f))
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
