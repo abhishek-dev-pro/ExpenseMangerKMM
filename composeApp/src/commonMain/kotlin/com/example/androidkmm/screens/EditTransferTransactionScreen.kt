@@ -249,8 +249,7 @@ fun EditTransferTransactionScreen(
                 Text(
                     text = "⚠️ From Account and To Account must be different",
                     color = Color(0xFFFF6B35), // Orange color for warning
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             }

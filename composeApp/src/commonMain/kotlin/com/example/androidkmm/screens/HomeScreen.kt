@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.ChevronRight
@@ -31,6 +32,7 @@ import com.example.androidkmm.components.GroupItem
 import com.example.androidkmm.components.QuickActions
 import com.example.androidkmm.components.RecentTransactionsSection
 import com.example.androidkmm.design.AppStyleDesignSystem
+import androidx.compose.material3.MaterialTheme
 import com.example.androidkmm.data.GroupData
 import com.example.androidkmm.database.rememberSQLiteGroupDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
@@ -156,13 +158,18 @@ fun HomeScreenContent(
                             showTransactionDetails = false
                             selectedTransaction = null
                         },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier
+                            .background(
+                                Color(0xFF2C2C2E),
+                                CircleShape
+                            )
+                            .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                         )
                     }
                 }
@@ -181,34 +188,31 @@ fun HomeScreenContent(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        // Transaction title and amount
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = transaction.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f),
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = "${currencySymbol}${transaction.amount}",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = when (transaction.type) {
-                                    com.example.androidkmm.models.TransactionType.INCOME -> Color(0xFF4CAF50)
-                                    com.example.androidkmm.models.TransactionType.EXPENSE -> Color(0xFFE53935)
-                                    com.example.androidkmm.models.TransactionType.TRANSFER -> Color(0xFF3B82F6)
-                                },
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        // Amount first
+                        Text(
+                            text = "${currencySymbol}${transaction.amount}",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = when (transaction.type) {
+                                com.example.androidkmm.models.TransactionType.INCOME -> Color(0xFF4CAF50)
+                                com.example.androidkmm.models.TransactionType.EXPENSE -> Color(0xFFE53935)
+                                com.example.androidkmm.models.TransactionType.TRANSFER -> Color(0xFF3B82F6)
+                            },
+                            fontWeight = FontWeight.Bold
+                        )
                         
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         
-                        // Compact transaction type indicator
+                        // Title second
+                        Text(
+                            text = transaction.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Medium
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Transaction type badge third
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),

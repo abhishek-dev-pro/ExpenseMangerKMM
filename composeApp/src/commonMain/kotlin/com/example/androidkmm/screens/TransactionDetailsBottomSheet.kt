@@ -26,6 +26,8 @@ import androidx.compose.ui.window.Dialog
 import com.example.androidkmm.utils.CurrencyUtils.formatDouble
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
+import com.example.androidkmm.design.AppStyleDesignSystem
+import androidx.compose.material3.MaterialTheme
 import com.example.androidkmm.screens.EditTransferTransactionScreen
 
 // Colors for Transaction Details
@@ -249,7 +251,22 @@ private fun TransactionDetailsContent(
                     .padding(horizontal = 12.dp, vertical = 2.dp)
             )
 
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.clickable(){ onDismiss() })
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .background(
+                        Color(0xFF2C2C2E),
+                        CircleShape
+                    )
+                    .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
+                )
+            }
 
         }
 

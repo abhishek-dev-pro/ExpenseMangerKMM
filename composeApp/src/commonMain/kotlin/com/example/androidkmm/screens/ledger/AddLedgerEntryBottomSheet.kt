@@ -28,6 +28,8 @@ import kotlinx.datetime.*
 import kotlin.time.ExperimentalTime
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.androidkmm.design.AppStyleDesignSystem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -43,7 +45,6 @@ import com.example.androidkmm.database.rememberSQLiteTransactionDatabase
 import com.example.androidkmm.database.rememberSQLiteAccountDatabase
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.models.AppSettings
-import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.components.AddAccountBottomSheet
 import com.example.androidkmm.components.BeautifulDateSelector
 import kotlinx.coroutines.launch
@@ -199,11 +200,20 @@ fun AddLedgerEntryBottomSheet(
                             color = LedgerTheme.textPrimary()
                         )
 
-                        IconButton(onClick = onDismiss) {
+                        IconButton(
+                            onClick = onDismiss,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xFF2C2C2E),
+                                    CircleShape
+                                )
+                                .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
-                                tint = LedgerTheme.textPrimary()
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                             )
                         }
                     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -35,6 +36,7 @@ import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
 import com.example.androidkmm.utils.CurrencyUtils.removeCurrencySymbols
 import com.example.androidkmm.models.AppSettings
 import com.example.androidkmm.design.AppStyleDesignSystem
+import androidx.compose.material3.MaterialTheme
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlin.time.ExperimentalTime
@@ -205,12 +207,20 @@ fun EditLedgerEntryBottomSheet(
                             color = LedgerTheme.textPrimary()
                         )
                         
-                        IconButton(onClick = onDismiss) {
+                        IconButton(
+                            onClick = onDismiss,
+                            modifier = Modifier
+                                .background(
+                                    Color(0xFF2C2C2E),
+                                    CircleShape
+                                )
+                                .size(AppStyleDesignSystem.Sizes.AVATAR_MEDIUM)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
-                                tint = LedgerTheme.textSecondary(),
-                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_LARGE)
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(AppStyleDesignSystem.Sizes.ICON_SIZE_MEDIUM)
                             )
                         }
                     }

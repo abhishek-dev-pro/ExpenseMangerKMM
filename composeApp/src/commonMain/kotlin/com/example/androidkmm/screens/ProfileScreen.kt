@@ -277,8 +277,7 @@ fun ProfileMainScreen() {
                 title = {
                     Text(
                         text = "Clear All Data",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
+                        style = AppStyleDesignSystem.Typography.TITLE_2,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 },
@@ -286,84 +285,91 @@ fun ProfileMainScreen() {
                     Column {
                         Text(
                             text = "This action will reset your data to defaults:",
-                            fontSize = 16.sp,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                         
                         Text(
                             text = "• Delete all transactions",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "• Delete all custom accounts (keep default Cash)",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "• Delete all custom categories (keep default ones)",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "• Delete all ledger entries",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "• Delete all groups and group expenses",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
                             text = "• Reset accounts and categories to defaults",
-                            fontSize = 14.sp,
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                         
                         Text(
                             text = "This action cannot be undone!",
-                            fontSize = 16.sp,
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFE57373)
                         )
                     }
                 },
                 confirmButton = {
-                    Button(
-                        onClick = {
-                            showClearDataDialog = false
-                            scope.launch {
-                                // Reset data to defaults instead of clearing everything
-                                transactionDatabaseManager.resetToDefaults()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE57373)
-                        )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "Reset to Defaults",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showClearDataDialog = false }
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Button(
+                            onClick = {
+                                showClearDataDialog = false
+                                scope.launch {
+                                    // Reset data to defaults instead of clearing everything
+                                    transactionDatabaseManager.resetToDefaults()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE57373)
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Reset",
+                                color = Color.White,
+                                style = AppStyleDesignSystem.Typography.CALL_OUT,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        
+                        TextButton(
+                            onClick = { showClearDataDialog = false },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "Cancel",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = AppStyleDesignSystem.Typography.CALL_OUT
+                            )
+                        }
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.surface,
