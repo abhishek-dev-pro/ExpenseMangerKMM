@@ -528,6 +528,8 @@ class SQLiteTransactionDatabase(
                             newTransaction.type == com.example.androidkmm.models.TransactionType.TRANSFER) {
                             // Use undo/apply logic for transfers
                             undoTransaction(oldTransaction, accountDatabaseManager)
+                            // Small delay to ensure database is updated
+                            kotlinx.coroutines.delay(10)
                             applyTransaction(newTransaction, accountDatabaseManager)
                         } else {
                             // Update balance with calculated value
@@ -538,6 +540,8 @@ class SQLiteTransactionDatabase(
                 } else {
                     // Different account - use undo/apply logic
                     undoTransaction(oldTransaction, accountDatabaseManager)
+                    // Small delay to ensure database is updated
+                    kotlinx.coroutines.delay(10)
                     applyTransaction(newTransaction, accountDatabaseManager)
                 }
                 
