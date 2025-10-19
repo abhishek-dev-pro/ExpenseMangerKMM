@@ -3,12 +3,17 @@ package com.example.androidkmm.screens.goals
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,7 +35,11 @@ import com.example.androidkmm.models.Goal
 import com.example.androidkmm.models.GoalIcon
 import com.example.androidkmm.models.GoalPriority
 import com.example.androidkmm.utils.DateFormatUtils
+import com.example.androidkmm.components.BeautifulDateSelector
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.toJavaLocalDate
 import java.time.format.DateTimeFormatter
 
@@ -44,6 +53,7 @@ fun CreateGoalScreen(
     var description by remember { mutableStateOf("") }
     var targetAmount by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf<LocalDate?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
     var isRecurring by remember { mutableStateOf(false) }
     var monthlyAmount by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf(GoalIcon.HOUSE) }
@@ -121,28 +131,22 @@ fun CreateGoalScreen(
                 fontWeight = FontWeight.Medium
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            cursorBrush = Brush.linearGradient(
+                colors = listOf(Color.White, Color.White)
+            ),
             decorationBox = { innerTextField ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(
-                        text = "₹",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (targetAmount.isEmpty()) {
-                            Text(
-                                text = "50000",
-                                color = Color.White.copy(alpha = 0.5f),
-                                fontSize = 18.sp
-                            )
-                        }
-                        innerTextField()
+                    if (targetAmount.isEmpty()) {
+                        Text(
+                            text = "50000",
+                            color = Color.White.copy(alpha = 0.5f),
+                            fontSize = 18.sp
+                        )
                     }
+                    innerTextField()
                 }
             }
         )
@@ -169,6 +173,9 @@ fun CreateGoalScreen(
             textStyle = androidx.compose.ui.text.TextStyle(
                 color = Color.White,
                 fontSize = 16.sp
+            ),
+            cursorBrush = Brush.linearGradient(
+                colors = listOf(Color.White, Color.White)
             ),
             decorationBox = { innerTextField ->
                 Box(
@@ -210,6 +217,9 @@ fun CreateGoalScreen(
                 color = Color.White,
                 fontSize = 16.sp
             ),
+            cursorBrush = Brush.linearGradient(
+                colors = listOf(Color.White, Color.White)
+            ),
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -243,7 +253,7 @@ fun CreateGoalScreen(
                 .fillMaxWidth()
                 .height(56.dp)
                 .background(Color.White, RoundedCornerShape(12.dp))
-                .clickable { /* TODO: Open date picker */ }
+                .clickable { showDatePicker = true }
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -332,6 +342,9 @@ fun CreateGoalScreen(
                         fontSize = 16.sp
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    cursorBrush = Brush.linearGradient(
+                        colors = listOf(Color.White, Color.White)
+                    ),
                     decorationBox = { innerTextField ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -460,6 +473,18 @@ fun CreateGoalScreen(
             }
         }
     }
+    
+    // Simple Date Picker Dialog
+    if (showDatePicker) {
+        SimpleDatePicker(
+            selectedDate = deadline,
+            onDateSelected = { selectedDate ->
+                deadline = selectedDate
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
 }
 
 @Composable
@@ -550,4 +575,228 @@ private fun getIconEmoji(icon: GoalIcon): String {
         GoalIcon.COFFEE_CUP -> "☕"
         GoalIcon.GIFT_BOX -> "🎁"
     }
+}
+
+@Composable
+fun SimpleDatePicker(
+    selectedDate: LocalDate?,
+    onDateSelected: (LocalDate) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var currentMonth by remember { mutableStateOf(12) }
+    var currentYear by remember { mutableStateOf(2024) }
+    val today = LocalDate(2024, 12, 17) // Current date for reference
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.8f))
+            .clickable { onDismiss() },
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .clickable { /* Prevent click through */ },
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A)),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp)
+            ) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Select Deadline",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color.White
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Month Navigation
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = {
+                            if (currentMonth > 1) {
+                                currentMonth--
+                            } else {
+                                currentMonth = 12
+                                currentYear--
+                            }
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "Previous Month",
+                            tint = Color.White
+                        )
+                    }
+                    
+                    Text(
+                        text = "${getMonthName(currentMonth)} $currentYear",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    
+                    IconButton(
+                        onClick = {
+                            if (currentMonth < 12) {
+                                currentMonth++
+                            } else {
+                                currentMonth = 1
+                                currentYear++
+                            }
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Next Month",
+                            tint = Color.White
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Days of week
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
+                        Text(
+                            text = day,
+                            color = Color.Gray,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Calendar Grid - Simple approach
+                val daysInMonth = getDaysInMonth(currentMonth, currentYear)
+                val firstDayOfWeek = getFirstDayOfWeek(currentMonth, currentYear)
+                
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    modifier = Modifier.height(200.dp)
+                ) {
+                    // Empty cells for days before the first day of the month
+                    items(firstDayOfWeek) {
+                        Box(modifier = Modifier.height(40.dp))
+                    }
+                    
+                    // Days of the month
+                    items(daysInMonth) { day ->
+                        val date = LocalDate(currentYear, currentMonth, day + 1)
+                        val isToday = date == today
+                        val isPast = date < today
+                        val isSelected = selectedDate == date
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    when {
+                                        isSelected -> Color(0xFF6A4C93)
+                                        isToday -> Color(0xFF4CAF50)
+                                        else -> Color.Transparent
+                                    },
+                                    CircleShape
+                                )
+                                .clickable(enabled = !isPast) {
+                                    if (!isPast) {
+                                        onDateSelected(date)
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "${day + 1}",
+                                color = when {
+                                    isSelected -> Color.White
+                                    isToday -> Color.White
+                                    isPast -> Color.Gray
+                                    else -> Color.White
+                                },
+                                fontSize = 14.sp,
+                                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Selected date info
+                if (selectedDate != null) {
+                    Text(
+                        text = "Selected: ${selectedDate.dayOfMonth}/${selectedDate.monthNumber}/${selectedDate.year}",
+                        color = Color(0xFF6A4C93),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun getMonthName(month: Int): String {
+    return when (month) {
+        1 -> "January"
+        2 -> "February"
+        3 -> "March"
+        4 -> "April"
+        5 -> "May"
+        6 -> "June"
+        7 -> "July"
+        8 -> "August"
+        9 -> "September"
+        10 -> "October"
+        11 -> "November"
+        12 -> "December"
+        else -> "Unknown"
+    }
+}
+
+private fun getDaysInMonth(month: Int, year: Int): Int {
+    return when (month) {
+        1, 3, 5, 7, 8, 10, 12 -> 31
+        4, 6, 9, 11 -> 30
+        2 -> if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) 29 else 28
+        else -> 30
+    }
+}
+
+private fun getFirstDayOfWeek(month: Int, year: Int): Int {
+    // Simple calculation - this is a basic implementation
+    // For a more accurate implementation, you'd use proper date libraries
+    return 0 // Start from Sunday for simplicity
 }

@@ -1,0 +1,18 @@
+-- Migration to add goals table
+CREATE TABLE IF NOT EXISTS goals (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    target_amount REAL NOT NULL,
+    current_amount REAL NOT NULL DEFAULT 0.0,
+    deadline TEXT,
+    is_recurring INTEGER NOT NULL DEFAULT 0,
+    monthly_amount REAL,
+    icon TEXT NOT NULL,
+    color TEXT NOT NULL DEFAULT 'blue',
+    priority TEXT NOT NULL DEFAULT 'medium',
+    progress_percentage INTEGER NOT NULL DEFAULT 0,
+    remaining_amount REAL NOT NULL DEFAULT 0.0,
+    status TEXT NOT NULL DEFAULT 'on track',
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
