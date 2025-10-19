@@ -150,6 +150,8 @@ fun GoalCard(
 
 @Composable
 fun GoalActionBar(
+    goalId: Long,
+    goalTitle: String,
     onAddClick: () -> Unit,
     onWithdrawClick: () -> Unit,
     onDeleteClick: () -> Unit,

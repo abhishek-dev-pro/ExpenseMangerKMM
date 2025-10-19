@@ -7,6 +7,7 @@ import SearchTransactionsScreen
 import com.example.androidkmm.screens.goals.CreateGoalScreen
 import com.example.androidkmm.screens.goals.GoalCard
 import com.example.androidkmm.screens.goals.GoalActionBar
+import com.example.androidkmm.screens.goals.AddMoneyFloatingBar
 import com.example.androidkmm.data.SampleGoals
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -163,8 +164,8 @@ fun InsightsScreen(
                         onError = { /* Handle error */ }
                     )
                 }
-        )
-    }
+            )
+        }
 }
 
 @Composable
@@ -1108,6 +1109,9 @@ private fun GoalsTab(
     onCreateGoalClick: () -> Unit,
     goalsUpdateTrigger: Int
 ) {
+    var showAddMoneySheet by remember { mutableStateOf(false) }
+    var selectedGoalId by remember { mutableStateOf(0L) }
+    var selectedGoalTitle by remember { mutableStateOf("") }
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = appSettings.value.currencySymbol
@@ -1298,7 +1302,13 @@ private fun GoalsTab(
                             currencySymbol = currencySymbol
                         )
                         GoalActionBar(
-                            onAddClick = { /* TODO: Handle add money to goal */ },
+                            goalId = goals[index].id,
+                            goalTitle = goals[index].title,
+                            onAddClick = { 
+                                selectedGoalId = goals[index].id
+                                selectedGoalTitle = goals[index].title
+                                showAddMoneySheet = true
+                            },
                             onWithdrawClick = { /* TODO: Handle withdraw money from goal */ },
                             onDeleteClick = { 
                                 goalsDatabaseManager.deleteGoal(
@@ -1311,8 +1321,20 @@ private fun GoalsTab(
                     }
                 }
             }
+        }
+        
+        // Show Add Money to Goal Floating Bar
+        if (showAddMoneySheet) {
+            AddMoneyFloatingBar(
+                goalId = selectedGoalId,
+                goalTitle = selectedGoalTitle,
+                onDismiss = { showAddMoneySheet = false },
+                onSuccess = { 
+                    // Goals will update automatically via the database flow
+                }
+            )
+        }
     }
-}
 
 @Composable
 private fun BudgetsTab() {
