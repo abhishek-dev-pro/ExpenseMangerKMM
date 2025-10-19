@@ -69,6 +69,24 @@ CREATE TABLE app_settings (
     updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
 );
 
+CREATE TABLE goals (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    target_amount REAL NOT NULL,
+    current_amount REAL NOT NULL DEFAULT 0.0,
+    deadline TEXT,
+    is_recurring INTEGER NOT NULL DEFAULT 0,
+    monthly_amount REAL,
+    icon TEXT NOT NULL,
+    color TEXT NOT NULL DEFAULT 'blue',
+    priority TEXT NOT NULL DEFAULT 'medium',
+    progress_percentage INTEGER NOT NULL DEFAULT 0,
+    remaining_amount REAL NOT NULL DEFAULT 0.0,
+    status TEXT NOT NULL DEFAULT 'on track',
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
 -- Insert default settings
 INSERT INTO app_settings (key, value) VALUES
 ('carry_forward_enabled', '1'),
@@ -519,3 +537,33 @@ unarchiveAccount:
 UPDATE account 
 SET name = SUBSTR(name, 11)
 WHERE id = ? AND name LIKE '[ARCHIVED]%';
+
+-- Goals Queries
+selectAllGoals:
+SELECT * FROM goals ORDER BY created_at DESC;
+
+selectGoalById:
+SELECT * FROM goals WHERE id = ?;
+
+insertGoal:
+INSERT INTO goals (id, title, description, target_amount, current_amount, deadline, is_recurring, monthly_amount, icon, color, priority, progress_percentage, remaining_amount, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateGoal:
+UPDATE goals 
+SET title = ?, description = ?, target_amount = ?, current_amount = ?, deadline = ?, is_recurring = ?, monthly_amount = ?, icon = ?, color = ?, priority = ?, progress_percentage = ?, remaining_amount = ?, status = ?
+WHERE id = ?;
+
+updateGoalProgress:
+UPDATE goals 
+SET current_amount = ?, progress_percentage = ?, remaining_amount = ?, status = ?
+WHERE id = ?;
+
+deleteGoal:
+DELETE FROM goals WHERE id = ?;
+
+getGoalCount:
+SELECT COUNT(*) FROM goals;
+
+deleteAllGoals:
+DELETE FROM goals;

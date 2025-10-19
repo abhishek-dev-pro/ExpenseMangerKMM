@@ -6,6 +6,7 @@ import FilterOptions
 import SearchTransactionsScreen
 import com.example.androidkmm.screens.goals.CreateGoalScreen
 import com.example.androidkmm.screens.goals.GoalCard
+import com.example.androidkmm.screens.goals.GoalActionBar
 import com.example.androidkmm.data.SampleGoals
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.example.androidkmm.design.AppStyleDesignSystem
 import com.example.androidkmm.utils.DateTimeUtils
 import com.example.androidkmm.database.rememberSQLiteSettingsDatabase
+import com.example.androidkmm.database.rememberSQLiteGoalsDatabase
 import com.example.androidkmm.models.AppSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +58,9 @@ fun InsightsScreen(
     val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
     val settings by settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = settings.currencySymbol
+    
+    // Get goals database manager
+    val goalsDatabaseManager = rememberSQLiteGoalsDatabase()
     
     // Function to handle category click
     val handleCategoryClick = { category: String, currentMonth: Int, currentYear: Int ->
@@ -149,14 +154,17 @@ fun InsightsScreen(
             CreateGoalScreen(
                 onClose = { showCreateGoalScreen = false },
                 onGoalCreated = { goal ->
-                    // Add the new goal to the sample goals list
-                    SampleGoals.addGoal(goal)
-                    showCreateGoalScreen = false
-                    // Trigger recomposition by updating the trigger
-                    goalsUpdateTrigger++
+                    // Add the new goal directly to the database
+                    goalsDatabaseManager.addGoal(
+                        goal = goal,
+                        onSuccess = { 
+                            showCreateGoalScreen = false
+                        },
+                        onError = { /* Handle error */ }
+                    )
                 }
-            )
-        }
+        )
+    }
 }
 
 @Composable
@@ -1104,13 +1112,11 @@ private fun GoalsTab(
     val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
     val currencySymbol = appSettings.value.currencySymbol
     
-    // Make goals reactive to changes
-    var goals by remember { mutableStateOf(SampleGoals.goals) }
+    // Get goals database manager
+    val goalsDatabaseManager = rememberSQLiteGoalsDatabase()
     
-    // Update goals when trigger changes
-    LaunchedEffect(goalsUpdateTrigger) {
-        goals = SampleGoals.goals
-    }
+    // Get goals from database with reactive updates
+    val goals by goalsDatabaseManager.getAllGoals().collectAsState(initial = emptyList())
     
     LazyColumn(
         modifier = Modifier
@@ -1139,7 +1145,7 @@ private fun GoalsTab(
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-                        Text(
+        Text(
                             text = "${goals.size}",
                             modifier = Modifier.fillMaxWidth(),
                             color = Color.White,
@@ -1286,10 +1292,23 @@ private fun GoalsTab(
                 }
             } else {
                 items(goals.size) { index ->
-                    GoalCard(
-                        goal = goals[index],
-                        currencySymbol = currencySymbol
-                    )
+                    Column {
+                        GoalCard(
+                            goal = goals[index],
+                            currencySymbol = currencySymbol
+                        )
+                        GoalActionBar(
+                            onAddClick = { /* TODO: Handle add money to goal */ },
+                            onWithdrawClick = { /* TODO: Handle withdraw money from goal */ },
+                            onDeleteClick = { 
+                                goalsDatabaseManager.deleteGoal(
+                                    goalId = goals[index].id,
+                                    onSuccess = { /* Goal deleted successfully */ },
+                                    onError = { /* Handle error */ }
+                                )
+                            }
+                        )
+                    }
                 }
             }
     }

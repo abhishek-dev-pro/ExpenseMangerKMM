@@ -1,10 +1,13 @@
 package com.example.androidkmm.screens.goals
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,11 +31,16 @@ fun GoalCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 0.dp, vertical = 8.dp),
+            .padding(horizontal = 0.dp, vertical = 8.dp)
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1A1A1A)
+            containerColor = Color.Black
         ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -46,7 +54,7 @@ fun GoalCard(
                 // Goal Icon
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(36.dp)
                         .background(
                             Color(0xFF6A4C93),
                             CircleShape
@@ -55,7 +63,7 @@ fun GoalCard(
                 ) {
                     Text(
                         text = getIconEmoji(goal.icon),
-                        style = AppStyleDesignSystem.Typography.TITLE_2
+                        style = AppStyleDesignSystem.Typography.BODY
                     )
                 }
                 
@@ -84,8 +92,8 @@ fun GoalCard(
                 
                 Spacer(modifier = Modifier.width(8.dp))
                 
-                // Priority Badge
-                PriorityBadge(priority = goal.priority)
+                // Status Badge
+                StatusBadge(status = goal.status)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -135,36 +143,92 @@ fun GoalCard(
                 trackColor = Color(0xFF2A2A2A)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
             
-            // Bottom Section: Remaining, Status, Monthly
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Remaining Amount - left side
-                Text(
-                    text = "$currencySymbol${goal.remainingAmount} to go",
-                    color = Color.Gray,
-                    style = AppStyleDesignSystem.Typography.CALL_OUT
-                )
-                
-                // Spacer to push right content to the right
-                Spacer(modifier = Modifier.weight(1f))
-                
-            // Right side - Status and Monthly as blue text
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Status as blue text
-                StatusBadge(status = goal.status)
+        }
+    }
+}
 
-                // Monthly Amount as blue text
-                if (goal.isRecurring && goal.monthlyAmount != null) {
-                    MonthlyBadge(amount = goal.monthlyAmount!!, currencySymbol = currencySymbol)
-                }
+@Composable
+fun GoalActionBar(
+    onAddClick: () -> Unit,
+    onWithdrawClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF2A2A2A)
+        ),
+        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp, topStart = 0.dp, topEnd = 0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Add Button
+            Button(
+                onClick = onAddClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp)
+            ) {
+                Text(
+                    text = "Add",
+                    color = Color.White,
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE
+                )
             }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Withdraw Button
+            Button(
+                onClick = onWithdrawClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFF9800)
+                ),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(40.dp)
+            ) {
+                Text(
+                    text = "Withdraw",
+                    color = Color.White,
+                    style = AppStyleDesignSystem.Typography.FOOTNOTE
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Delete Icon
+            IconButton(
+                onClick = onDeleteClick,
+                modifier = Modifier
+                    .height(40.dp)
+                    .width(40.dp)
+                    .background(
+                        Color(0xFFD32F2F),
+                        RoundedCornerShape(8.dp)
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Goal",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
