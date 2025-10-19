@@ -4,6 +4,9 @@ import com.example.androidkmm.utils.DateFormatUtils
 import DateRange
 import FilterOptions
 import SearchTransactionsScreen
+import com.example.androidkmm.screens.goals.CreateGoalScreen
+import com.example.androidkmm.screens.goals.GoalCard
+import com.example.androidkmm.data.SampleGoals
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -17,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -28,6 +32,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +48,8 @@ fun InsightsScreen(
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     var showSearchScreen by remember { mutableStateOf(false) }
+    var showCreateGoalScreen by remember { mutableStateOf(false) }
+    var goalsUpdateTrigger by remember { mutableStateOf(0) }
     var searchInitialFilters by remember { mutableStateOf<FilterOptions>(FilterOptions()) }
     
     // Get currency symbol from settings
@@ -118,7 +125,10 @@ fun InsightsScreen(
                 currencySymbol = currencySymbol,
                 onCategoryClick = handleCategoryClick
             )
-            1 -> GoalsTab()
+            1 -> GoalsTab(
+                onCreateGoalClick = { showCreateGoalScreen = true },
+                goalsUpdateTrigger = goalsUpdateTrigger
+            )
             2 -> BudgetsTab()
             3 -> RecurringTab()
         }
@@ -133,6 +143,20 @@ fun InsightsScreen(
             initialFilters = searchInitialFilters
         )
     }
+    
+        // Show Create Goal Screen
+        if (showCreateGoalScreen) {
+            CreateGoalScreen(
+                onClose = { showCreateGoalScreen = false },
+                onGoalCreated = { goal ->
+                    // Add the new goal to the sample goals list
+                    SampleGoals.addGoal(goal)
+                    showCreateGoalScreen = false
+                    // Trigger recomposition by updating the trigger
+                    goalsUpdateTrigger++
+                }
+            )
+        }
 }
 
 @Composable
@@ -1072,16 +1096,202 @@ private fun InsightCard(
 }
 
 @Composable
-private fun GoalsTab() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+private fun GoalsTab(
+    onCreateGoalClick: () -> Unit,
+    goalsUpdateTrigger: Int
+) {
+    val settingsDatabaseManager = rememberSQLiteSettingsDatabase()
+    val appSettings = settingsDatabaseManager.getAppSettings().collectAsState(initial = AppSettings())
+    val currencySymbol = appSettings.value.currencySymbol
+    
+    // Make goals reactive to changes
+    var goals by remember { mutableStateOf(SampleGoals.goals) }
+    
+    // Update goals when trigger changes
+    LaunchedEffect(goalsUpdateTrigger) {
+        goals = SampleGoals.goals
+    }
+    
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = AppStyleDesignSystem.Padding.LARGE),
+        verticalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
     ) {
-        Text(
-            text = "Goals Tab - Coming Soon",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp
-        )
+        item {
+            Spacer(Modifier.height(AppStyleDesignSystem.Padding.MEDIUM))
+            
+            // Goals Overview Cards
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppStyleDesignSystem.Padding.MEDIUM)
+            ) {
+                // Active Goals Card (1x width)
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF3B82F6) // Blue background
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+                        Text(
+                            text = "${goals.size}",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            style = AppStyleDesignSystem.Typography.LARGE_TITLE,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Active",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                // Money Saved Card (2x width)
+                Card(
+                    modifier = Modifier.weight(2f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF10B981) // Green background
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "$currencySymbol${DateFormatUtils.formatDouble(goals.sumOf { it.currentAmount }, "%.0f")}",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            style = AppStyleDesignSystem.Typography.LARGE_TITLE,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Saved till now",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                
+                // Percentage Card (1x width)
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF8B5CF6) // Purple background
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "${if (goals.isNotEmpty()) goals.map { it.progressPercentage }.average().toInt() else 0}%",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            style = AppStyleDesignSystem.Typography.LARGE_TITLE,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "Percentage",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = AppStyleDesignSystem.Typography.FOOTNOTE,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+        
+        item {
+            // Create New Goal Button
+            Button(
+                onClick = onCreateGoalClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White
+                ),
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Create New Goal",
+                        color = Color.Black,
+                        style = AppStyleDesignSystem.Typography.BODY
+                    )
+                }
+            }
+        }
+        
+        item {
+            Spacer(Modifier.height(24.dp))
+        }
+        
+            // Goals List
+            if (goals.isEmpty()) {
+                item {
+                    // Empty state
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No goals yet",
+                            style = AppStyleDesignSystem.Typography.HEADLINE,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Create your first goal to get started",
+                            style = AppStyleDesignSystem.Typography.CALL_OUT,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            } else {
+                items(goals.size) { index ->
+                    GoalCard(
+                        goal = goals[index],
+                        currencySymbol = currencySymbol
+                    )
+                }
+            }
     }
 }
 
