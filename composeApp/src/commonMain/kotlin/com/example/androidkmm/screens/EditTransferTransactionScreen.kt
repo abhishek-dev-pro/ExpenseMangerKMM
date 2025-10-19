@@ -108,10 +108,20 @@ fun EditTransferTransactionScreen(
             BasicTextField(
                 value = amount,
                 onValueChange = { newValue: String ->
-                    val filteredValue = newValue.filter { char -> char.isDigit() || char == '.' }
-                    val decimalCount = filteredValue.count { char -> char == '.' }
-                    if (decimalCount <= 1) {
-                        amount = filteredValue
+                    // Apply same validation logic as Add Transaction screen
+                    val filtered = newValue.filter { char ->
+                        char.isDigit() || char == '.'
+                    }
+                    
+                    // Limit to maximum 8 digits (excluding decimal point)
+                    val digitsOnly = filtered.filter { char -> char.isDigit() }
+                    val decimalCount = filtered.count { char -> char == '.' }
+                    
+                    // Check if it's a valid decimal format and within digit limit
+                    if (filtered.matches(Regex("^\\d*\\.?\\d{0,2}$")) && 
+                        digitsOnly.length <= 8 && 
+                        decimalCount <= 1) {
+                        amount = filtered
                     }
                 },
                 textStyle = TextStyle(
